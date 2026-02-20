@@ -1,0 +1,139 @@
+{
+  "version": "1.5.3",
+  "project": {
+    "name": "smart-farm-platform",
+    "level": "dynamic",
+    "description": "Tuya IoT 기반 스마트 농업 자동화 플랫폼",
+    "techStack": {
+      "frontend": "Vue 3 + TypeScript + Vite",
+      "backend": "NestJS + TypeScript",
+      "database": "PostgreSQL + TimescaleDB",
+      "cache": "Redis",
+      "realtime": "Socket.io",
+      "iot": "Tuya Cloud API"
+    }
+  },
+  "pdca": {
+    "currentFeature": "sensor-display-ux-fix",
+    "phase": "check",
+    "matchRate": 100,
+    "iterationCount": 0,
+    "history": [
+      {
+        "action": "plan_created",
+        "feature": "smart-farm-platform",
+        "timestamp": "2026-02-10T00:00:00Z",
+        "details": "프로젝트 설계 검토 Plan 문서 작성 완료"
+      },
+      {
+        "action": "design_created",
+        "feature": "smart-farm-platform",
+        "timestamp": "2026-02-10T00:00:00Z",
+        "details": "상세 설계 문서 작성 완료 - 프론트엔드/백엔드/DB/보안/구현순서"
+      },
+      {
+        "action": "plan_created",
+        "feature": "automation-rules",
+        "timestamp": "2026-02-11T00:00:00Z",
+        "details": "자동화 룰 관리 기능 Plan 문서 작성 - 개폐기/환풍기/관수 룰 생성 위저드"
+      },
+      {
+        "action": "design_created",
+        "feature": "automation-rules",
+        "timestamp": "2026-02-11T00:00:00Z",
+        "details": "상세 설계 완료 - 데이터 구조(ConditionGroup/RuleAction), 위저드 4단계 UI, 10단계 구현순서"
+      },
+      {
+        "action": "do_started",
+        "feature": "automation-rules",
+        "timestamp": "2026-02-11T00:00:00Z",
+        "details": "구현 시작 - 10단계 구현순서 따라 진행"
+      },
+      {
+        "action": "do_completed",
+        "feature": "automation-rules",
+        "timestamp": "2026-02-12T00:00:00Z",
+        "details": "10단계 구현 완료 - 타입/헬퍼/DTO/서비스/위저드6컴포넌트/Automation.vue 리팩토링, TypeScript+Vite 빌드 통과"
+      },
+      {
+        "action": "gap_analysis",
+        "feature": "smart-farm-platform",
+        "timestamp": "2026-02-19T00:00:00Z",
+        "details": "전체 플랫폼 Gap 분석 완료 - Match Rate 82%, 10개 Gap 발견 (테스트 미구현, WebSocket 미연결, 알림모듈 미구현 등)"
+      },
+      {
+        "action": "plan_created",
+        "feature": "ui-improvement",
+        "timestamp": "2026-02-19T00:00:00Z",
+        "details": "모바일 UX 개선 Plan 작성 - 하단탭바/SafeArea/접근성/ConfirmDialog/StepByStep위저드/ProgressiveDisclosure, 9개 FR, 4Phase 구현순서"
+      },
+      {
+        "action": "design_created",
+        "feature": "ui-improvement",
+        "timestamp": "2026-02-19T00:00:00Z",
+        "details": "상세 설계 완료 - BottomTabBar/MoreMenu/ConfirmDialog/useConfirm/SummaryCards 5개 신규 컴포넌트, 9개 기존파일 수정, 12단계 구현순서"
+      },
+      {
+        "action": "plan_created",
+        "feature": "platform-bugfix-v2",
+        "timestamp": "2026-02-20T00:00:00Z",
+        "details": "6개 요구사항 Plan 작성 - 폰트가독성/CSS변수교체/그룹센서로딩/Tuya동기화/전체센서표시/리포트연동"
+      },
+      {
+        "action": "plan_created",
+        "feature": "ui-enhancement-v2",
+        "timestamp": "2026-02-20T00:00:00Z",
+        "details": "시니어 사용자 접근성 개선 Plan 작성 - 다크모드/폰트확대/버튼통일/장비ID숨김/카드디자인통일, 5개 FR, 5Phase 구현순서"
+      },
+      {
+        "action": "design_created",
+        "feature": "ui-enhancement-v2",
+        "timestamp": "2026-02-20T00:00:00Z",
+        "details": "상세 설계 완료 - CSS변수 50+개 정의(라이트/다크), 10개 파일 120+개 색상매핑, 버튼3단계규격, 카드통일규격, 10단계 구현순서"
+      },
+      {
+        "action": "gap_analysis",
+        "feature": "ui-enhancement-v2",
+        "timestamp": "2026-02-20T00:00:00Z",
+        "details": "Gap 분석 완료 - Match Rate 94%, 9개 Gap (Small버튼5건, 카드2건, 하드코딩색상2건), FR-01/02/04 100% 달성"
+      },
+      {
+        "action": "iteration_completed",
+        "feature": "ui-enhancement-v2",
+        "timestamp": "2026-02-20T00:00:00Z",
+        "details": "Act-1 완료 - 8개 Gap 수정 (탭Small규격3건, Reports Medium/Small 2건, sensor-card배경, sub-card규격, warning변수추가), Match Rate 94%→98%, 빌드 통과"
+      },
+      {
+        "action": "plan_created",
+        "feature": "platform-fix-v3",
+        "timestamp": "2026-02-20T00:00:00Z",
+        "details": "4개 FR Plan 작성 - 센서표시필터링(5개)/대시보드정리+날씨확대/다크모드배경수정/자동화카드녹색제거, 5Phase 구현순서"
+      },
+      {
+        "action": "do_completed",
+        "feature": "platform-fix-v3",
+        "timestamp": "2026-02-20T00:00:00Z",
+        "details": "5Phase 구현 완료 - 센서5개필터(Sensors/SummaryCards/automation-helpers), 대시보드격자+API제거+날씨확대, 다크모드14파일background교체, 자동화카드border-left제거, 빌드 통과"
+      },
+      {
+        "action": "gap_analysis",
+        "feature": "platform-fix-v3",
+        "timestamp": "2026-02-20T00:00:00Z",
+        "details": "Gap 분석 완료 - Match Rate 78%, FR-01(90%)/FR-02(100%)/FR-04(100%) PASS, FR-03(40%) FAIL - StepConditionBuilder/UserManagement/RuleWizardModal 하드코딩 색상 7건"
+      },
+      {
+        "action": "iteration_completed",
+        "feature": "platform-fix-v3",
+        "timestamp": "2026-02-20T00:00:00Z",
+        "details": "Act-1 완료 - FR-03 하드코딩 색상 8건 수정 (StepConditionBuilder #fafafa→var(--bg-secondary), UserManagement #f5f5f5/#f8f9fa/#f0f0f0→CSS변수 4건, RuleWizardModal #eee/#f5f5f5→CSS변수 3건), Match Rate 78%→95%, 빌드 통과"
+      }
+    ]
+  },
+  "context": {
+    "lastModified": "2026-02-19",
+    "phase1Status": "completed",
+    "phase2Status": "in_progress",
+    "criticalIssues": ["no_tests", "no_websocket_client", "no_sensor_data_recording"],
+    "overallCompletion": "82%"
+  }
+}

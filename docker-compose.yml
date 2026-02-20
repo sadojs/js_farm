@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # PostgreSQL with TimescaleDB
+  postgres:
+    image: timescale/timescaledb:latest-pg15
+    container_name: smart-farm-db
+    environment:
+      POSTGRES_USER: smartfarm
+      POSTGRES_PASSWORD: smartfarm123
+      POSTGRES_DB: smartfarm
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - smart-farm-network
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: smart-farm-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - smart-farm-network
+
+  # Backend (NestJS)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: smart-farm-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://smartfarm:smartfarm123@postgres:5432/smartfarm
+      - REDIS_URL=redis://redis:6379
+      - TUYA_CLIENT_ID=${TUYA_CLIENT_ID}
+      - TUYA_CLIENT_SECRET=${TUYA_CLIENT_SECRET}
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
+      - KMA_API_KEY=${KMA_API_KEY}
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - smart-farm-network
+    restart: unless-stopped
+
+  # Frontend (Vue 3)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: smart-farm-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - smart-farm-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  smart-farm-network:
+    driver: bridge
