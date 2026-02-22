@@ -1,4 +1,4 @@
-export type EquipmentType = 'opener' | 'fan' | 'irrigation' | 'other'
+export type EquipmentType = 'fan' | 'irrigation' | 'opener_open' | 'opener_close' | 'other'
 
 export interface SensorData {
   [key: string]: number | null | undefined
@@ -16,10 +16,13 @@ export interface Device {
   icon?: string
   online: boolean
   switchState?: boolean | null
+  switchStates?: Record<string, boolean>
   sensorData?: SensorData | null
   lastSeen?: string
   createdAt: string
   updatedAt: string
+  pairedDeviceId?: string
+  openerGroupName?: string
 }
 
 export interface RegisterDeviceRequest {

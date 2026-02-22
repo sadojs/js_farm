@@ -8,61 +8,65 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class GroupsController {
   constructor(private groupsService: GroupsService) {}
 
+  private getEffectiveUserId(user: any): string {
+    return user.role === 'farm_user' && user.parentUserId ? user.parentUserId : user.id;
+  }
+
   @Get()
-  findAllGroups(@CurrentUser('id') userId: string) {
-    return this.groupsService.findAllGroups(userId);
+  findAllGroups(@CurrentUser() user: any) {
+    return this.groupsService.findAllGroups(this.getEffectiveUserId(user));
   }
 
   @Post()
-  createGroup(@CurrentUser('id') userId: string, @Body() body: any) {
-    return this.groupsService.createGroup(userId, body);
+  createGroup(@CurrentUser() user: any, @Body() body: any) {
+    return this.groupsService.createGroup(this.getEffectiveUserId(user), body);
   }
 
   @Put(':id')
-  updateGroup(@Param('id') id: string, @CurrentUser('id') userId: string, @Body() body: any) {
-    return this.groupsService.updateGroup(id, userId, body);
+  updateGroup(@Param('id') id: string, @CurrentUser() user: any, @Body() body: any) {
+    return this.groupsService.updateGroup(id, this.getEffectiveUserId(user), body);
   }
 
   @Delete(':id')
-  removeGroup(@Param('id') id: string, @CurrentUser('id') userId: string) {
-    return this.groupsService.removeGroup(id, userId);
+  removeGroup(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.groupsService.removeGroup(id, this.getEffectiveUserId(user));
   }
 
   @Get('houses')
-  findAllHouses(@CurrentUser('id') userId: string) {
-    return this.groupsService.findAllHouses(userId);
+  findAllHouses(@CurrentUser() user: any) {
+    return this.groupsService.findAllHouses(this.getEffectiveUserId(user));
   }
 
   @Post('houses')
-  createHouse(@CurrentUser('id') userId: string, @Body() body: any) {
-    return this.groupsService.createHouse(userId, body);
+  createHouse(@CurrentUser() user: any, @Body() body: any) {
+    return this.groupsService.createHouse(this.getEffectiveUserId(user), body);
   }
 
   @Put('houses/:id')
-  updateHouse(@Param('id') id: string, @CurrentUser('id') userId: string, @Body() body: any) {
-    return this.groupsService.updateHouse(id, userId, body);
+  updateHouse(@Param('id') id: string, @CurrentUser() user: any, @Body() body: any) {
+    return this.groupsService.updateHouse(id, this.getEffectiveUserId(user), body);
   }
 
   @Delete('houses/:id')
-  removeHouse(@Param('id') id: string, @CurrentUser('id') userId: string) {
-    return this.groupsService.removeHouse(id, userId);
+  removeHouse(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.groupsService.removeHouse(id, this.getEffectiveUserId(user));
   }
 
   @Post(':id/devices')
   assignDevices(
     @Param('id') id: string,
-    @CurrentUser('id') userId: string,
+    @CurrentUser() user: any,
     @Body() body: { deviceIds: string[] },
   ) {
-    return this.groupsService.assignDevices(id, userId, body.deviceIds);
+    return this.groupsService.assignDevices(id, this.getEffectiveUserId(user), body.deviceIds);
   }
 
   @Delete(':id/devices/:deviceId')
   removeDeviceFromGroup(
     @Param('id') id: string,
     @Param('deviceId') deviceId: string,
-    @CurrentUser('id') userId: string,
+    @CurrentUser() user: any,
   ) {
-    return this.groupsService.removeDeviceFromGroup(id, userId, deviceId);
+    return this.groupsService.removeDeviceFromGroup(id, this.getEffectiveUserId(user), deviceId);
   }
 }

@@ -27,10 +27,16 @@ export class Device {
   deviceType: 'sensor' | 'actuator';
 
   @Column({ name: 'equipment_type', nullable: true })
-  equipmentType: 'opener' | 'fan' | 'irrigation' | 'other';
+  equipmentType: 'fan' | 'irrigation' | 'opener_open' | 'opener_close' | 'other';
 
   @Column({ nullable: true })
   icon: string;
+
+  @Column({ name: 'paired_device_id', nullable: true })
+  pairedDeviceId: string;
+
+  @Column({ name: 'opener_group_name', nullable: true })
+  openerGroupName: string;
 
   @Column({ default: false })
   online: boolean;

@@ -46,6 +46,11 @@ export class AutomationRunnerService {
     const conditionResult = await this.evaluateRuleConditions(rule, evaluatedAt);
 
     if (!conditionResult.matched) {
+      // 릴레이 모드 체크: 조건 불일치지만 릴레이 활성 시간대 내이면 릴레이 사이클 실행
+      const relayResult = this.checkRelayCycle(rule, evaluatedAt);
+      if (relayResult) {
+        return this.executeRelayAction(rule, relayResult, evaluatedAt);
+      }
       return { executed: false, reason: 'conditions_not_met', details: conditionResult.details };
     }
 
@@ -231,6 +236,42 @@ export class AutomationRunnerService {
       return { matched: false, actual, isOnceMatched: false, onceDateKey: undefined };
     }
 
+    // 히스테리시스 (FR-02): deviation이 있는 경우
+    if (condition.deviation != null && condition.deviation > 0) {
+      const base = Number(condition.value);
+      const dev = Number(condition.deviation);
+      const onThreshold = base + dev;
+      const offThreshold = base - dev;
+
+      if (actualNum >= onThreshold) {
+        return { matched: true, actual: actualNum, isOnceMatched: false, onceDateKey: undefined, hysteresisAction: 'on' };
+      }
+      if (actualNum <= offThreshold) {
+        return { matched: true, actual: actualNum, isOnceMatched: false, onceDateKey: undefined, hysteresisAction: 'off' };
+      }
+      // 사이 값: 현재 상태 유지 (matched: false로 처리하여 무동작)
+      return { matched: false, actual: actualNum, isOnceMatched: false, onceDateKey: undefined, hysteresisAction: 'hold' };
+    }
+
+    // 시간대 스케줄러 (FR-03): timeSlots가 있는 경우
+    if (Array.isArray(condition.timeSlots) && condition.timeSlots.length > 0) {
+      const currentHour = now.getHours();
+      const weekdayMatched = this.isWeekdayMatched(condition, now);
+      if (!weekdayMatched) {
+        return { matched: false, actual: currentHour, isOnceMatched: false, onceDateKey: undefined };
+      }
+      for (const slot of condition.timeSlots) {
+        if (currentHour === slot.start) {
+          return { matched: true, actual: currentHour, isOnceMatched: false, onceDateKey: undefined, timeAction: 'on' };
+        }
+        if (currentHour === slot.end) {
+          return { matched: true, actual: currentHour, isOnceMatched: false, onceDateKey: undefined, timeAction: 'off' };
+        }
+      }
+      const inActiveSlot = condition.timeSlots.some((s: any) => currentHour >= s.start && currentHour < s.end);
+      return { matched: false, actual: currentHour, isOnceMatched: false, onceDateKey: undefined, inActiveSlot };
+    }
+
     return {
       matched: this.evaluateNumericCondition(condition.operator, condition.value, actualNum),
       actual: actualNum,
@@ -290,7 +331,11 @@ export class AutomationRunnerService {
 
     if (groupId) {
       params.push(groupId);
-      groupFilter = 'AND h.group_id = $2';
+      // group_devices 또는 houses.group_id 둘 다 확인 (센서가 하우스 없이 그룹에 직접 연결된 경우 포함)
+      groupFilter = `AND (
+        d.id IN (SELECT gd.device_id FROM group_devices gd WHERE gd.group_id = $2)
+        OR h.group_id = $2
+      )`;
     }
 
     if (houseId) {
@@ -331,13 +376,17 @@ export class AutomationRunnerService {
       throw new Error('활성화된 Tuya 프로젝트 설정이 없습니다.');
     }
 
-    // targetDeviceIds가 있으면 특정 장비를, 없으면 기존 로직 사용
+    // targetDeviceId(단일) 또는 targetDeviceIds(배열)가 있으면 특정 장비를 사용
     let candidateDevices: Device[];
-    if (Array.isArray(action?.targetDeviceIds) && action.targetDeviceIds.length > 0) {
+    const targetIds = action?.targetDeviceId
+      ? [action.targetDeviceId]
+      : (Array.isArray(action?.targetDeviceIds) && action.targetDeviceIds.length > 0 ? action.targetDeviceIds : null);
+
+    if (targetIds) {
       candidateDevices = await this.devicesRepo
         .createQueryBuilder('d')
         .where('d.user_id = :userId', { userId: rule.userId })
-        .andWhere('d.id IN (:...ids)', { ids: action.targetDeviceIds })
+        .andWhere('d.id IN (:...ids)', { ids: targetIds })
         .getMany();
     } else {
       candidateDevices = await this.findTargetDevices(rule, action?.deviceType);
@@ -353,6 +402,9 @@ export class AutomationRunnerService {
 
     const results: any[] = [];
     for (const device of candidateDevices) {
+      this.logger.log(
+        `자동화 명령 전송: rule=${rule.name}, device=${device.name}(${device.tuyaDeviceId}), command=${JSON.stringify(commands[0])}`,
+      );
       let sent = false;
       let lastError = '';
       for (const commandSet of commands) {
@@ -444,9 +496,9 @@ export class AutomationRunnerService {
     const deviceType = action?.deviceType;
     const params = action?.parameters || {};
 
-    // 새로운 형식: targetDeviceIds + 단순 on/off 명령
-    if (Array.isArray(action?.targetDeviceIds) && (command === 'on' || command === 'off')) {
-      const isOn = command === 'on';
+    // 새로운 형식: targetDeviceIds/targetDeviceId + on/off 명령
+    if (action?.targetDeviceId || (Array.isArray(action?.targetDeviceIds) && action.targetDeviceIds.length > 0)) {
+      const isOn = command !== 'off';
       return [
         [{ code: 'switch_1', value: isOn }],
         [{ code: 'switch', value: isOn }],
@@ -543,6 +595,41 @@ export class AutomationRunnerService {
       rule.enabled = false;
     }
     await this.rulesRepo.save(rule);
+  }
+
+  // 릴레이 사이클 체크: 조건에 relay=true가 있고, 현재 활성 시간대 내이면 릴레이 ON/OFF 결정
+  private checkRelayCycle(rule: AutomationRule, now: Date): { isOnPhase: boolean; condition: any } | null {
+    const conditions = rule.conditions;
+    if (!conditions?.groups?.length) return null;
+
+    for (const group of conditions.groups) {
+      for (const cond of group.conditions || []) {
+        if (cond.relay) {
+          const minuteInHour = now.getMinutes();
+          const onMinutes = cond.relayOnMinutes || 50;
+          const offMinutes = cond.relayOffMinutes || 10;
+          const cycleLength = onMinutes + offMinutes;
+          const cyclePosition = minuteInHour % cycleLength;
+          const isOnPhase = cyclePosition < onMinutes;
+          return { isOnPhase, condition: cond };
+        }
+      }
+    }
+    return null;
+  }
+
+  private async executeRelayAction(rule: AutomationRule, relay: { isOnPhase: boolean; condition: any }, now: Date) {
+    const action = Array.isArray(rule.actions) ? rule.actions[0] : rule.actions;
+    const actionOverride = { ...action, command: relay.isOnPhase ? 'on' : 'off' };
+
+    try {
+      const result = await this.executeAction(rule, actionOverride);
+      this.logger.log(`릴레이 ${relay.isOnPhase ? 'ON' : 'OFF'} 실행: rule=${rule.name}`);
+      return { executed: true, relay: true, isOnPhase: relay.isOnPhase, actions: [result] };
+    } catch (err: any) {
+      this.logger.error(`릴레이 실행 실패: ${err.message}`);
+      return { executed: false, relay: true, error: err.message };
+    }
   }
 
   private toBoolean(value: any): boolean {

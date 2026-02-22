@@ -51,61 +51,96 @@
                 </option>
               </select>
 
-              <!-- 연산자 선택 -->
-              <select
-                :value="cond.operator"
-                @change="changeOperator(gi, ci, ($event.target as HTMLSelectElement).value)"
-                class="op-select"
-              >
-                <option v-for="op in getOperators(cond.field)" :key="op" :value="op">
-                  {{ OPERATOR_LABELS_KR[op] || op }}
-                </option>
-              </select>
+              <!-- 미구현 필드 뱃지 (FR-02) -->
+              <div v-if="isUnimplemented(cond.field)" class="unimplemented-badge">
+                미구현 (추후 업데이트 예정)
+              </div>
 
-              <!-- 값 입력 -->
-              <template v-if="cond.field === 'rain'">
-                <select
-                  :value="cond.value ? 'true' : 'false'"
-                  @change="changeValue(gi, ci, ($event.target as HTMLSelectElement).value === 'true')"
-                  class="value-input"
-                >
-                  <option value="true">예 (비 감지)</option>
-                  <option value="false">아니오</option>
-                </select>
+              <!-- 히스테리시스 UI (FR-02): fan + temperature/humidity -->
+              <template v-else-if="isFanHysteresis(cond)">
+                <div class="hysteresis-row">
+                  <label>기준값</label>
+                  <input
+                    type="number"
+                    :value="cond.value"
+                    @input="changeValue(gi, ci, Number(($event.target as HTMLInputElement).value))"
+                    class="value-input small"
+                  />
+                  <span class="unit">{{ getUnit(cond.field) }}</span>
+                  <label>편차</label>
+                  <input
+                    type="number"
+                    :value="cond.deviation || 0"
+                    min="0"
+                    @input="changeDeviation(gi, ci, Number(($event.target as HTMLInputElement).value))"
+                    class="value-input small"
+                  />
+                  <span class="unit">{{ getUnit(cond.field) }}</span>
+                </div>
+                <div v-if="cond.deviation" class="hysteresis-preview">
+                  ON: {{ Number(cond.value) + Number(cond.deviation) }}{{ getUnit(cond.field) }} 이상 /
+                  OFF: {{ Number(cond.value) - Number(cond.deviation) }}{{ getUnit(cond.field) }} 이하
+                </div>
               </template>
-              <template v-else-if="cond.field === 'hour' && cond.operator === 'between'">
-                <input
-                  type="number" min="0" max="23"
-                  :value="Array.isArray(cond.value) ? cond.value[0] : 0"
-                  @input="changeTimeRange(gi, ci, 0, Number(($event.target as HTMLInputElement).value))"
-                  class="value-input small"
-                />
-                <span class="range-sep">~</span>
-                <input
-                  type="number" min="0" max="23"
-                  :value="Array.isArray(cond.value) ? cond.value[1] : 23"
-                  @input="changeTimeRange(gi, ci, 1, Number(($event.target as HTMLInputElement).value))"
-                  class="value-input small"
-                />
-                <span class="unit">시</span>
-              </template>
-              <template v-else-if="cond.field === 'hour'">
-                <input
-                  type="number" min="0" max="23"
-                  :value="cond.value"
-                  @input="changeValue(gi, ci, Number(($event.target as HTMLInputElement).value))"
-                  class="value-input small"
-                />
-                <span class="unit">시</span>
-              </template>
+
+              <!-- 일반 조건 -->
               <template v-else>
-                <input
-                  type="number"
-                  :value="cond.value"
-                  @input="changeValue(gi, ci, Number(($event.target as HTMLInputElement).value))"
-                  class="value-input"
-                />
-                <span v-if="getUnit(cond.field)" class="unit">{{ getUnit(cond.field) }}</span>
+                <!-- 연산자 선택 -->
+                <select
+                  :value="cond.operator"
+                  @change="changeOperator(gi, ci, ($event.target as HTMLSelectElement).value)"
+                  class="op-select"
+                >
+                  <option v-for="op in getOperators(cond.field)" :key="op" :value="op">
+                    {{ OPERATOR_LABELS_KR[op] || op }}
+                  </option>
+                </select>
+
+                <!-- 값 입력 -->
+                <template v-if="cond.field === 'rain'">
+                  <select
+                    :value="cond.value ? 'true' : 'false'"
+                    @change="changeValue(gi, ci, ($event.target as HTMLSelectElement).value === 'true')"
+                    class="value-input"
+                  >
+                    <option value="true">예 (비 감지)</option>
+                    <option value="false">아니오</option>
+                  </select>
+                </template>
+                <template v-else-if="cond.field === 'hour' && cond.operator === 'between'">
+                  <input
+                    type="number" min="0" max="23"
+                    :value="Array.isArray(cond.value) ? cond.value[0] : 0"
+                    @input="changeTimeRange(gi, ci, 0, Number(($event.target as HTMLInputElement).value))"
+                    class="value-input small"
+                  />
+                  <span class="range-sep">~</span>
+                  <input
+                    type="number" min="0" max="23"
+                    :value="Array.isArray(cond.value) ? cond.value[1] : 23"
+                    @input="changeTimeRange(gi, ci, 1, Number(($event.target as HTMLInputElement).value))"
+                    class="value-input small"
+                  />
+                  <span class="unit">시</span>
+                </template>
+                <template v-else-if="cond.field === 'hour'">
+                  <input
+                    type="number" min="0" max="23"
+                    :value="cond.value"
+                    @input="changeValue(gi, ci, Number(($event.target as HTMLInputElement).value))"
+                    class="value-input small"
+                  />
+                  <span class="unit">시</span>
+                </template>
+                <template v-else>
+                  <input
+                    type="number"
+                    :value="cond.value"
+                    @input="changeValue(gi, ci, Number(($event.target as HTMLInputElement).value))"
+                    class="value-input"
+                  />
+                  <span v-if="getUnit(cond.field)" class="unit">{{ getUnit(cond.field) }}</span>
+                </template>
               </template>
 
               <!-- 삭제 -->
@@ -115,6 +150,14 @@
                 @click="removeCondition(gi, ci)"
               >✕</button>
             </div>
+
+            <!-- 릴레이 동작대기 옵션 (FR-04): fan인 경우 -->
+            <div v-if="isFan" class="relay-option">
+              <label class="relay-toggle">
+                <input type="checkbox" :checked="cond.relay" @change="toggleRelay(gi, ci)" />
+                동작대기 ({{ cond.relayOnMinutes || 50 }}분 ON / {{ cond.relayOffMinutes || 10 }}분 OFF 반복)
+              </label>
+            </div>
           </div>
 
           <!-- 조건 추가 -->
@@ -123,13 +166,44 @@
       </div>
     </div>
 
+    <!-- 시간대 스케줄러 (FR-03): timeOnly + fan -->
+    <div v-if="timeOnly && isFan" class="time-scheduler">
+      <h4 class="scheduler-title">시간대 스케줄러</h4>
+      <div v-for="(slot, i) in timeSlots" :key="i" class="time-slot">
+        <input type="number" v-model.number="slot.start" min="0" max="23" class="value-input small" />
+        <span class="unit">시</span>
+        <span class="range-sep">~</span>
+        <input type="number" v-model.number="slot.end" min="0" max="23" class="value-input small" />
+        <span class="unit">시</span>
+        <button class="btn-remove" @click="removeTimeSlot(i)">✕</button>
+      </div>
+      <button class="btn-add-condition" @click="addTimeSlot">+ 시간대 추가</button>
+
+      <div class="day-selector">
+        <button
+          v-for="d in DAYS"
+          :key="d.value"
+          class="day-btn"
+          :class="{ active: selectedDays.includes(d.value) }"
+          @click="toggleDay(d.value)"
+        >
+          {{ d.label }}
+        </button>
+      </div>
+
+      <label class="repeat-toggle">
+        <input type="checkbox" v-model="repeatWeekly" />
+        매주 반복
+      </label>
+    </div>
+
     <!-- 그룹 추가 -->
     <button class="btn-add-group" @click="addGroup">+ 조건 그룹 추가</button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { ConditionGroup, Condition } from '../../types/automation.types'
 import {
   SENSOR_CONDITION_FIELDS,
@@ -139,11 +213,70 @@ import {
   createEmptyConditionSet,
 } from '../../utils/automation-helpers'
 
+const UNIMPLEMENTED_FIELDS = ['rain', 'uv', 'dew_point']
+const DAYS = [
+  { value: 1, label: '월' }, { value: 2, label: '화' },
+  { value: 3, label: '수' }, { value: 4, label: '목' },
+  { value: 5, label: '금' }, { value: 6, label: '토' },
+  { value: 7, label: '일' },
+]
+
 const props = defineProps<{
   modelValue: ConditionGroup
   timeOnly?: boolean
+  equipmentType?: string
 }>()
-const emit = defineEmits<{ 'update:modelValue': [value: ConditionGroup] }>()
+const emit = defineEmits<{
+  'update:modelValue': [value: ConditionGroup]
+  'update:canProceed': [value: boolean]
+}>()
+
+const isFan = computed(() => props.equipmentType === 'fan')
+
+function isUnimplemented(field: string): boolean {
+  return UNIMPLEMENTED_FIELDS.includes(field)
+}
+
+function isFanHysteresis(cond: Condition): boolean {
+  return isFan.value && ['temperature', 'humidity'].includes(cond.field)
+}
+
+// 미구현 필드가 선택되었는지 감시 → canProceed emit
+watch(() => props.modelValue, (val) => {
+  const allConds = val.groups.flatMap(g => g.conditions)
+  const hasUnimplemented = allConds.some(c => UNIMPLEMENTED_FIELDS.includes(c.field))
+  emit('update:canProceed', !hasUnimplemented)
+}, { deep: true, immediate: true })
+
+// 시간대 스케줄러 state
+const timeSlots = ref<{ start: number; end: number }[]>([{ start: 9, end: 17 }])
+const selectedDays = ref<number[]>([1, 2, 3, 4, 5])
+const repeatWeekly = ref(true)
+
+function addTimeSlot() {
+  timeSlots.value.push({ start: 9, end: 17 })
+}
+function removeTimeSlot(i: number) {
+  if (timeSlots.value.length > 1) timeSlots.value.splice(i, 1)
+}
+function toggleDay(day: number) {
+  const idx = selectedDays.value.indexOf(day)
+  if (idx >= 0) selectedDays.value.splice(idx, 1)
+  else selectedDays.value.push(day)
+}
+
+// 시간대 스케줄러가 변경되면 조건에 반영
+watch([timeSlots, selectedDays, repeatWeekly], () => {
+  if (!props.timeOnly || !isFan.value) return
+  const next = clone()
+  // 첫 번째 조건에 timeSlots 정보 설정
+  if (next.groups[0]?.conditions[0]) {
+    next.groups[0].conditions[0].timeSlots = JSON.parse(JSON.stringify(timeSlots.value))
+    next.groups[0].conditions[0].daysOfWeek = [...selectedDays.value]
+    next.groups[0].conditions[0].repeat = repeatWeekly.value
+  }
+  emit('update:modelValue', next)
+}, { deep: true })
 
 const TIME_ONLY_FIELDS = SENSOR_CONDITION_FIELDS.filter(f => f.type === 'time')
 
@@ -220,6 +353,23 @@ function changeOperator(gi: number, ci: number, operator: string) {
 function changeValue(gi: number, ci: number, value: any) {
   const next = clone()
   next.groups[gi].conditions[ci].value = value
+  emit('update:modelValue', next)
+}
+
+function changeDeviation(gi: number, ci: number, value: number) {
+  const next = clone()
+  next.groups[gi].conditions[ci].deviation = value
+  emit('update:modelValue', next)
+}
+
+function toggleRelay(gi: number, ci: number) {
+  const next = clone()
+  const cond = next.groups[gi].conditions[ci]
+  cond.relay = !cond.relay
+  if (cond.relay) {
+    cond.relayOnMinutes = cond.relayOnMinutes || 50
+    cond.relayOffMinutes = cond.relayOffMinutes || 10
+  }
   emit('update:modelValue', next)
 }
 
@@ -319,4 +469,61 @@ function addGroup() {
   padding: 10px; font-size: 14px; color: var(--text-muted); cursor: pointer;
 }
 .btn-add-group:hover { border-color: var(--text-muted); color: var(--text-secondary); }
+
+/* 미구현 뱃지 */
+.unimplemented-badge {
+  padding: 4px 12px; background: #fff3e0; color: #e65100; border-radius: 8px;
+  font-size: 13px; font-weight: 500;
+}
+
+/* 히스테리시스 */
+.hysteresis-row {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.hysteresis-row label {
+  font-size: 13px; font-weight: 600; color: var(--text-secondary);
+}
+.hysteresis-preview {
+  width: 100%; font-size: 12px; color: var(--accent); background: var(--accent-bg);
+  padding: 6px 10px; border-radius: 6px; margin-top: 4px;
+}
+
+/* 릴레이 옵션 */
+.relay-option {
+  padding: 8px 0;
+}
+.relay-toggle {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; color: var(--text-secondary); cursor: pointer;
+}
+.relay-toggle input { width: 18px; height: 18px; cursor: pointer; }
+
+/* 시간대 스케줄러 */
+.time-scheduler {
+  border: 1px solid var(--border-input); border-radius: 12px; padding: 16px;
+  background: var(--bg-secondary); display: flex; flex-direction: column; gap: 12px;
+}
+.scheduler-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0; }
+
+.time-slot {
+  display: flex; align-items: center; gap: 8px;
+}
+
+.day-selector {
+  display: flex; gap: 4px; flex-wrap: wrap;
+}
+.day-btn {
+  padding: 6px 12px; border: 1px solid var(--border-input); border-radius: 8px;
+  background: var(--bg-card); font-size: 13px; cursor: pointer;
+  color: var(--text-primary); transition: all 0.15s;
+}
+.day-btn.active {
+  background: var(--accent); color: white; border-color: var(--accent);
+}
+
+.repeat-toggle {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; color: var(--text-secondary); cursor: pointer;
+}
+.repeat-toggle input { width: 18px; height: 18px; cursor: pointer; }
 </style>

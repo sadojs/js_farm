@@ -12,8 +12,12 @@ export class CreateUserDto {
   name: string;
 
   @IsOptional()
-  @IsIn(['admin', 'user'])
-  role?: 'admin' | 'user';
+  @IsIn(['admin', 'farm_admin', 'farm_user'])
+  role?: 'admin' | 'farm_admin' | 'farm_user';
+
+  @IsOptional()
+  @IsString()
+  parentUserId?: string;
 
   @IsOptional()
   @IsString()
@@ -26,8 +30,12 @@ export class UpdateUserDto {
   name?: string;
 
   @IsOptional()
-  @IsIn(['admin', 'user'])
-  role?: 'admin' | 'user';
+  @IsIn(['admin', 'farm_admin', 'farm_user'])
+  role?: 'admin' | 'farm_admin' | 'farm_user';
+
+  @IsOptional()
+  @IsString()
+  parentUserId?: string;
 
   @IsOptional()
   @IsString()

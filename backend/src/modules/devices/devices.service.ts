@@ -63,6 +63,21 @@ export class DevicesService {
       }
     }
 
+    // 개폐기 페어링: opener_open + opener_close 쌍이 있으면 상호 pairedDeviceId 설정
+    const openerOpen = results.find(d => d.equipmentType === 'opener_open');
+    const openerClose = results.find(d => d.equipmentType === 'opener_close');
+    if (openerOpen && openerClose) {
+      openerOpen.pairedDeviceId = openerClose.id;
+      openerClose.pairedDeviceId = openerOpen.id;
+      // openerGroupName 설정 (프론트에서 전달)
+      const groupName = devices.find(d => (d as any).openerGroupName)?.['openerGroupName'];
+      if (groupName) {
+        openerOpen.openerGroupName = groupName;
+        openerClose.openerGroupName = groupName;
+      }
+      await this.devicesRepo.save([openerOpen, openerClose]);
+    }
+
     return results;
   }
 
@@ -127,6 +142,8 @@ export class DevicesService {
   async remove(id: string, userId: string) {
     const device = await this.devicesRepo.findOne({ where: { id, userId } });
     if (!device) throw new NotFoundException();
+    // group_devices 조인 테이블에서 먼저 제거 (외래키 제약 방지)
+    await this.devicesRepo.query('DELETE FROM group_devices WHERE device_id = $1', [id]);
     await this.devicesRepo.remove(device);
     return { message: '삭제되었습니다.' };
   }

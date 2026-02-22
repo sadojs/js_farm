@@ -14,7 +14,7 @@
     }
   },
   "pdca": {
-    "currentFeature": "sensor-display-ux-fix",
+    "currentFeature": "role-based-access",
     "phase": "check",
     "matchRate": 100,
     "iterationCount": 0,
@@ -126,6 +126,102 @@
         "feature": "platform-fix-v3",
         "timestamp": "2026-02-20T00:00:00Z",
         "details": "Act-1 완료 - FR-03 하드코딩 색상 8건 수정 (StepConditionBuilder #fafafa→var(--bg-secondary), UserManagement #f5f5f5/#f8f9fa/#f0f0f0→CSS변수 4건, RuleWizardModal #eee/#f5f5f5→CSS변수 3건), Match Rate 78%→95%, 빌드 통과"
+      },
+      {
+        "action": "plan_created",
+        "feature": "automation-device-v2",
+        "timestamp": "2026-02-21T00:00:00Z",
+        "details": "7개 FR Plan 작성 - 자동화위저드(장비단일선택/히스테리시스조건/시간대스케줄러/릴레이동작대기) + 장비등록(타입변경/개폐기페어링/인터록제어), 7Phase 구현순서"
+      },
+      {
+        "action": "design_created",
+        "feature": "automation-device-v2",
+        "timestamp": "2026-02-21T00:00:00Z",
+        "details": "상세 설계 완료 - 6개 데이터구조변경(EquipmentType/Device/Condition/WizardFormData/RuleAction/DB), 4개 컴포넌트(StepActuatorSelect/StepConditionBuilder/DeviceRegistration/Devices), 5개 백엔드(entity/service/runner 히스테리시스+시간대+릴레이), 7Phase 구현순서"
+      },
+      {
+        "action": "do_completed",
+        "feature": "automation-device-v2",
+        "timestamp": "2026-02-21T00:00:00Z",
+        "details": "7Phase 구현 완료 - EquipmentType(opener→opener_open/close)+DB마이그레이션, 개폐기페어링(DeviceRegistration+백엔드), 인터록제어(Devices.vue 1.5초딜레이), 장비단일선택(StepActuatorSelect라디오+개폐기숨김), 히스테리시스(기준값+편차UI+백엔드evaluateSingleCondition), 시간대스케줄러(timeSlots+요일+반복), 릴레이(50/10분사이클+checkRelayCycle), 프론트/백엔드 빌드 통과"
+      },
+      {
+        "action": "plan_created",
+        "feature": "equipment-ui-toggle-status",
+        "timestamp": "2026-02-22T00:00:00Z",
+        "details": "5개 FR Plan 작성 - 개폐기/관수 ON/OFF→토글변환, 개폐기 장비뱃지 추가, 관수 상태모달(8개 스위치 읽기전용), 그룹관리 관수에도 상태모달 추가, 4Phase 구현순서"
+      },
+      {
+        "action": "design_created",
+        "feature": "equipment-ui-toggle-status",
+        "timestamp": "2026-02-22T00:00:00Z",
+        "details": "상세 설계 완료 - Devices.vue(개폐기토글+뱃지, 관수토글, 상태모달), Groups.vue(상태버튼+모달), IRRIGATION_SWITCH_LABELS 8개 스위치 매핑, 4Phase 7Step 구현순서"
+      },
+      {
+        "action": "do_completed",
+        "feature": "equipment-ui-toggle-status",
+        "timestamp": "2026-02-22T00:00:00Z",
+        "details": "4Phase 구현 완료 - 개폐기(장비뱃지+토글변환), 관수(토글변환+상태버튼+8스위치상태모달), Groups.vue(상태버튼+모달), StepDeviceAction.vue TS에러수정, 빌드 통과"
+      },
+      {
+        "action": "gap_analysis",
+        "feature": "equipment-ui-toggle-status",
+        "timestamp": "2026-02-22T00:00:00Z",
+        "details": "Gap 분석 완료 - Match Rate 100%, FR-01~FR-05 전체 PASS, Gap 0건, 추가수정: RuleWizardModal noSensor 복원 버그 수정"
+      },
+      {
+        "action": "plan_created",
+        "feature": "ui-design-improvement",
+        "timestamp": "2026-02-22T00:00:00Z",
+        "details": "5개 FR Plan 작성 - 토글간격개선/시간피커교체(vue-datepicker)/상세설정폰트확대/날짜피커교체/센서가로레이아웃, 5Phase 구현순서"
+      },
+      {
+        "action": "design_created",
+        "feature": "ui-design-improvement",
+        "timestamp": "2026-02-22T00:00:00Z",
+        "details": "상세 설계 완료 - VueDatePicker(time-picker+date-picker)+다크모드연동(useLocalStorage), 폰트5개확대(content-scale), 토글행간격+구분선, 센서grid→flex가로레이아웃, 5Phase 7Step 구현순서"
+      },
+      {
+        "action": "do_completed",
+        "feature": "ui-design-improvement",
+        "timestamp": "2026-02-22T00:00:00Z",
+        "details": "5Phase 구현 완료 - VueDatePicker설치+named import수정, StepIrrigationCondition(time-picker교체+timePickerValue computed+isDark+폰트5개확대), Reports(date-picker2개교체+isDark+CSS커스텀), Groups(토글padding+구분선+센서flex가로레이아웃), vue-tsc+vite빌드 통과"
+      },
+      {
+        "action": "do_completed",
+        "feature": "ui-design-improvement",
+        "timestamp": "2026-02-22T00:00:00Z",
+        "details": "사용자 피드백 5회 반영 완료 - StepIrrigationCondition(VueDatePicker제거→네이티브select2개 시/분, iOS스타일 스크롤휠), Reports(dp__input_icon CSS숨김+시간제거+yyyy-MM-dd포맷), Groups(센서flex-wrap변경), 빌드 통과"
+      },
+      {
+        "action": "plan_created",
+        "feature": "report-weather-integration",
+        "timestamp": "2026-02-22T00:00:00Z",
+        "details": "4개 FR Plan 작성 - 리포트조회버그(updateDateRange미호출)/날씨DB저장(weather_data hypertable+크론잡)/날씨조회API/센서타입UI변경+날씨비교차트, 7Phase 구현순서"
+      },
+      {
+        "action": "design_created",
+        "feature": "report-weather-integration",
+        "timestamp": "2026-02-22T00:00:00Z",
+        "details": "상세 설계 완료 - WeatherData엔티티(복합PK time+userId), WeatherCollectorService(Cron EVERY_HOUR+DashboardService재사용), DashboardModule exports추가, ReportsService getWeatherHourly, Reports.vue(onCustomQuery버그수정+weatherData ref+차트점선라인4색), 7Phase 12Step 구현순서"
+      },
+      {
+        "action": "plan_created",
+        "feature": "role-based-access",
+        "timestamp": "2026-02-22T00:00:00Z",
+        "details": "5개 FR Plan 작성 - 3-tier RBAC(admin/farm_admin/farm_user), 메뉴접근제어(farm_user:장비/자동화/사용자관리숨김), 사용자등록폼(역할3개+팜선택+Tuya연동생략), parent_user_id기반데이터공유, 계정마이그레이션(test/user→farm_admin), 5Phase 구현순서"
+      },
+      {
+        "action": "design_created",
+        "feature": "role-based-access",
+        "timestamp": "2026-02-22T00:00:00Z",
+        "details": "상세 설계 완료 - DB(role CHECK+parent_user_id), Entity/DTO/JwtPayload 3-tier확장, UsersService(findFarmAdmins+getEffectiveUserId), 4개Controller effectiveUserId적용, Frontend(auth.store isFarmAdmin/isFarmUser+router denyFarmUser+App.vue메뉴조건부+UserFormModal 역할3개+팜선택UI+UserManagement 뱃지3종), 6Phase 18Step 구현순서"
+      },
+      {
+        "action": "do_completed",
+        "feature": "role-based-access",
+        "timestamp": "2026-02-22T00:00:00Z",
+        "details": "6Phase 구현 완료 - DB(schema/seed role CHECK+parent_user_id), Entity/DTO 3-tier확장, JWT(parentUserId payload), AuthService(login/refresh/getMe parentUserId), UsersService(findFarmAdmins+getEffectiveUserId+findAll parentUserName/tuyaProject+create/update parentUserId), UsersController(farm-admins), 4개Controller effectiveUserId, Frontend auth(types+store isFarmAdmin/isFarmUser), Router(denyFarmUser+guard), App.vue(데스크탑+모바일 v-if+userRole 3종), user.api.ts(getFarmAdmins+CreateUserRequest), UserFormModal(역할3개+팜선택+Tuya조건부), UserManagement(뱃지3종+parentBadge+saveUser parentUserId), 빌드 통과"
       }
     ]
   },

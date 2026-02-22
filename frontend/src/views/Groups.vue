@@ -29,7 +29,7 @@
             <p v-if="group.description" class="group-desc">{{ group.description }}</p>
           </div>
           <div class="group-header-actions">
-            <span class="device-count-badge">{{ (group.devices || []).length }}개 장비</span>
+            <span class="device-count-badge">{{ getGroupSensors(group).length + getGroupActuators(group).length + getGroupOpenerGroups(group).length }}개 장비</span>
             <button class="btn-icon" @click="openAddDeviceModal(group)" aria-label="장비 추가">+</button>
             <button class="btn-icon danger" @click="deleteGroup(group)" aria-label="삭제">🗑</button>
             <button class="btn-icon" @click="toggleCollapse(group.id)" :aria-label="collapsedGroups.has(group.id) ? '펼치기' : '접기'">
@@ -67,10 +67,56 @@
             </div>
           </template>
 
-          <!-- 장비(액추에이터) 목록 -->
-          <template v-if="getGroupActuators(group).length > 0">
-            <div class="section-label actuator">장비 ({{ getGroupActuators(group).length }})</div>
+          <!-- 장비(액추에이터 + 개폐기 + 관수) 목록 -->
+          <template v-if="getGroupActuators(group).length > 0 || getGroupOpenerGroups(group).length > 0 || getGroupIrrigationDevices(group).length > 0">
+            <div class="section-label actuator">장비 ({{ getGroupActuators(group).length + getGroupOpenerGroups(group).length + getGroupIrrigationDevices(group).length }})</div>
             <div class="device-sub-grid">
+              <!-- 개폐기 그룹 카드 -->
+              <div v-for="og in getGroupOpenerGroups(group)" :key="og.groupName" class="sub-card actuator">
+                <div class="sub-card-top">
+                  <span :class="['status-dot', og.openDevice.online || og.closeDevice.online ? 'online' : 'offline']"></span>
+                  <span class="sub-card-name">{{ og.groupName }}</span>
+                  <span class="type-tag actuator">개폐기</span>
+                </div>
+                <div class="sub-card-control" :class="{ disabled: !og.openDevice.online }">
+                  <span class="control-label">열림</span>
+                  <label class="toggle-switch" @click.prevent="og.openDevice.online && handleControl(og.openDevice.id, !og.openDevice.switchState)">
+                    <input type="checkbox" :checked="og.openDevice.switchState === true" :disabled="!og.openDevice.online || controllingId === og.openDevice.id" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="sub-card-control" :class="{ disabled: !og.closeDevice.online }">
+                  <span class="control-label">닫힘</span>
+                  <label class="toggle-switch" @click.prevent="og.closeDevice.online && handleControl(og.closeDevice.id, !og.closeDevice.switchState)">
+                    <input type="checkbox" :checked="og.closeDevice.switchState === true" :disabled="!og.closeDevice.online || controllingId === og.closeDevice.id" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              <!-- 관수 장비 카드 -->
+              <div v-for="device in getGroupIrrigationDevices(group)" :key="device.id" class="sub-card actuator">
+                <div class="sub-card-top">
+                  <span :class="['status-dot', device.online ? 'online' : 'offline']"></span>
+                  <span class="sub-card-name">{{ device.name }}</span>
+                  <button class="btn-status-sm" @click="openIrrigationStatusModal(device)">상태</button>
+                  <span class="type-tag actuator">관수</span>
+                </div>
+                <div class="sub-card-control" :class="{ disabled: !device.online }">
+                  <span class="control-label">타이머 전원/B접점</span>
+                  <label class="toggle-switch" @click.prevent="device.online && handleIrrigationControl(device, 'switch_1')">
+                    <input type="checkbox" :checked="device.switchStates?.switch_1 === true" :disabled="!device.online || irrigationControlling === device.id" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="sub-card-control" :class="{ disabled: !device.online }">
+                  <span class="control-label">교반기/B접점</span>
+                  <label class="toggle-switch" @click.prevent="device.online && handleIrrigationControl(device, 'switch_usb1')">
+                    <input type="checkbox" :checked="device.switchStates?.switch_usb1 === true" :disabled="!device.online || irrigationControlling === device.id" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              <!-- 일반 장비 카드 -->
               <div v-for="device in getGroupActuators(group)" :key="device.id" class="sub-card actuator">
                 <div class="sub-card-top">
                   <span :class="['status-dot', device.online ? 'online' : 'offline']"></span>
@@ -92,7 +138,7 @@
           <template v-if="getGroupRules(group.id).length > 0">
             <div class="section-label automation">자동화 ({{ getGroupRules(group.id).length }})</div>
             <div class="rules-list">
-              <div v-for="rule in getGroupRules(group.id)" :key="rule.id" class="rule-row">
+              <div v-for="rule in getGroupRules(group.id)" :key="rule.id" class="rule-row clickable" @click="openEditRule(rule)">
                 <span class="rule-name">{{ rule.name }}</span>
                 <span class="rule-summary">{{ getRuleSummary(rule) }}</span>
                 <label class="toggle-switch" @click.stop>
@@ -156,6 +202,39 @@
         </div>
       </div>
     </div>
+
+    <!-- 관수 상태 모달 -->
+    <div v-if="showIrrigationStatusModal && irrigationStatusDevice" class="modal-overlay" @click.self="showIrrigationStatusModal = false">
+      <div class="status-modal">
+        <div class="status-modal-header">
+          <h3>{{ irrigationStatusDevice.name }} - 스위치 상태</h3>
+          <button class="close-btn" @click="showIrrigationStatusModal = false">✕</button>
+        </div>
+        <div class="status-modal-body">
+          <div
+            v-for="(label, code) in IRRIGATION_SWITCH_LABELS"
+            :key="code"
+            class="status-row"
+          >
+            <span class="status-row-label">{{ label }}</span>
+            <span
+              class="status-row-value"
+              :class="irrigationStatusDevice.switchStates?.[code] ? 'on' : 'off'"
+            >
+              {{ irrigationStatusDevice.switchStates?.[code] ? 'ON' : 'OFF' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 자동화 편집 모달 -->
+    <AutomationEditModal
+      :visible="showEditRuleModal"
+      :rule="editingRule"
+      @close="showEditRuleModal = false"
+      @saved="onRuleEdited"
+    />
   </div>
 </template>
 
@@ -165,6 +244,7 @@ import { useGroupStore } from '../stores/group.store'
 import { useDeviceStore } from '../stores/device.store'
 import { useAutomationStore } from '../stores/automation.store'
 import GroupCreation from '@/components/groups/GroupCreation.vue'
+import AutomationEditModal from '@/components/automation/AutomationEditModal.vue'
 import { useConfirm } from '../composables/useConfirm'
 import type { HouseGroup } from '../types/group.types'
 import type { Device } from '../types/device.types'
@@ -223,11 +303,99 @@ const getGroupSensors = (group: HouseGroup): Device[] =>
     return storeDevice ? { ...d, sensorData: storeDevice.sensorData, online: storeDevice.online } : d
   })
 
-const getGroupActuators = (group: HouseGroup): Device[] =>
-  (group.devices || []).filter(d => d.deviceType === 'actuator').map(d => {
-    const storeDevice = deviceStore.devices.find(sd => sd.id === d.id)
-    return storeDevice ? { ...d, switchState: storeDevice.switchState, online: storeDevice.online } : d
-  })
+// 개폐기 쌍 ID (개별 표시 제외용)
+const getOpenerPairIds = (group: HouseGroup): Set<string> => {
+  const devices = group.devices || []
+  const ids = new Set<string>()
+  for (const d of devices) {
+    if ((d.equipmentType === 'opener_open' || d.equipmentType === 'opener_close') && d.pairedDeviceId) {
+      ids.add(d.id)
+    }
+  }
+  return ids
+}
+
+// 개폐기 그룹 대표 목록
+interface OpenerGroupInfo {
+  groupName: string
+  openDevice: Device
+  closeDevice: Device
+}
+const getGroupOpenerGroups = (group: HouseGroup): OpenerGroupInfo[] => {
+  const devices = group.devices || []
+  const opens = devices.filter(d => d.equipmentType === 'opener_open' && d.pairedDeviceId)
+  return opens.map(od => {
+    const cd = devices.find(d => d.id === od.pairedDeviceId)
+    if (!cd) return null
+    const storeOpen = deviceStore.devices.find(sd => sd.id === od.id)
+    const storeClose = deviceStore.devices.find(sd => sd.id === cd.id)
+    return {
+      groupName: od.openerGroupName || od.name,
+      openDevice: storeOpen ? { ...od, switchState: storeOpen.switchState, online: storeOpen.online } : od,
+      closeDevice: storeClose ? { ...cd, switchState: storeClose.switchState, online: storeClose.online } : cd,
+    }
+  }).filter(Boolean) as OpenerGroupInfo[]
+}
+
+const getGroupActuators = (group: HouseGroup): Device[] => {
+  const openerIds = getOpenerPairIds(group)
+  return (group.devices || [])
+    .filter(d => d.deviceType === 'actuator' && !openerIds.has(d.id) && d.equipmentType !== 'irrigation')
+    .map(d => {
+      const storeDevice = deviceStore.devices.find(sd => sd.id === d.id)
+      return storeDevice ? { ...d, switchState: storeDevice.switchState, online: storeDevice.online } : d
+    })
+}
+
+// 관수 장비
+const getGroupIrrigationDevices = (group: HouseGroup): Device[] => {
+  return (group.devices || [])
+    .filter(d => d.equipmentType === 'irrigation')
+    .map(d => {
+      const storeDevice = deviceStore.devices.find(sd => sd.id === d.id)
+      return storeDevice ? { ...d, switchStates: storeDevice.switchStates, online: storeDevice.online } : d
+    })
+}
+
+const irrigationControlling = ref<string | null>(null)
+
+// 관수 상태 모달
+const showIrrigationStatusModal = ref(false)
+const irrigationStatusDevice = ref<Device | null>(null)
+
+const IRRIGATION_SWITCH_LABELS: Record<string, string> = {
+  switch_1: '타이머 전원/B접점',
+  switch_2: '1구역 관수',
+  switch_3: '2구역 관수',
+  switch_4: '3구역 관수',
+  switch_5: '4구역 관수',
+  switch_6: '5구역 관수',
+  switch_usb1: '교반기 모터/B접점',
+  switch_usb2: '액비모터',
+}
+
+const openIrrigationStatusModal = (device: Device) => {
+  irrigationStatusDevice.value = device
+  showIrrigationStatusModal.value = true
+}
+
+const handleIrrigationControl = async (device: Device, switchCode: string) => {
+  irrigationControlling.value = device.id
+  try {
+    const currentVal = device.switchStates?.[switchCode] ?? false
+    await deviceStore.controlDevice(device.id, [{ code: switchCode, value: !currentVal }])
+    const storeDevice = deviceStore.devices.find(d => d.id === device.id)
+    if (storeDevice) {
+      if (!storeDevice.switchStates) storeDevice.switchStates = {}
+      storeDevice.switchStates[switchCode] = !currentVal
+    }
+  } catch (err: any) {
+    console.error('관수 장비 제어 실패:', err)
+    alert('장비 제어에 실패했습니다.')
+  } finally {
+    irrigationControlling.value = null
+  }
+}
 
 const SENSOR_LABELS: Record<string, string> = {
   temperature: '온도', humidity: '습도', co2: 'CO2',
@@ -295,6 +463,19 @@ const toggleRule = async (ruleId: string) => {
   }
 }
 
+// 자동화 편집 모달
+const showEditRuleModal = ref(false)
+const editingRule = ref<AutomationRule | null>(null)
+
+const openEditRule = (rule: AutomationRule) => {
+  editingRule.value = rule
+  showEditRuleModal.value = true
+}
+
+const onRuleEdited = () => {
+  automationStore.fetchRules()
+}
+
 const handleTuyaSync = async () => {
   syncing.value = true
   try {
@@ -312,7 +493,13 @@ const unassignedDevices = computed(() => {
   const assignedIds = new Set(
     groups.value.flatMap(g => (g.devices || []).map(d => d.id))
   )
-  return deviceStore.devices.filter(d => !assignedIds.has(d.id))
+  // 개폐기는 opener_open만 대표로 보여주고 opener_close는 숨김
+  // (그룹에 추가할 때 opener_open 선택 시 쌍인 opener_close도 함께 추가됨)
+  return deviceStore.devices.filter(d => {
+    if (assignedIds.has(d.id)) return false
+    if (d.equipmentType === 'opener_close' && d.pairedDeviceId) return false
+    return true
+  })
 })
 
 const handleGroupCreated = () => {
@@ -351,7 +538,15 @@ const confirmAddDevices = async () => {
   if (!addDeviceTargetGroup.value) return
   addingDevices.value = true
   try {
-    await groupStore.assignDevices(addDeviceTargetGroup.value.id, addDeviceSelected.value)
+    // 개폐기 대표(opener_open) 선택 시 쌍(opener_close)도 자동 추가
+    const idsToAdd = [...addDeviceSelected.value]
+    for (const id of addDeviceSelected.value) {
+      const dev = deviceStore.devices.find(d => d.id === id)
+      if (dev?.equipmentType === 'opener_open' && dev.pairedDeviceId && !idsToAdd.includes(dev.pairedDeviceId)) {
+        idsToAdd.push(dev.pairedDeviceId)
+      }
+    }
+    await groupStore.assignDevices(addDeviceTargetGroup.value.id, idsToAdd)
     showAddDeviceModal.value = false
   } catch (err) {
     console.error('장비 추가 실패:', err)
@@ -551,14 +746,16 @@ const confirmAddDevices = async () => {
 .type-tag.actuator { background: var(--accent-bg); color: var(--accent); }
 
 .sub-card-sensor-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-  gap: 6px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 2px 0;
 }
 
 .sensor-grid-item {
   text-align: center;
-  padding: 4px 0;
+  padding: 4px 4px;
+  min-width: 50px;
 }
 
 .sensor-grid-value {
@@ -594,7 +791,13 @@ const confirmAddDevices = async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 8px 0;
 }
+
+.sub-card-control + .sub-card-control {
+  border-top: 1px solid var(--border-light);
+}
+
 .sub-card-control.disabled {
   opacity: 0.4;
   pointer-events: none;
@@ -672,6 +875,8 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
   border-bottom: 1px solid var(--border-light);
 }
 .rule-row:last-child { border-bottom: none; }
+.rule-row.clickable { cursor: pointer; transition: background 0.15s; }
+.rule-row.clickable:hover { background: var(--bg-secondary); }
 .rule-name { font-weight: 600; color: var(--text-primary); white-space: nowrap; }
 .rule-summary { flex: 1; color: var(--text-muted); font-size: calc(13px * var(--content-scale, 1)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -751,6 +956,83 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
 .status-indicator.offline { background: var(--danger-bg); color: var(--danger); }
 
 .empty-state-sm { padding: 32px; text-align: center; color: var(--text-muted); }
+
+/* 관수 상태 버튼 (소형) */
+.btn-status-sm {
+  padding: 2px 8px;
+  background: var(--bg-secondary);
+  color: var(--text-link);
+  border: 1px solid var(--border-input);
+  border-radius: 4px;
+  font-size: calc(12px * var(--content-scale, 1));
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.2s, background 0.2s;
+}
+.btn-status-sm:hover {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+/* 관수 상태 모달 */
+.status-modal {
+  background: var(--bg-card);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow-modal);
+}
+
+.status-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.status-modal-header h3 {
+  font-size: calc(18px * var(--content-scale, 1));
+  font-weight: 600;
+  margin: 0;
+}
+
+.status-modal-body {
+  padding: 16px 24px 24px;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.status-row:last-child {
+  border-bottom: none;
+}
+
+.status-row-label {
+  font-size: calc(15px * var(--content-scale, 1));
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.status-row-value {
+  font-size: calc(14px * var(--content-scale, 1));
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+.status-row-value.on {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+.status-row-value.off {
+  background: var(--bg-badge);
+  color: var(--text-muted);
+}
 
 @media (max-width: 768px) {
   .page-container { padding: 16px; }

@@ -12,6 +12,7 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { GatewayModule } from './modules/gateway/gateway.module';
 import { TuyaModule } from './modules/integrations/tuya/tuya.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { WeatherModule } from './modules/weather/weather.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     GatewayModule,
     TuyaModule,
     DashboardModule,
+    WeatherModule,
   ],
 })
 export class AppModule {}

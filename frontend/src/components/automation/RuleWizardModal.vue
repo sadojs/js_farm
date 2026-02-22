@@ -30,18 +30,23 @@
           />
           <StepActuatorSelect
             v-if="currentStep === 3"
-            v-model:deviceIds="formData.actuatorDeviceIds"
-            v-model:command="formData.actuatorCommand"
+            v-model:selectedId="formData.actuatorDeviceId"
             :groupId="formData.groupId"
           />
+          <StepIrrigationCondition
+            v-if="currentStep === 4 && isIrrigation"
+            v-model="irrigationForm"
+          />
           <StepConditionBuilder
-            v-if="currentStep === 4"
+            v-if="currentStep === 4 && !isIrrigation"
             v-model="formData.conditions"
             :timeOnly="noSensor"
+            :equipmentType="selectedEquipmentType"
           />
           <StepReview
             v-if="currentStep === 5"
             :formData="formData"
+            :irrigationConditions="isIrrigation ? irrigationForm : undefined"
             @update:name="formData.name = $event"
             @update:description="formData.description = $event"
           />
@@ -62,14 +67,15 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import type { AutomationRule, WizardFormData, CreateRuleRequest } from '../../types/automation.types'
-import { createEmptyWizardForm } from '../../utils/automation-helpers'
+import type { AutomationRule, WizardFormData, CreateRuleRequest, IrrigationConditions } from '../../types/automation.types'
+import { createEmptyWizardForm, createDefaultIrrigationConditions } from '../../utils/automation-helpers'
 import { useAutomationStore } from '../../stores/automation.store'
 import { useGroupStore } from '../../stores/group.store'
 import StepTargetSelect from './StepTargetSelect.vue'
 import StepSensorSelect from './StepSensorSelect.vue'
 import StepActuatorSelect from './StepActuatorSelect.vue'
 import StepConditionBuilder from './StepConditionBuilder.vue'
+import StepIrrigationCondition from './StepIrrigationCondition.vue'
 import StepReview from './StepReview.vue'
 
 const props = defineProps<{ visible: boolean; editRule?: AutomationRule | null }>()
@@ -81,6 +87,7 @@ const currentStep = ref(1)
 const saving = ref(false)
 const noSensor = ref(false)
 const formData = ref<WizardFormData>(createEmptyWizardForm())
+const irrigationForm = ref<IrrigationConditions>(createDefaultIrrigationConditions())
 
 const stepList = [
   { num: 1, label: '그룹' },
@@ -101,28 +108,49 @@ watch(() => props.visible, (open) => {
     formData.value = {
       groupId: rule.groupId,
       sensorDeviceIds: sensorIds,
-      actuatorDeviceIds: actions.targetDeviceIds || [],
-      actuatorCommand: actions.command === 'off' ? 'off' : 'on',
-      conditions: rule.conditions && Array.isArray(rule.conditions.groups)
+      actuatorDeviceId: actions.targetDeviceIds?.[0] || (actions as any).targetDeviceId,
+      conditions: rule.conditions && 'groups' in rule.conditions && Array.isArray(rule.conditions.groups)
         ? rule.conditions
         : createEmptyWizardForm().conditions,
       name: rule.name,
       description: rule.description || '',
       priority: rule.priority,
     }
-    // 센서 미선택 모드 판별: 센서 ID 없고 시간 조건만 있으면
-    noSensor.value = sensorIds.length === 0 && rule.ruleType === 'time'
+    // 관수 조건 복원
+    if (rule.conditions && (rule.conditions as any).type === 'irrigation') {
+      irrigationForm.value = JSON.parse(JSON.stringify(rule.conditions))
+    } else {
+      irrigationForm.value = createDefaultIrrigationConditions()
+    }
+    noSensor.value = sensorIds.length === 0 && (rule.ruleType === 'time' || (rule.conditions as any)?.type === 'irrigation')
   } else {
     formData.value = createEmptyWizardForm()
+    irrigationForm.value = createDefaultIrrigationConditions()
     noSensor.value = false
   }
 })
 
+// 선택된 장비의 equipmentType
+const selectedEquipmentType = computed(() => {
+  if (!formData.value.actuatorDeviceId || !formData.value.groupId) return undefined
+  const group = groupStore.groups.find(g => g.id === formData.value.groupId)
+  const device = group?.devices?.find((d: any) => d.id === formData.value.actuatorDeviceId)
+  return (device as any)?.equipmentType as string | undefined
+})
+
+const isIrrigation = computed(() => selectedEquipmentType.value === 'irrigation')
+
 const canNext = computed(() => {
   if (currentStep.value === 1) return !!formData.value.groupId
   if (currentStep.value === 2) return formData.value.sensorDeviceIds.length > 0 || noSensor.value
-  if (currentStep.value === 3) return formData.value.actuatorDeviceIds.length > 0
+  if (currentStep.value === 3) return !!formData.value.actuatorDeviceId
   if (currentStep.value === 4) {
+    if (isIrrigation.value) {
+      // 관수: 시작시간과 활성 구역 최소 1개
+      return !!irrigationForm.value.startTime &&
+        irrigationForm.value.zones.some(z => z.enabled) &&
+        irrigationForm.value.schedule.days.length > 0
+    }
     return formData.value.conditions.groups.length > 0 &&
       formData.value.conditions.groups.every(g => g.conditions.length > 0) &&
       formData.value.conditions.groups.every(g =>
@@ -133,7 +161,7 @@ const canNext = computed(() => {
 })
 
 const canSave = computed(() => {
-  return !!formData.value.name.trim() && formData.value.actuatorDeviceIds.length > 0
+  return !!formData.value.name.trim() && !!formData.value.actuatorDeviceId
 })
 
 async function handleSave() {
@@ -144,10 +172,12 @@ async function handleSave() {
       name: formData.value.name.trim(),
       description: formData.value.description || undefined,
       groupId: formData.value.groupId,
-      conditions: formData.value.conditions,
+      conditions: isIrrigation.value
+        ? irrigationForm.value
+        : formData.value.conditions,
       actions: {
-        targetDeviceIds: formData.value.actuatorDeviceIds,
-        command: formData.value.actuatorCommand,
+        targetDeviceId: formData.value.actuatorDeviceId,
+        targetDeviceIds: formData.value.actuatorDeviceId ? [formData.value.actuatorDeviceId] : [],
         sensorDeviceIds: formData.value.sensorDeviceIds,
       } as any,
       priority: formData.value.priority,

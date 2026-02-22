@@ -13,6 +13,12 @@ export interface Condition {
   daysOfWeek?: number[]
   onceWeekStart?: string
   executedDates?: string[]
+  deviation?: number
+  timeSlots?: { start: number; end: number }[]
+  repeat?: boolean
+  relay?: boolean
+  relayOnMinutes?: number
+  relayOffMinutes?: number
 }
 
 export interface ConditionSet {
@@ -27,8 +33,9 @@ export interface ConditionGroup {
 
 // === 액션 (새로운 형식: 실제 장비 ID 기반) ===
 export interface RuleAction {
+  targetDeviceId?: string
   targetDeviceIds?: string[]
-  command: string
+  command?: string
   sensorDeviceIds?: string[]
   actuatorDeviceIds?: string[]
   // 레거시 호환
@@ -36,13 +43,32 @@ export interface RuleAction {
   parameters?: any
 }
 
+// === 관수 조건 데이터 ===
+export interface IrrigationZoneConfig {
+  zone: number
+  name: string
+  duration: number
+  waitTime: number
+  enabled: boolean
+}
+
+export interface IrrigationConditions {
+  type: 'irrigation'
+  startTime: string
+  timerSwitch: boolean
+  zones: IrrigationZoneConfig[]
+  mixer: { enabled: boolean }
+  fertilizer: { duration: number; preStopWait: number }
+  schedule: { days: number[]; repeat: boolean }
+}
+
 // === 위저드 폼 데이터 (5단계) ===
 export interface WizardFormData {
   groupId?: string
   sensorDeviceIds: string[]
-  actuatorDeviceIds: string[]
-  actuatorCommand: 'on' | 'off'
+  actuatorDeviceId?: string
   conditions: ConditionGroup
+  irrigationConditions?: IrrigationConditions
   name: string
   description: string
   priority: number
@@ -58,7 +84,7 @@ export interface AutomationRule {
   description?: string
   ruleType: RuleType
   enabled: boolean
-  conditions: ConditionGroup
+  conditions: ConditionGroup | IrrigationConditions
   actions: RuleAction
   priority: number
   createdAt: string
@@ -70,7 +96,7 @@ export interface CreateRuleRequest {
   description?: string
   groupId?: string
   houseId?: string
-  conditions: ConditionGroup
+  conditions: ConditionGroup | IrrigationConditions
   actions: RuleAction
   priority?: number
 }

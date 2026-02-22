@@ -136,12 +136,17 @@
             선택된 기기: <strong>{{ selectedDevices.length }}개</strong>
           </div>
 
+          <!-- 개폐기 페어링 경고 -->
+          <div v-if="hasOpenerType && !openerPairValid" class="error-box">
+            <p>개폐기는 반드시 <strong>열림 1개 + 닫힘 1개</strong>를 함께 선택해야 합니다.</p>
+          </div>
+
           <div class="button-group">
             <button class="btn-secondary" @click="step = 1">← 이전</button>
             <button
               class="btn-primary"
               @click="step = 3"
-              :disabled="selectedDevices.length === 0"
+              :disabled="!canProceedStep2"
             >
               다음 →
             </button>
@@ -156,6 +161,18 @@
           </div>
 
           <p class="step-description">각 장비의 이름을 확인하고 필요시 수정하세요. 나중에 그룹에서 이 장비들을 할당합니다.</p>
+
+          <!-- 개폐기 그룹 이름 입력 -->
+          <div v-if="hasOpenerType && openerPairValid" class="opener-group-name-box">
+            <label>개폐기 대표 이름</label>
+            <input
+              type="text"
+              v-model="openerGroupName"
+              class="form-input"
+              placeholder="예: 1동 천창"
+            />
+            <p class="help-text">열림/닫힘 장비 이름이 자동 생성됩니다: <strong>{{ openerGroupName || '개폐기' }} (열림)</strong>, <strong>{{ openerGroupName || '개폐기' }} (닫힘)</strong></p>
+          </div>
 
           <!-- 에러 메시지 -->
           <div v-if="errorMessage" class="error-box">
@@ -236,17 +253,18 @@ const guessDeviceType = (category: string): 'sensor' | 'actuator' => {
 }
 
 const guessEquipmentType = (category: string): EquipmentType => {
-  if (['cl', 'mc'].includes(category)) return 'opener'
+  if (['cl', 'mc'].includes(category)) return 'opener_open'
   if (['wk', 'fs'].includes(category)) return 'fan'
   if (['bh', 'sfkzq'].includes(category)) return 'irrigation'
   return 'other'
 }
 
 const EQUIPMENT_TYPE_OPTIONS: { value: EquipmentType; label: string }[] = [
-  { value: 'opener', label: '개폐기' },
-  { value: 'fan', label: '환풍기(휀)' },
-  { value: 'irrigation', label: '관수' },
   { value: 'other', label: '기타' },
+  { value: 'irrigation', label: '관수' },
+  { value: 'fan', label: '환풍기(휀)' },
+  { value: 'opener_open', label: '개폐기(열림)' },
+  { value: 'opener_close', label: '개폐기(닫힘)' },
 ]
 
 const props = defineProps<{ isOpen: boolean }>()
@@ -325,7 +343,18 @@ const loadDevices = async () => {
       return
     }
 
-    tuyaDevices.value = devices
+    // 이미 등록된 장비(tuyaDeviceId 기준) 필터링
+    const registeredTuyaIds = new Set(deviceStore.devices.map(d => d.tuyaDeviceId))
+    const available = devices.filter((d: TuyaDevice) => !registeredTuyaIds.has(d.id))
+
+    if (available.length === 0 && devices.length > 0) {
+      noDevicesFound.value = false
+      errorMessage.value = `모든 기기(${devices.length}개)가 이미 등록되어 있습니다.`
+      loading.value = false
+      return
+    }
+
+    tuyaDevices.value = available
     loading.value = false
     step.value = 2
   } catch (err: any) {
@@ -383,6 +412,21 @@ const getEquipmentLabel = (eqType?: EquipmentType): string => {
 const sensorCount = computed(() => selectedDevices.value.filter(d => d.deviceType === 'sensor').length)
 const actuatorCount = computed(() => selectedDevices.value.filter(d => d.deviceType === 'actuator').length)
 
+// 개폐기 페어링 검증
+const openerOpenDevices = computed(() => selectedDevices.value.filter(d => d.equipmentType === 'opener_open'))
+const openerCloseDevices = computed(() => selectedDevices.value.filter(d => d.equipmentType === 'opener_close'))
+const hasOpenerType = computed(() => openerOpenDevices.value.length > 0 || openerCloseDevices.value.length > 0)
+const openerPairValid = computed(() => {
+  if (!hasOpenerType.value) return true
+  return openerOpenDevices.value.length === 1 && openerCloseDevices.value.length === 1
+})
+const canProceedStep2 = computed(() => {
+  if (selectedDevices.value.length === 0) return false
+  if (hasOpenerType.value) return openerPairValid.value
+  return true
+})
+const openerGroupName = ref('')
+
 const removeDevice = (deviceId: string) => {
   const index = selectedDevices.value.findIndex(d => d.id === deviceId)
   if (index > -1) {
@@ -396,6 +440,15 @@ const registerDevices = async () => {
   registering.value = true
   errorMessage.value = ''
   try {
+    // 개폐기 그룹 이름이 있으면 자동으로 이름 생성
+    if (hasOpenerType.value && openerPairValid.value && openerGroupName.value) {
+      const gn = openerGroupName.value
+      for (const d of selectedDevices.value) {
+        if (d.equipmentType === 'opener_open') d.name = `${gn} (열림)`
+        if (d.equipmentType === 'opener_close') d.name = `${gn} (닫힘)`
+      }
+    }
+
     const deviceList = selectedDevices.value.map(d => ({
       tuyaDeviceId: d.id,
       name: d.name,
@@ -403,6 +456,7 @@ const registerDevices = async () => {
       deviceType: d.deviceType || guessDeviceType(d.category),
       equipmentType: d.deviceType === 'actuator' ? (d.equipmentType || 'other') : undefined,
       online: d.online,
+      ...(d.equipmentType?.startsWith('opener_') && openerGroupName.value ? { openerGroupName: openerGroupName.value } : {}),
     }))
 
     await deviceStore.registerDevices(deviceList)
@@ -423,6 +477,7 @@ const closeModal = () => {
   searchQuery.value = ''
   errorMessage.value = ''
   noDevicesFound.value = false
+  openerGroupName.value = ''
 }
 </script>
 
@@ -971,6 +1026,28 @@ const closeModal = () => {
   font-size: 12px;
   color: var(--text-link);
   white-space: nowrap;
+}
+
+.opener-group-name-box {
+  padding: 16px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.opener-group-name-box label {
+  display: block;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.opener-group-name-box .help-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 8px 0 0 0;
 }
 
 .register-summary {

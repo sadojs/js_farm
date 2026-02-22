@@ -11,6 +11,8 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!accessToken.value)
   const isAdmin = computed(() => user.value?.role === 'admin')
+  const isFarmAdmin = computed(() => user.value?.role === 'farm_admin')
+  const isFarmUser = computed(() => user.value?.role === 'farm_user')
 
   async function login(email: string, password: string) {
     loading.value = true
@@ -81,6 +83,8 @@ export const useAuthStore = defineStore('auth', () => {
     loading,
     isAuthenticated,
     isAdmin,
+    isFarmAdmin,
+    isFarmUser,
     login,
     logout,
     refreshToken,

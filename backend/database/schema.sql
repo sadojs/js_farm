@@ -14,7 +14,8 @@ CREATE TABLE users (
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   name VARCHAR(100) NOT NULL,
-  role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'user')),
+  role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'farm_admin', 'farm_user')),
+  parent_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
   address TEXT,
   status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -23,6 +24,7 @@ CREATE TABLE users (
 
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_users_parent ON users(parent_user_id);
 
 -- ==========================================
 -- 2. Tuya 프로젝트 설정
@@ -199,6 +201,25 @@ SELECT add_continuous_aggregate_policy('sensor_data_daily',
 SELECT add_retention_policy('sensor_data', INTERVAL '3 months');
 
 -- ==========================================
+-- 8-1. 날씨 데이터 (시계열 데이터) - TimescaleDB Hypertable
+-- ==========================================
+
+CREATE TABLE weather_data (
+  time TIMESTAMPTZ NOT NULL,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  temperature DECIMAL(5, 2),
+  humidity DECIMAL(5, 2),
+  precipitation DECIMAL(5, 2),
+  wind_speed DECIMAL(5, 2),
+  condition VARCHAR(20) DEFAULT 'clear',
+  nx INT,
+  ny INT
+);
+
+SELECT create_hypertable('weather_data', 'time');
+CREATE INDEX idx_weather_data_user ON weather_data(user_id, time DESC);
+
+-- ==========================================
 -- 9. 자동화 룰
 -- ==========================================
 
@@ -309,9 +330,9 @@ CREATE TRIGGER update_automation_rules_updated_at BEFORE UPDATE ON automation_ru
 INSERT INTO users (email, password_hash, name, role, address)
 VALUES ('admin@farm.com', '$2b$10$placeholder_hash', '관리자', 'admin', '서울시 강남구');
 
--- 테스트 사용자 (비밀번호: user123)
+-- 테스트 농장 관리자 (비밀번호: user123)
 INSERT INTO users (email, password_hash, name, role, address)
-VALUES ('user@farm.com', '$2b$10$placeholder_hash', '사용자', 'user', '경기도 화성시 농업로 123');
+VALUES ('user@farm.com', '$2b$10$placeholder_hash', '김농부', 'farm_admin', '경기도 화성시 농업로 123');
 
 -- 코멘트
 COMMENT ON TABLE sensor_data IS '센서 시계열 데이터 (TimescaleDB Hypertable)';

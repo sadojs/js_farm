@@ -39,6 +39,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       role: user.role,
+      parentUserId: user.parentUserId || null,
     };
 
     return {
@@ -49,6 +50,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         role: user.role,
+        parentUserId: user.parentUserId || null,
         address: user.address,
         tuyaProject: tuyaProject
           ? {
@@ -70,6 +72,7 @@ export class AuthService {
         sub: payload.sub,
         email: payload.email,
         role: payload.role,
+        parentUserId: payload.parentUserId || null,
       };
       return {
         accessToken: this.jwtService.sign(newPayload, { expiresIn: '1h' }),
@@ -91,6 +94,7 @@ export class AuthService {
       email: user.email,
       name: user.name,
       role: user.role,
+      parentUserId: user.parentUserId || null,
       address: user.address,
       tuyaProject: tuyaProject
         ? {

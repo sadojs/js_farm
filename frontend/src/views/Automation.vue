@@ -50,17 +50,33 @@
           <span class="rule-type-badge">{{ ruleTypeLabel(rule) }}</span>
         </div>
 
-        <!-- 조건 / 동작 2단 -->
-        <div class="rule-body">
-          <div class="rule-section condition">
-            <span class="section-title">조건</span>
-            <span class="section-content">{{ formatConditionGroup(rule.conditions) }}</span>
+        <!-- 관수 룰: 스케줄 정보 -->
+        <template v-if="isIrrigationConditions(rule.conditions)">
+          <div class="rule-body irrigation-body">
+            <div class="irrigation-schedule-row">
+              <span class="section-title">스케줄</span>
+              <span class="section-content">{{ formatIrrigationSchedule(rule.conditions) }}</span>
+            </div>
+            <div class="irrigation-schedule-row">
+              <span class="section-title">구역</span>
+              <span class="section-content">{{ formatIrrigationZones(rule.conditions) }}</span>
+            </div>
           </div>
-          <div class="rule-section action">
-            <span class="section-title">동작</span>
-            <span class="section-content">{{ formatAction(rule.actions) }}</span>
+        </template>
+
+        <!-- 일반 룰: 조건 / 동작 2단 -->
+        <template v-else>
+          <div class="rule-body">
+            <div class="rule-section condition">
+              <span class="section-title">조건</span>
+              <span class="section-content">{{ formatConditionGroup(rule.conditions) }}</span>
+            </div>
+            <div class="rule-section action">
+              <span class="section-title">동작</span>
+              <span class="section-content">{{ formatAction(rule.actions) }}</span>
+            </div>
           </div>
-        </div>
+        </template>
 
         <!-- 장비 목록 -->
         <div v-if="getRuleDeviceNames(rule).length > 0" class="rule-devices">
@@ -94,10 +110,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useAutomationStore } from '../stores/automation.store'
 import { useGroupStore } from '../stores/group.store'
 import { useDeviceStore } from '../stores/device.store'
-import { formatAction, formatConditionGroup } from '../utils/automation-helpers'
+import { formatAction, formatConditionGroup, isIrrigationConditions, formatIrrigationSchedule, formatIrrigationZones } from '../utils/automation-helpers'
 import { useConfirm } from '../composables/useConfirm'
 import type { AutomationRule } from '../types/automation.types'
-import type { EquipmentType } from '../types/device.types'
 import RuleWizardModal from '../components/automation/RuleWizardModal.vue'
 
 const automationStore = useAutomationStore()
@@ -105,7 +120,8 @@ const groupStore = useGroupStore()
 const deviceStore = useDeviceStore()
 const { confirm } = useConfirm()
 
-type TabType = 'all' | 'opener' | 'fan' | 'irrigation' | 'other'
+type RuleKind = 'opener' | 'fan' | 'irrigation' | 'other'
+type TabType = 'all' | RuleKind
 const activeTab = ref<TabType>('all')
 const wizardOpen = ref(false)
 const editingRule = ref<AutomationRule | null>(null)
@@ -125,25 +141,30 @@ function getRuleDeviceNames(rule: AutomationRule): string[] {
     .map(d => d!.name)
 }
 
-function detectRuleKind(rule: AutomationRule): EquipmentType {
+function detectRuleKind(rule: AutomationRule): RuleKind {
   const actions = rule.actions as any
   const deviceIds: string[] = actions?.targetDeviceIds || []
   if (deviceIds.length === 0) return 'other'
 
+  function toRuleKind(et: string | undefined): RuleKind | null {
+    if (!et || et === 'other') return null
+    if (et === 'opener_open' || et === 'opener_close') return 'opener'
+    if (et === 'fan' || et === 'irrigation') return et
+    return null
+  }
+
   for (const id of deviceIds) {
     const device = deviceStore.devices.find(d => d.id === id)
-    if (device?.equipmentType && device.equipmentType !== 'other') {
-      return device.equipmentType
-    }
+    const kind = toRuleKind(device?.equipmentType)
+    if (kind) return kind
   }
 
   const group = groupStore.groups.find(g => g.id === rule.groupId)
   if (group) {
     for (const id of deviceIds) {
       const device = group.devices?.find(d => d.id === id)
-      if (device?.equipmentType && device.equipmentType !== 'other') {
-        return device.equipmentType
-      }
+      const kind = toRuleKind(device?.equipmentType)
+      if (kind) return kind
     }
   }
 
@@ -163,7 +184,7 @@ const filteredRules = computed(() => {
   return otherRules.value
 })
 
-const EQUIPMENT_LABELS: Record<EquipmentType, string> = {
+const EQUIPMENT_LABELS: Record<RuleKind, string> = {
   opener: '개폐기',
   fan: '환풍기',
   irrigation: '관수',
@@ -400,6 +421,19 @@ onMounted(async () => {
   font-size: calc(15px * var(--content-scale, 1));
   color: var(--text-primary);
   line-height: 1.5;
+}
+
+.irrigation-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.irrigation-schedule-row {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--bg-condition);
 }
 
 .rule-devices {
