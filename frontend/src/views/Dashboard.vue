@@ -73,7 +73,6 @@ const weather = ref({
   windSpeed: null as number | null,
   condition: 'clear',
 })
-
 const weatherIcon = computed(() => {
   if (weather.value.condition === 'rain') return '🌧️'
   return '☀️'
@@ -89,8 +88,8 @@ async function refreshWeather() {
   errorMessage.value = ''
 
   try {
-    const { data } = await dashboardApi.getWeather()
-
+    const weatherRes = await dashboardApi.getWeather()
+    const data = weatherRes.data
     sourceAddress.value = data.location.address
     locationLabel.value = [data.location.level1, data.location.level2, data.location.level3]
       .filter(Boolean)
@@ -104,6 +103,7 @@ async function refreshWeather() {
     source.value = data.source
     weather.value = data.weather
     lastUpdate.value = new Date(data.fetchedAt).toLocaleString('ko-KR')
+
   } catch (err: any) {
     errorMessage.value = err.response?.data?.message || '날씨 정보를 불러오지 못했습니다.'
   } finally {

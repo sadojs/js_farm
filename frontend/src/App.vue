@@ -31,11 +31,19 @@
         </router-link>
         <router-link to="/sensors" class="sidebar-link">
           <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
-          <span>실시간 모니터링</span>
+          <span>환경 모니터링</span>
         </router-link>
         <router-link to="/reports" class="sidebar-link">
           <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
           <span>리포트</span>
+        </router-link>
+        <router-link to="/harvest-rec" class="sidebar-link">
+          <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c4-4 8-7.5 8-12a8 8 0 1 0-16 0c0 4.5 4 8 8 12z"/><circle cx="12" cy="10" r="3"/></svg></span>
+          <span>수확 관리</span>
+        </router-link>
+        <router-link to="/alerts" class="sidebar-link">
+          <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <span>센서 알림</span>
         </router-link>
         <router-link v-if="isAdmin" to="/users" class="sidebar-link">
           <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
@@ -130,11 +138,19 @@
         </router-link>
         <router-link to="/sensors" class="sidebar-link" @click="isDrawerOpen = false">
           <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
-          <span>실시간 모니터링</span>
+          <span>환경 모니터링</span>
         </router-link>
         <router-link to="/reports" class="sidebar-link" @click="isDrawerOpen = false">
           <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
           <span>리포트</span>
+        </router-link>
+        <router-link to="/harvest-rec" class="sidebar-link" @click="isDrawerOpen = false">
+          <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c4-4 8-7.5 8-12a8 8 0 1 0-16 0c0 4.5 4 8 8 12z"/><circle cx="12" cy="10" r="3"/></svg></span>
+          <span>수확 관리</span>
+        </router-link>
+        <router-link to="/alerts" class="sidebar-link" @click="isDrawerOpen = false">
+          <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <span>센서 알림</span>
         </router-link>
         <router-link v-if="isAdmin" to="/users" class="sidebar-link" @click="isDrawerOpen = false">
           <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>

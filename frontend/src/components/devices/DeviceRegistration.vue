@@ -247,7 +247,7 @@ interface TuyaDevice {
   equipmentType?: EquipmentType
 }
 
-const SENSOR_CATEGORIES = ['wsdcg', 'co2bj', 'ldcg', 'mcs', 'ywbj', 'pm25', 'cz']
+const SENSOR_CATEGORIES = ['wsdcg', 'co2bj', 'ldcg', 'mcs', 'ywbj', 'pm25', 'cz', 'qxj', 'hjjcy']
 const guessDeviceType = (category: string): 'sensor' | 'actuator' => {
   return SENSOR_CATEGORIES.includes(category) ? 'sensor' : 'actuator'
 }

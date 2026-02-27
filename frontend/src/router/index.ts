@@ -56,7 +56,25 @@ const router = createRouter({
       name: 'reports',
       component: () => import('../views/Reports.vue'),
       meta: { title: '리포트 및 통계', requiresAuth: true }
-    }
+    },
+    {
+      path: '/harvest',
+      name: 'harvest',
+      component: () => import('../views/Harvest.vue'),
+      meta: { title: '수확 관리', requiresAuth: true }
+    },
+    {
+      path: '/harvest-rec',
+      name: 'harvest-rec',
+      component: () => import('../views/HarvestRecommendation.vue'),
+      meta: { title: '수확 관리', requiresAuth: true }
+    },
+    {
+      path: '/alerts',
+      name: 'alerts',
+      component: () => import('../views/Alerts.vue'),
+      meta: { title: '센서 알림', requiresAuth: true }
+    },
   ]
 })
 

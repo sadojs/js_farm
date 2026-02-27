@@ -13,4 +13,10 @@ export class DashboardController {
     const effectiveUserId = user.role === 'farm_user' && user.parentUserId ? user.parentUserId : user.id;
     return this.dashboardService.getWeatherForUser(effectiveUserId);
   }
+
+  @Get('widgets')
+  getWidgets(@CurrentUser() user: any) {
+    const effectiveUserId = user.role === 'farm_user' && user.parentUserId ? user.parentUserId : user.id;
+    return this.dashboardService.getWidgetData(effectiveUserId);
+  }
 }

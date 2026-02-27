@@ -13,6 +13,9 @@ import { GatewayModule } from './modules/gateway/gateway.module';
 import { TuyaModule } from './modules/integrations/tuya/tuya.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { WeatherModule } from './modules/weather/weather.module';
+import { HarvestModule } from './modules/harvest/harvest.module';
+import { SensorAlertsModule } from './modules/sensor-alerts/sensor-alerts.module';
+import { HarvestRecModule } from './modules/harvest-rec/harvest-rec.module';
 
 @Module({
   imports: [
@@ -39,6 +42,9 @@ import { WeatherModule } from './modules/weather/weather.module';
     TuyaModule,
     DashboardModule,
     WeatherModule,
+    HarvestModule,
+    SensorAlertsModule,
+    HarvestRecModule,
   ],
 })
 export class AppModule {}

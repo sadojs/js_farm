@@ -2,18 +2,13 @@
   <div class="page-container">
     <header class="page-header">
       <div>
-        <h2>실시간 모니터링</h2>
-        <p class="page-description">센서 데이터를 실시간으로 확인합니다</p>
+        <h2>환경 모니터링</h2>
+        <p class="page-description">농장 환경을 종합적으로 확인합니다</p>
       </div>
       <button class="btn-refresh" @click="refreshAll" :disabled="refreshing">
         {{ refreshing ? '새로고침 중...' : '새로고침' }}
       </button>
     </header>
-
-    <!-- 정보 배너 -->
-    <div class="info-banner">
-      센서 데이터가 자동으로 업데이트됩니다
-    </div>
 
     <!-- 로딩 -->
     <div v-if="loading" class="loading-state">
@@ -47,43 +42,13 @@
           </div>
         </div>
 
-        <!-- 센서 카드 (확장 시) -->
-        <div v-if="expandedGroups.has(group.id)" class="sensors-grid">
-          <div
-            v-for="sensor in group.sensors"
-            :key="sensor.id"
-            class="sensor-card"
-            :class="{ offline: !sensor.online }"
-          >
-            <div class="sensor-card-top">
-              <span class="sensor-name">{{ sensor.name }}</span>
-              <span :class="['sensor-status', sensor.online ? 'online' : 'offline']">
-                {{ sensor.online ? '정상' : '오프라인' }}
-              </span>
-            </div>
-
-            <div v-if="sensor.sensorData && Object.keys(sensor.sensorData).length > 0" class="sensor-values">
-              <div
-                v-for="key in DISPLAY_FIELDS.filter(f => sensor.sensorData && f in sensor.sensorData)"
-                :key="key"
-                class="sensor-value-block"
-              >
-                <span class="value-number">{{ formatSensorValue(key, sensor.sensorData[key] as number) }}</span>
-                <span class="value-unit">{{ SENSOR_FIELD_META[key]?.unit || '' }}</span>
-                <span class="value-label">{{ SENSOR_FIELD_META[key]?.label || key }}</span>
-              </div>
-            </div>
-            <div v-else-if="sensor.online" class="sensor-values-empty">
-              데이터 로딩 중...
-            </div>
-            <div v-else class="sensor-values-empty">
-              오프라인
-            </div>
-
-            <div class="sensor-card-footer">
-              업데이트: {{ formatLastSeen(sensor.lastSeen) }}
-            </div>
-          </div>
+        <!-- 환경 모니터링 위젯 (확장 시) -->
+        <div v-if="expandedGroups.has(group.id)" class="group-widgets">
+          <MonitoringWidgets
+            :widget-data="widgetData"
+            :weather-data="weatherData"
+            :loading="widgetLoading"
+          />
         </div>
       </div>
     </div>
@@ -91,9 +56,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useGroupStore } from '@/stores/group.store'
 import { useDeviceStore } from '@/stores/device.store'
+import { useWebSocket } from '@/composables/useWebSocket'
+import { dashboardApi } from '@/api/dashboard.api'
+import type { WidgetDataResponse } from '@/api/dashboard.api'
+import MonitoringWidgets from '@/components/dashboard/MonitoringWidgets.vue'
 import type { Device } from '@/types/device.types'
 
 const groupStore = useGroupStore()
@@ -101,6 +70,11 @@ const deviceStore = useDeviceStore()
 const loading = ref(true)
 const refreshing = ref(false)
 const expandedGroups = ref(new Set<string>())
+
+// 환경 모니터링 위젯 데이터
+const widgetData = ref<WidgetDataResponse | null>(null)
+const weatherData = ref<{ temperature: number | null; humidity: number | null } | null>(null)
+const widgetLoading = ref(false)
 
 // 센서 필드 메타데이터 (DB 기록은 전체, 화면 표시는 DISPLAY_FIELDS만)
 const SENSOR_FIELD_META: Record<string, { label: string; icon: string; unit: string; min: number; max: number; color: string }> = {
@@ -188,38 +162,64 @@ function toggleGroup(groupId: string) {
   }
 }
 
-const formatLastSeen = (lastSeen?: string) => {
-  if (!lastSeen) return ''
-  const date = new Date(lastSeen)
-  const now = new Date()
-  const diffMin = Math.floor((now.getTime() - date.getTime()) / 60000)
-  if (diffMin < 1) return '방금 전'
-  if (diffMin < 60) return `${diffMin}분 전`
-  const diffHour = Math.floor(diffMin / 60)
-  if (diffHour < 24) return `${diffHour}시간 전`
-  return `${Math.floor(diffHour / 24)}일 전`
+async function fetchWidgetData() {
+  widgetLoading.value = true
+  try {
+    const [weatherRes, widgetRes] = await Promise.all([
+      dashboardApi.getWeather().catch(() => null),
+      dashboardApi.getWidgets().catch(() => ({ data: null })),
+    ])
+    if (weatherRes) {
+      weatherData.value = weatherRes.data.weather
+    }
+    widgetData.value = widgetRes.data
+  } finally {
+    widgetLoading.value = false
+  }
 }
 
 async function refreshAll() {
   refreshing.value = true
   try {
-    await deviceStore.fetchDevices()
+    await Promise.all([
+      deviceStore.fetchDevices(),
+      fetchWidgetData(),
+    ])
     await deviceStore.fetchAllSensorStatuses()
   } finally {
     refreshing.value = false
   }
 }
 
+// WebSocket: sensor:update 수신 시 위젯 자동 갱신 (2초 디바운스)
+const { on, off } = useWebSocket()
+let refreshTimer: ReturnType<typeof setTimeout> | null = null
+
+function handleSensorUpdate() {
+  if (refreshTimer) clearTimeout(refreshTimer)
+  refreshTimer = setTimeout(() => {
+    fetchWidgetData()
+    deviceStore.fetchAllSensorStatuses()
+  }, 2000)
+}
+
 onMounted(async () => {
   await Promise.all([
     groupStore.fetchGroups(),
     deviceStore.fetchDevices(),
+    fetchWidgetData(),
   ])
   await deviceStore.fetchAllSensorStatuses()
   for (const g of sensorGroups.value) {
     expandedGroups.value.add(g.id)
   }
   loading.value = false
+  on('sensor:update', handleSensorUpdate)
+})
+
+onUnmounted(() => {
+  off('sensor:update', handleSensorUpdate)
+  if (refreshTimer) clearTimeout(refreshTimer)
 })
 </script>
 
@@ -255,16 +255,6 @@ onMounted(async () => {
 }
 .btn-refresh:hover:not(:disabled) { background: var(--border-color); }
 .btn-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.info-banner {
-  background: var(--bg-info-banner);
-  color: var(--text-info-banner);
-  padding: 14px 18px;
-  border-radius: 10px;
-  font-size: calc(15px * var(--content-scale, 1));
-  font-weight: 500;
-  margin-bottom: 24px;
-}
 
 .loading-state, .empty-state {
   text-align: center;
@@ -339,105 +329,18 @@ onMounted(async () => {
   white-space: nowrap;
 }
 
-.sensors-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 12px;
+.group-widgets {
   padding: 0 20px 20px;
-}
-
-.sensor-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-card);
-  border-radius: 14px;
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.sensor-card.offline {
-  opacity: 0.5;
-  border-color: var(--border-color);
-}
-
-.sensor-card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.sensor-name {
-  font-size: calc(17px * var(--content-scale, 1));
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.sensor-status {
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-size: calc(14px * var(--content-scale, 1));
-  font-weight: 600;
-}
-.sensor-status.online { background: var(--accent-bg); color: var(--accent); }
-.sensor-status.offline { background: var(--bg-hover); color: var(--text-muted); }
-
-.sensor-values {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: 8px;
-  padding: 8px 0;
-}
-
-.sensor-value-block {
-  text-align: center;
-  padding: 4px 0;
-}
-
-.value-number {
-  font-size: calc(22px * var(--content-scale, 1));
-  font-weight: 700;
-  color: var(--sensor-accent);
-  font-variant-numeric: tabular-nums;
-}
-
-.value-unit {
-  font-size: calc(12px * var(--content-scale, 1));
-  color: var(--text-muted);
-  font-weight: 500;
-  margin-left: 1px;
-}
-
-.value-label {
-  display: block;
-  font-size: calc(12px * var(--content-scale, 1));
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-.sensor-values-empty {
-  font-size: calc(15px * var(--content-scale, 1));
-  color: var(--text-muted);
-  text-align: center;
-  padding: 12px;
-}
-
-.sensor-card-footer {
-  font-size: calc(14px * var(--content-scale, 1));
-  color: var(--text-muted);
-  padding-top: 8px;
-  border-top: 1px solid var(--border-light);
 }
 
 @media (max-width: 768px) {
   .page-container { padding: 16px; }
   .page-header h2 { font-size: calc(24px * var(--content-scale, 1)); }
-  .sensors-grid { grid-template-columns: 1fr; }
   .group-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
-  .value-number { font-size: calc(18px * var(--content-scale, 1)); }
+  .group-widgets { padding: 0 12px 16px; }
 }
 </style>

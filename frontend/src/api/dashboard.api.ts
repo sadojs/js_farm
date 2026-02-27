@@ -26,6 +26,28 @@ export interface DashboardWeatherResponse {
   }
 }
 
+export interface WidgetDataResponse {
+  inside: {
+    temperature: number | null
+    humidity: number | null
+    dewPoint: number | null
+    uv: number | null
+    rainfall: number | null
+  } | null
+  history: {
+    temperature: number | null
+    humidity: number | null
+    timestamp: string | null
+  } | null
+  trend6h: {
+    temperature: { time: string; value: number }[]
+    humidity: { time: string; value: number }[]
+    uv: { time: string; value: number }[]
+  } | null
+  uvStats14d: { min: number; max: number } | null
+}
+
 export const dashboardApi = {
   getWeather: () => apiClient.get<DashboardWeatherResponse>('/dashboard/weather'),
+  getWidgets: () => apiClient.get<WidgetDataResponse>('/dashboard/widgets'),
 }

@@ -368,6 +368,7 @@ const getCategoryLabel = (category: string): string => {
     'bh': '관수', 'sfkzq': '관수',
     'wsdcg': '온습도계', 'co2bj': 'CO2센서', 'ldcg': '토양센서',
     'mcs': '복합센서', 'ywbj': '우량계', 'pm25': '미세먼지',
+    'qxj': '기상관측센서', 'hjjcy': '환경검측기',
   }
   return labels[category] || category
 }
