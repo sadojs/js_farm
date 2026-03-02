@@ -3,6 +3,22 @@ import type {
   WizardFormData, RuleAction, IrrigationConditions,
 } from '../types/automation.types'
 
+// === 환경설정 역할별 필드 설정 ===
+
+export const ENV_ROLE_FIELD_CONFIG: Record<string, {
+  operators: string[]
+  defaultValue: number
+  icon: string
+}> = {
+  internal_temp: { operators: ['gte', 'lte', 'gt', 'lt', 'eq', 'between'], defaultValue: 25, icon: '🌡️' },
+  internal_humidity: { operators: ['gte', 'lte', 'gt', 'lt', 'eq', 'between'], defaultValue: 60, icon: '💧' },
+  external_temp: { operators: ['gte', 'lte', 'gt', 'lt', 'eq', 'between'], defaultValue: 25, icon: '🌡️' },
+  external_humidity: { operators: ['gte', 'lte', 'gt', 'lt', 'eq', 'between'], defaultValue: 60, icon: '💧' },
+  co2: { operators: ['gte', 'lte', 'gt', 'lt', 'eq', 'between'], defaultValue: 800, icon: '💨' },
+  uv: { operators: ['gte', 'lte', 'gt', 'lt', 'eq'], defaultValue: 5, icon: '☀️' },
+  rainfall: { operators: ['gte', 'lte', 'gt', 'lt', 'eq'], defaultValue: 0, icon: '🌧️' },
+}
+
 // === 라벨 매핑 ===
 
 export const FIELD_LABELS: Record<string, string> = {
@@ -16,6 +32,13 @@ export const FIELD_LABELS: Record<string, string> = {
   ph: 'PH',
   ec: 'EC',
   rain: '비 센서',
+  // env role keys
+  internal_temp: '내부 온도',
+  internal_humidity: '내부 습도',
+  external_temp: '외부 온도',
+  external_humidity: '외부 습도',
+  uv: 'UV',
+  rainfall: '강우량',
 }
 
 export const FIELD_UNITS: Record<string, string> = {
@@ -26,6 +49,13 @@ export const FIELD_UNITS: Record<string, string> = {
   soil_moisture: '%',
   ph: '',
   ec: 'mS/cm',
+  // env role keys
+  internal_temp: '°C',
+  internal_humidity: '%',
+  external_temp: '°C',
+  external_humidity: '%',
+  uv: '',
+  rainfall: 'mm',
 }
 
 export const OPERATOR_LABELS: Record<string, string> = {
@@ -109,6 +139,15 @@ export function formatConditionGroup(cg: ConditionGroup | IrrigationConditions):
   return parts.join(` ${cg.logic} `)
 }
 
+const ACTION_LABELS: Record<string, string> = {
+  open: '열기', close: '닫기', on: '켜기', off: '끄기',
+  start: '시작', stop: '정지',
+}
+
+export function localizeAction(command: string): string {
+  return ACTION_LABELS[command] || command
+}
+
 export function formatAction(a: RuleAction): string {
   if (a.targetDeviceId) {
     return `장비 제어 (조건에 따라 ON/OFF)`
@@ -116,7 +155,7 @@ export function formatAction(a: RuleAction): string {
   if (a.targetDeviceIds?.length) {
     return `${a.targetDeviceIds.length}개 장비 제어`
   }
-  return `${a.command || '제어'}`
+  return localizeAction(a.command || '제어')
 }
 
 // === 기본값 생성 ===
@@ -125,7 +164,7 @@ export function createEmptyWizardForm(): WizardFormData {
   return {
     groupId: undefined,
     sensorDeviceIds: [],
-    actuatorDeviceId: undefined,
+    actuatorDeviceIds: [],
     conditions: { logic: 'AND', groups: [createEmptyConditionSet()] },
     name: '',
     description: '',

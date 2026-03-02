@@ -41,11 +41,15 @@ export const SENSOR_ALERT_RULES: Record<string, AlertRuleParams> = {
 };
 
 // 데이터 없음 임계값 (분)
-export const NO_DATA_WARNING_MINUTES = 30;
+export const NO_DATA_WARNING_MINUTES = 60; // 1시간
 export const NO_DATA_CRITICAL_MINUTES = 360; // 6시간
 
 // Flatline 윈도우 (시간)
 export const FLATLINE_WINDOW_HOURS = 24;
+
+// 알림 반복(flapping) 감지: 6시간 내 3회 이상 no_data 해제 시 센서 점검 알림
+export const FLAPPING_WINDOW_HOURS = 6;
+export const FLAPPING_THRESHOLD = 3;
 
 // 유형별 조치 가이드
 export const ACTION_GUIDES: Record<string, string[]> = {
@@ -68,5 +72,10 @@ export const ACTION_GUIDES: Record<string, string[]> = {
     '센서 교정이 필요할 수 있습니다',
     '물리적 손상 여부를 확인하세요',
     '교체를 검토하세요',
+  ],
+  unstable: [
+    '센서 연결이 불안정합니다. 센서를 점검하세요',
+    '배터리 잔량 및 전원 공급 상태를 확인하세요',
+    '게이트웨이와의 거리 및 장애물을 확인하세요',
   ],
 };

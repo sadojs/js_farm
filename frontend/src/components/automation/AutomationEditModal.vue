@@ -25,6 +25,7 @@
             v-model="conditionForm"
             :timeOnly="isTimeOnly"
             :equipmentType="equipmentType"
+            :groupId="rule?.groupId"
           />
         </template>
         <template v-if="step === 'review'">
@@ -50,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import type {
   AutomationRule, ConditionGroup, IrrigationConditions,
   CreateRuleRequest, WizardFormData,
@@ -105,7 +106,9 @@ const reviewFormData = computed<WizardFormData>(() => {
   return {
     groupId: props.rule?.groupId,
     sensorDeviceIds: actions?.sensorDeviceIds || [],
-    actuatorDeviceId: actions?.targetDeviceIds?.[0] || actions?.targetDeviceId,
+    actuatorDeviceIds: actions?.targetDeviceIds?.length
+      ? actions.targetDeviceIds
+      : actions?.targetDeviceId ? [actions.targetDeviceId] : [],
     conditions: isIrrigation.value ? createEmptyWizardForm().conditions : conditionForm.value,
     name: ruleName.value,
     description: ruleDescription.value,
@@ -117,6 +120,7 @@ const canSave = computed(() => !!ruleName.value.trim())
 
 // visible 변경 시 폼 초기화
 watch(() => props.visible, (open) => {
+  document.body.style.overflow = open ? 'hidden' : ''
   if (!open || !props.rule) return
   step.value = 'condition'
   ruleName.value = props.rule.name
@@ -134,6 +138,8 @@ watch(() => props.visible, (open) => {
     conditionForm.value = createEmptyWizardForm().conditions
   }
 })
+
+onBeforeUnmount(() => { document.body.style.overflow = '' })
 
 async function handleSave() {
   if (saving.value || !props.rule) return
@@ -213,4 +219,20 @@ async function handleSave() {
   border: none; border-radius: 10px; font-weight: 600; cursor: pointer;
 }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 768px) {
+  .modal-overlay { padding: 0; }
+  .modal-container {
+    max-width: 100%;
+    max-height: 100%;
+    height: 100vh;
+    height: 100dvh;
+    border-radius: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .modal-body { padding: 0 16px 16px; }
+  .modal-header { padding: 16px 16px 8px; }
+  .modal-footer { padding: 12px 16px; }
+  .edit-tabs { margin: 0 16px 12px; }
+}
 </style>

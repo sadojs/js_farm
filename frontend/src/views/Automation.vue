@@ -10,7 +10,7 @@
 
     <div class="automation-tabs">
       <button class="tab" :class="{ active: activeTab === 'all' }" @click="activeTab = 'all'">전체 ({{ rules.length }})</button>
-      <button class="tab" :class="{ active: activeTab === 'opener' }" @click="activeTab = 'opener'">개폐기 ({{ openerRules.length }})</button>
+      <button v-if="SHOW_OPENER_TAB" class="tab" :class="{ active: activeTab === 'opener' }" @click="activeTab = 'opener'">개폐기 ({{ openerRules.length }})</button>
       <button class="tab" :class="{ active: activeTab === 'fan' }" @click="activeTab = 'fan'">환풍기 ({{ fanRules.length }})</button>
       <button class="tab" :class="{ active: activeTab === 'irrigation' }" @click="activeTab = 'irrigation'">관수 ({{ irrigationRules.length }})</button>
       <button class="tab" :class="{ active: activeTab === 'other' }" @click="activeTab = 'other'">기타 ({{ otherRules.length }})</button>
@@ -122,6 +122,8 @@ const { confirm } = useConfirm()
 
 type RuleKind = 'opener' | 'fan' | 'irrigation' | 'other'
 type TabType = 'all' | RuleKind
+// 개폐기 탭 표시 여부 (당분간 미사용, 필요 시 true로 변경)
+const SHOW_OPENER_TAB = false
 const activeTab = ref<TabType>('all')
 const wizardOpen = ref(false)
 const editingRule = ref<AutomationRule | null>(null)

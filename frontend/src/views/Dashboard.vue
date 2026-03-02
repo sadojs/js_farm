@@ -171,38 +171,38 @@ onMounted(() => {
 /* 날씨 카드 - 파란 그라데이션 */
 .weather-card {
   background: linear-gradient(135deg, #5B9BE6 0%, #4A7FD4 50%, #3B6BC2 100%);
-  border-radius: 20px;
-  padding: 28px 24px;
+  border-radius: 16px;
+  padding: 16px 20px;
   color: white;
   margin-bottom: 20px;
-  box-shadow: 0 8px 24px rgba(74, 144, 217, 0.35);
+  box-shadow: 0 4px 16px rgba(74, 144, 217, 0.25);
 }
 
 .weather-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .weather-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .weather-icon-big {
-  font-size: 40px;
+  font-size: 28px;
 }
 
 .weather-title {
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .weather-location {
-  font-size: 15px;
+  font-size: 13px;
   opacity: 0.85;
 }
 
@@ -218,49 +218,49 @@ onMounted(() => {
 }
 
 .weather-temp-big {
-  font-size: 48px;
+  font-size: 36px;
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
 .weather-temp-unit {
-  font-size: 22px;
+  font-size: 16px;
   font-weight: 500;
   opacity: 0.85;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .weather-condition {
-  font-size: 16px;
+  font-size: 14px;
   opacity: 0.85;
   text-align: right;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .weather-details-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
 }
 
 .weather-detail-item {
   background: rgba(255, 255, 255, 0.18);
-  border-radius: 14px;
-  padding: 16px;
+  border-radius: 10px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .detail-label {
-  font-size: 15px;
+  font-size: 13px;
   opacity: 0.85;
   font-weight: 500;
 }
 
 .detail-value {
-  font-size: 26px;
+  font-size: 18px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -275,15 +275,19 @@ onMounted(() => {
   }
 
   .weather-card {
-    padding: 24px 20px;
+    padding: 14px 16px;
+  }
+
+  .weather-details-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .weather-temp-big {
-    font-size: 42px;
+    font-size: 32px;
   }
 
   .detail-value {
-    font-size: 24px;
+    font-size: 16px;
   }
 }
 </style>

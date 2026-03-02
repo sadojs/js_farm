@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { DevicesService } from './devices.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -40,6 +40,17 @@ export class DevicesController {
     @Body() body: { commands: { code: string; value: any }[] },
   ) {
     return this.devicesService.controlDevice(id, this.getEffectiveUserId(user), body.commands);
+  }
+
+  @Get(':id/dependencies')
+  getDependencies(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.devicesService.getDependencies(id, this.getEffectiveUserId(user));
+  }
+
+  @Delete(':id/opener-pair')
+  @HttpCode(HttpStatus.OK)
+  removeOpenerPair(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.devicesService.removeOpenerPair(id, this.getEffectiveUserId(user));
   }
 
   @Delete(':id')

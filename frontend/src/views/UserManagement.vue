@@ -2,7 +2,7 @@
   <div class="page-container">
     <header class="page-header">
       <h2>👥 사용자 관리</h2>
-      <p class="page-description">사용자 계정을 생성하고 Tuya 프로젝트를 할당하세요</p>
+      <p class="page-description">사용자 계정을 생성하고 센서 프로젝트를 할당하세요</p>
       <button class="btn-primary" @click="showUserModal = true">
         + 새 사용자 추가
       </button>
@@ -18,7 +18,7 @@
             <th>이메일</th>
             <th>역할</th>
             <th>주소</th>
-            <th>Tuya 프로젝트</th>
+            <th>센서 프로젝트</th>
             <th>등록일</th>
             <th>상태</th>
             <th>작업</th>
@@ -67,7 +67,7 @@
                 </button>
                 <button
                   class="btn-icon"
-                  title="Tuya 프로젝트 할당"
+                  title="센서 프로젝트 할당"
                   @click="assignProject(user)"
                 >
                   🔗

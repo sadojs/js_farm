@@ -51,3 +51,22 @@ export interface TuyaDeviceInfo {
   online: boolean
   productName: string
 }
+
+export interface DependencyRule {
+  id: string
+  name: string
+  enabled: boolean
+}
+
+export interface DeviceDependenciesResponse {
+  canDelete: boolean
+  isOpenerPair: boolean
+  pairedDevice?: {
+    id: string
+    name: string
+    equipmentType: string
+  }
+  automationRules: DependencyRule[]
+  pairedDeviceAutomationRules?: DependencyRule[]
+  groups: { id: string; name: string }[]
+}

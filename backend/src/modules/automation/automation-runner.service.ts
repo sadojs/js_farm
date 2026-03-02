@@ -365,6 +365,70 @@ export class AutomationRunnerService {
       const numeric = Number(raw);
       map[row.sensor_type] = Number.isNaN(numeric) ? this.toBoolean(raw) : numeric;
     }
+
+    // env role 기반 매핑 병합 (groupId가 있는 경우)
+    if (groupId) {
+      const envRoleMap = await this.getEnvRoleMap(groupId);
+      Object.assign(map, envRoleMap);
+    }
+
+    return map;
+  }
+
+  /**
+   * 환경설정 역할(env role) 기반으로 최신 센서/기상 데이터 맵 생성
+   * condition.field가 'internal_temp', 'external_humidity' 등의 env role key일 때 사용
+   */
+  private async getEnvRoleMap(groupId: string): Promise<Record<string, number | boolean>> {
+    const map: Record<string, number | boolean> = {};
+
+    // 1. sensor 매핑: env_mappings → sensor_data
+    const sensorRows = await this.dataSource.query(
+      `
+      SELECT em.role_key,
+        (SELECT sd.value FROM sensor_data sd
+         WHERE sd.device_id = em.device_id AND sd.sensor_type = em.sensor_type
+         ORDER BY sd.time DESC LIMIT 1) as value
+      FROM env_mappings em
+      WHERE em.group_id = $1 AND em.source_type = 'sensor'
+        AND em.device_id IS NOT NULL AND em.sensor_type IS NOT NULL
+      `,
+      [groupId],
+    );
+    for (const row of sensorRows) {
+      if (row.value != null) {
+        const numeric = Number(row.value);
+        map[row.role_key] = Number.isNaN(numeric) ? this.toBoolean(row.value) : numeric;
+      }
+    }
+
+    // 2. weather 매핑: env_mappings → weather_data
+    const weatherRows = await this.dataSource.query(
+      `
+      SELECT em.role_key, em.weather_field
+      FROM env_mappings em
+      WHERE em.group_id = $1 AND em.source_type = 'weather'
+        AND em.weather_field IS NOT NULL
+      `,
+      [groupId],
+    );
+    if (weatherRows.length > 0) {
+      const latestWeather = await this.dataSource.query(
+        `SELECT temperature, humidity, precipitation, wind_speed
+         FROM weather_data ORDER BY time DESC LIMIT 1`,
+      );
+      if (latestWeather.length > 0) {
+        const wd = latestWeather[0];
+        for (const row of weatherRows) {
+          const val = wd[row.weather_field];
+          if (val != null) {
+            const numeric = Number(val);
+            map[row.role_key] = Number.isNaN(numeric) ? this.toBoolean(val) : numeric;
+          }
+        }
+      }
+    }
+
     return map;
   }
 

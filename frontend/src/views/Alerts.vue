@@ -28,7 +28,8 @@
       <div v-else-if="activeSensors.length === 0" class="empty-state">
         <h3>활성 센서가 없습니다</h3>
         <p v-if="standbySensors.length > 0">대기 목록에서 센서를 활성화하세요.</p>
-        <p v-else>등록된 센서가 없습니다.</p>
+        <p v-else>장비를 등록하고 센서를 활성화하세요.</p>
+        <router-link to="/devices" class="empty-cta-link">장비 관리</router-link>
       </div>
       <div v-else class="sensor-grid">
         <div v-for="s in activeSensors" :key="s.deviceId + s.sensorType" class="sensor-card">
@@ -188,7 +189,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { sensorAlertsApi, type SensorAlert, type SensorEntry, type AlertDetail } from '../api/sensor-alerts.api'
 import { useNotificationStore } from '../stores/notification.store'
 
@@ -209,6 +210,7 @@ const ALERT_TYPE_LABELS: Record<string, string> = {
   flatline: '값 고정',
   spike: '급변',
   out_of_range: '범위 이탈',
+  unstable: '센서 불안정',
 }
 
 const SENSOR_TYPE_LABELS: Record<string, string> = {
@@ -279,17 +281,26 @@ const filterOptions = [
   { label: '해결됨', value: 'resolved' },
 ]
 
-const unresolvedCount = computed(() => alerts.value.filter(a => !a.resolved).length)
 const activeSensors = computed(() => sensors.value.filter(s => !s.standby))
 const standbySensors = computed(() => sensors.value.filter(s => s.standby))
 
+// 대기 센서 알림 프론트엔드 방어 필터
+const standbyKeys = computed(() => new Set(
+  standbySensors.value.map(s => `${s.deviceId}:${s.sensorType}`)
+))
+const visibleAlerts = computed(() =>
+  alerts.value.filter(a => !standbyKeys.value.has(`${a.deviceId}:${a.sensorType}`))
+)
+
+const unresolvedCount = computed(() => visibleAlerts.value.filter(a => !a.resolved).length)
+
 const filteredAlerts = computed(() => {
   switch (filter.value) {
-    case 'unresolved': return alerts.value.filter(a => !a.resolved)
-    case 'critical': return alerts.value.filter(a => a.severity === 'critical' && !a.resolved)
-    case 'warning': return alerts.value.filter(a => a.severity === 'warning' && !a.resolved)
-    case 'resolved': return alerts.value.filter(a => a.resolved)
-    default: return alerts.value
+    case 'unresolved': return visibleAlerts.value.filter(a => !a.resolved)
+    case 'critical': return visibleAlerts.value.filter(a => a.severity === 'critical' && !a.resolved)
+    case 'warning': return visibleAlerts.value.filter(a => a.severity === 'warning' && !a.resolved)
+    case 'resolved': return visibleAlerts.value.filter(a => a.resolved)
+    default: return visibleAlerts.value
   }
 })
 
@@ -353,6 +364,7 @@ async function moveToStandby(sensor: SensorEntry) {
     await sensorAlertsApi.addStandby(sensor.deviceId, sensor.sensorType)
     sensor.standby = true
     notificationStore.success('대기', `${sensor.deviceName} / ${sensorTypeLabel(sensor.sensorType)} 대기 목록으로 이동`)
+    await loadAlerts()
   } catch {
     notificationStore.error('오류', '대기 목록 이동에 실패했습니다.')
   }
@@ -363,6 +375,7 @@ async function restoreFromStandby(sensor: SensorEntry) {
     await sensorAlertsApi.removeStandby(sensor.deviceId, sensor.sensorType)
     sensor.standby = false
     notificationStore.success('활성화', `${sensor.deviceName} / ${sensorTypeLabel(sensor.sensorType)} 활성화됨`)
+    await loadAlerts()
   } catch {
     notificationStore.error('오류', '활성화에 실패했습니다.')
   }
@@ -415,8 +428,16 @@ async function handleSnooze(id: string, days: number) {
   }
 }
 
+// 30초마다 알림 목록 자동 갱신
+let pollTimer: ReturnType<typeof setInterval> | null = null
+
 onMounted(async () => {
   await Promise.all([loadAlerts(), loadSensors()])
+  pollTimer = setInterval(() => loadAlerts(), 30_000)
+})
+
+onBeforeUnmount(() => {
+  if (pollTimer) clearInterval(pollTimer)
 })
 </script>
 
@@ -642,6 +663,15 @@ onMounted(async () => {
   color: var(--text-primary);
   margin-bottom: 8px;
 }
+.empty-cta-link {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: calc(15px * var(--content-scale, 1));
+}
+.empty-cta-link:hover { text-decoration: underline; }
 
 /* 알림 카드 */
 .alerts-list {

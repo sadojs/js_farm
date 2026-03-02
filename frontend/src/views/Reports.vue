@@ -96,10 +96,16 @@
       </div>
     </div>
 
+    <!-- 환경 미설정 경고 -->
+    <div v-if="envWarning" class="env-warning-banner">
+      <span>⚠️ 선택된 그룹의 환경 항목이 설정되지 않았습니다.</span>
+      <router-link :to="`/groups?envConfig=${selectedGroup}`" class="warning-link">환경 설정하기</router-link>
+    </div>
+
     <!-- 로딩 -->
     <div v-if="loadingData" class="loading-state">데이터를 불러오는 중...</div>
 
-    <template v-else-if="hourlyData.length > 0">
+    <template v-else-if="hourlyData.length > 0 && !envWarning">
       <!-- 통계 카드 -->
       <div class="stats-grid">
         <div class="stat-card">
@@ -160,7 +166,7 @@
     </template>
 
     <div v-else class="empty-state">
-      <p>조회된 데이터가 없습니다. 기간을 선택하여 조회해주세요.</p>
+      <p>{{ envWarning ? '환경 설정 후 리포트를 확인할 수 있습니다.' : '조회된 데이터가 없습니다. 기간을 선택하여 조회해주세요.' }}</p>
     </div>
   </div>
 </template>
@@ -173,6 +179,7 @@ import {
   LineElement, BarElement, Title, Tooltip, Legend, Filler
 } from 'chart.js'
 import { reportApi } from '../api/report.api'
+import { envConfigApi } from '../api/env-config.api'
 import { useGroupStore } from '../stores/group.store'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
@@ -201,6 +208,7 @@ const customEndDate = ref('')
 const startDate = ref('')
 const endDate = ref('')
 const loadingData = ref(false)
+const envWarning = ref(false)
 
 const groups = computed(() => groupStore.groups)
 
@@ -601,6 +609,23 @@ async function exportToPDF() {
   window.print()
 }
 
+async function checkEnvWarning(groupId: string) {
+  if (!groupId) {
+    envWarning.value = false
+    return
+  }
+  try {
+    const res = await envConfigApi.getResolved(groupId)
+    envWarning.value = Object.values(res.data).every(v => v.source === '미설정')
+  } catch {
+    envWarning.value = false
+  }
+}
+
+watch(selectedGroup, (groupId) => {
+  checkEnvWarning(groupId)
+})
+
 watch([selectedGroup, selectedSensorType], () => {
   if (startDate.value && endDate.value) loadAllData()
 })
@@ -610,6 +635,7 @@ onMounted(async () => {
   // 기본: 첫 번째 그룹 자동 선택
   if (groupStore.groups.length > 0) {
     selectedGroup.value = groupStore.groups[0].id
+    checkEnvWarning(selectedGroup.value)
   }
   updateDateRange()
   loadAllData()
@@ -763,6 +789,27 @@ onMounted(async () => {
 }
 .data-table tbody tr:hover { background: var(--bg-hover); }
 
+.env-warning-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid #f59e0b;
+  border-radius: 10px;
+  font-size: calc(14px * var(--content-scale, 1));
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.warning-link {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.warning-link:hover { text-decoration: underline; }
+
 .loading-state, .empty-state {
   text-align: center; padding: 60px 20px; color: var(--text-secondary); font-size: calc(16px * var(--content-scale, 1));
 }
@@ -772,8 +819,10 @@ onMounted(async () => {
   .stats-grid { grid-template-columns: 1fr; }
   .chart-container { height: 250px; }
   .filter-row { flex-direction: column; }
-  .period-buttons { flex-direction: column; }
-  .period-btn { text-align: center; }
+  .period-buttons { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .period-btn { white-space: nowrap; flex-shrink: 0; }
+  .download-row { flex-wrap: wrap; }
+  .btn-download { white-space: nowrap; }
 }
 
 @media print {

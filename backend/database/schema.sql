@@ -469,3 +469,46 @@ COMMENT ON TABLE automation_logs IS '자동화 실행 로그';
 COMMENT ON TABLE task_templates IS '작업 템플릿 (단계별 SOP 반복 작업 정의)';
 COMMENT ON TABLE batch_tasks IS '배치-템플릿 연결';
 COMMENT ON TABLE task_occurrences IS '개별 작업 일정 (생육피드백 + 허용윈도우 포함)';
+
+-- ==========================================
+-- 12. 센서 환경 설정 (그룹별 매핑)
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS env_roles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  role_key VARCHAR(50) UNIQUE NOT NULL,
+  label VARCHAR(100) NOT NULL,
+  category VARCHAR(20) NOT NULL DEFAULT 'internal',
+  unit VARCHAR(20) NOT NULL DEFAULT '',
+  sort_order INT NOT NULL DEFAULT 0,
+  is_default BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+INSERT INTO env_roles (role_key, label, category, unit, sort_order) VALUES
+  ('internal_temp',     '내부 온도',  'internal', '°C',  1),
+  ('internal_humidity', '내부 습도',  'internal', '%',   2),
+  ('external_temp',     '외부 온도',  'external', '°C',  3),
+  ('external_humidity', '외부 습도',  'external', '%',   4),
+  ('co2',               'CO2',       'internal', 'ppm', 5),
+  ('uv',                'UV',        'external', '',    6),
+  ('rainfall',          '강우량',    'external', 'mm',  7)
+ON CONFLICT (role_key) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS env_mappings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  group_id UUID NOT NULL REFERENCES house_groups(id) ON DELETE CASCADE,
+  role_key VARCHAR(50) NOT NULL REFERENCES env_roles(role_key) ON DELETE CASCADE,
+  source_type VARCHAR(20) NOT NULL CHECK (source_type IN ('sensor', 'weather')),
+  device_id UUID REFERENCES devices(id) ON DELETE SET NULL,
+  sensor_type VARCHAR(50),
+  weather_field VARCHAR(50),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(group_id, role_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_env_mappings_group ON env_mappings(group_id);
+
+COMMENT ON TABLE env_roles IS '환경 역할 정의 (내부 온도, 외부 습도 등)';
+COMMENT ON TABLE env_mappings IS '그룹별 환경 역할 → 소스 매핑';

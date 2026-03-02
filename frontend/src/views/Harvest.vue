@@ -274,12 +274,26 @@
 
         <div class="form-group">
           <label>파종일 *</label>
-          <input type="date" v-model="form.sowDate" />
+          <VueDatePicker
+            v-model="form.sowDate"
+            :model-type="'yyyy-MM-dd'"
+            :dark="isDark"
+            :enable-time-picker="false"
+            :teleport="false"
+            auto-apply
+          />
         </div>
 
         <div class="form-group">
           <label>정식일</label>
-          <input type="date" v-model="form.transplantDate" />
+          <VueDatePicker
+            v-model="form.transplantDate"
+            :model-type="'yyyy-MM-dd'"
+            :dark="isDark"
+            :enable-time-picker="false"
+            :teleport="false"
+            auto-apply
+          />
         </div>
 
         <div class="form-group">
@@ -311,7 +325,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { harvestApi, type CropBatch, type CreateBatchRequest } from '../api/harvest.api'
 import { harvestTaskApi, type OccurrenceWithContext, type TaskSummary } from '../api/harvest-task.api'
 import { groupApi } from '../api/group.api'
@@ -320,8 +334,13 @@ import { CROP_PRESETS } from '../utils/harvest-presets'
 import { getStageInfo, needsFeedback } from '../utils/task-presets'
 import { useNotificationStore } from '../stores/notification.store'
 import RescheduleSheet from '../components/harvest/RescheduleSheet.vue'
+import { VueDatePicker } from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
+import { useLocalStorage } from '@vueuse/core'
 
 const notificationStore = useNotificationStore()
+const sfTheme = useLocalStorage('sf-theme', 'light')
+const isDark = computed(() => sfTheme.value === 'dark')
 
 const loading = ref(true)
 const batches = ref<CropBatch[]>([])
@@ -725,6 +744,12 @@ function toggleMenu(id: string) {
   openMenuId.value = openMenuId.value === id ? null : id
 }
 
+// 모달 열림 시 배경 스크롤 차단
+watch(() => showModal.value, (open) => {
+  document.body.style.overflow = open ? 'hidden' : ''
+})
+onBeforeUnmount(() => { document.body.style.overflow = '' })
+
 onMounted(() => {
   loadBatches()
   loadGroups()
@@ -941,7 +966,17 @@ onMounted(() => {
   .view-toggle button { flex: 1; }
   .task-card { flex-direction: column; align-items: stretch; }
   .task-actions { justify-content: flex-end; }
-  .modal-content { padding: 20px; }
+  .modal-overlay { padding: 0; }
+  .modal-content {
+    padding: 20px;
+    border-radius: 16px 16px 0 0;
+    max-width: 100%;
+    max-height: 100%;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
   .calendar-cell { min-height: 44px; }
 }
 </style>

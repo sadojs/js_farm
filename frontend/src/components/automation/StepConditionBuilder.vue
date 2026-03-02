@@ -47,17 +47,12 @@
                 class="field-select"
               >
                 <option v-for="f in availableFields" :key="f.value" :value="f.value">
-                  {{ f.label }}
+                  {{ f.displayLabel }}
                 </option>
               </select>
 
-              <!-- 미구현 필드 뱃지 (FR-02) -->
-              <div v-if="isUnimplemented(cond.field)" class="unimplemented-badge">
-                미구현 (추후 업데이트 예정)
-              </div>
-
-              <!-- 히스테리시스 UI (FR-02): fan + temperature/humidity -->
-              <template v-else-if="isFanHysteresis(cond)">
+              <!-- 히스테리시스 UI (FR-02): fan + temperature/humidity 관련 역할 -->
+              <template v-if="isFanHysteresis(cond)">
                 <div class="hysteresis-row">
                   <label>기준값</label>
                   <input
@@ -97,7 +92,7 @@
                 </select>
 
                 <!-- 값 입력 -->
-                <template v-if="cond.field === 'rain'">
+                <template v-if="cond.field === 'rainfall'">
                   <select
                     :value="cond.value ? 'true' : 'false'"
                     @change="changeValue(gi, ci, ($event.target as HTMLSelectElement).value === 'true')"
@@ -203,17 +198,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import type { ConditionGroup, Condition } from '../../types/automation.types'
 import {
   SENSOR_CONDITION_FIELDS,
   OPERATOR_LABELS_KR,
   FIELD_UNITS,
+  ENV_ROLE_FIELD_CONFIG,
   createEmptyCondition,
   createEmptyConditionSet,
 } from '../../utils/automation-helpers'
+import { envConfigApi } from '../../api/env-config.api'
+import type { EnvRole, ResolvedValue } from '../../api/env-config.api'
 
-const UNIMPLEMENTED_FIELDS = ['rain', 'uv', 'dew_point']
 const DAYS = [
   { value: 1, label: '월' }, { value: 2, label: '화' },
   { value: 3, label: '수' }, { value: 4, label: '목' },
@@ -221,10 +218,14 @@ const DAYS = [
   { value: 7, label: '일' },
 ]
 
+// 온도/습도 관련 역할 (히스테리시스 대상)
+const TEMP_HUMIDITY_ROLES = ['internal_temp', 'external_temp', 'internal_humidity', 'external_humidity', 'temperature', 'humidity']
+
 const props = defineProps<{
   modelValue: ConditionGroup
   timeOnly?: boolean
   equipmentType?: string
+  groupId?: string
 }>()
 const emit = defineEmits<{
   'update:modelValue': [value: ConditionGroup]
@@ -233,19 +234,34 @@ const emit = defineEmits<{
 
 const isFan = computed(() => props.equipmentType === 'fan')
 
-function isUnimplemented(field: string): boolean {
-  return UNIMPLEMENTED_FIELDS.includes(field)
+// env roles 및 resolved values
+const envRoles = ref<EnvRole[]>([])
+const resolvedValues = ref<Record<string, ResolvedValue>>({})
+
+async function loadEnvData() {
+  if (!props.groupId) return
+  try {
+    const [rolesRes, resolvedRes] = await Promise.all([
+      envConfigApi.getRoles(),
+      envConfigApi.getResolved(props.groupId),
+    ])
+    envRoles.value = rolesRes.data
+    resolvedValues.value = resolvedRes.data
+  } catch {
+    // fallback to empty
+  }
 }
+
+onMounted(loadEnvData)
+watch(() => props.groupId, loadEnvData)
 
 function isFanHysteresis(cond: Condition): boolean {
-  return isFan.value && ['temperature', 'humidity'].includes(cond.field)
+  return isFan.value && TEMP_HUMIDITY_ROLES.includes(cond.field)
 }
 
-// 미구현 필드가 선택되었는지 감시 → canProceed emit
-watch(() => props.modelValue, (val) => {
-  const allConds = val.groups.flatMap(g => g.conditions)
-  const hasUnimplemented = allConds.some(c => UNIMPLEMENTED_FIELDS.includes(c.field))
-  emit('update:canProceed', !hasUnimplemented)
+// canProceed: 항상 true (모든 env role은 유효)
+watch(() => props.modelValue, () => {
+  emit('update:canProceed', true)
 }, { deep: true, immediate: true })
 
 // 시간대 스케줄러 state
@@ -269,7 +285,6 @@ function toggleDay(day: number) {
 watch([timeSlots, selectedDays, repeatWeekly], () => {
   if (!props.timeOnly || !isFan.value) return
   const next = clone()
-  // 첫 번째 조건에 timeSlots 정보 설정
   if (next.groups[0]?.conditions[0]) {
     next.groups[0].conditions[0].timeSlots = JSON.parse(JSON.stringify(timeSlots.value))
     next.groups[0].conditions[0].daysOfWeek = [...selectedDays.value]
@@ -280,8 +295,56 @@ watch([timeSlots, selectedDays, repeatWeekly], () => {
 
 const TIME_ONLY_FIELDS = SENSOR_CONDITION_FIELDS.filter(f => f.type === 'time')
 
+// env role 기반 필드 목록 생성
+const envRoleFields = computed(() => {
+  if (envRoles.value.length === 0) {
+    // fallback: 기존 SENSOR_CONDITION_FIELDS
+    return SENSOR_CONDITION_FIELDS.map(f => ({
+      ...f,
+      displayLabel: f.label,
+    }))
+  }
+
+  const fields: {
+    value: string; label: string; displayLabel: string;
+    type: 'sensor' | 'time'; operators: string[];
+    unit: string; defaultValue: number; icon: string;
+  }[] = envRoles.value.map(role => {
+    const config = ENV_ROLE_FIELD_CONFIG[role.roleKey]
+    const resolved = resolvedValues.value[role.roleKey]
+    const valueStr = resolved?.value != null
+      ? `${resolved.value}${role.unit}`
+      : '미설정'
+    return {
+      value: role.roleKey,
+      label: role.label,
+      displayLabel: `${role.label}(${valueStr})`,
+      type: 'sensor' as const,
+      operators: config?.operators || ['gte', 'lte', 'gt', 'lt', 'eq', 'between'],
+      unit: role.unit,
+      defaultValue: config?.defaultValue ?? 0,
+      icon: config?.icon || '📊',
+    }
+  })
+
+  // 시간 필드 추가
+  fields.push({
+    value: 'hour',
+    label: '시간',
+    displayLabel: '시간',
+    type: 'time',
+    operators: ['eq', 'between'],
+    unit: '',
+    defaultValue: 9,
+    icon: '🕐',
+  })
+
+  return fields
+})
+
 const availableFields = computed(() => {
-  return props.timeOnly ? TIME_ONLY_FIELDS : SENSOR_CONDITION_FIELDS
+  if (props.timeOnly) return TIME_ONLY_FIELDS.map(f => ({ ...f, displayLabel: f.label }))
+  return envRoleFields.value
 })
 
 // timeOnly 모드로 전환 시, 기존 센서 조건을 시간 조건으로 변경
@@ -305,11 +368,15 @@ function clone(): ConditionGroup {
 }
 
 function getOperators(field: string): string[] {
+  const envField = envRoleFields.value.find(f => f.value === field)
+  if (envField) return envField.operators
   const def = SENSOR_CONDITION_FIELDS.find(f => f.value === field)
   return def?.operators || ['eq']
 }
 
 function getUnit(field: string): string {
+  const envField = envRoleFields.value.find(f => f.value === field)
+  if (envField) return envField.unit
   return FIELD_UNITS[field] || ''
 }
 
@@ -327,7 +394,8 @@ function updateSetLogic(gi: number, logic: 'AND' | 'OR') {
 
 function changeField(gi: number, ci: number, field: string) {
   const next = clone()
-  const def = SENSOR_CONDITION_FIELDS.find(f => f.value === field)
+  const def = envRoleFields.value.find(f => f.value === field)
+    || SENSOR_CONDITION_FIELDS.find(f => f.value === field)
   next.groups[gi].conditions[ci] = {
     type: def?.type || 'sensor',
     field,
@@ -386,7 +454,19 @@ function addCondition(gi: number) {
   if (props.timeOnly) {
     next.groups[gi].conditions.push({ type: 'time', field: 'hour', operator: 'eq', value: 9, unit: '' })
   } else {
-    next.groups[gi].conditions.push(createEmptyCondition())
+    // 첫 번째 env role을 기본값으로 사용
+    const firstRole = envRoleFields.value[0]
+    if (firstRole && firstRole.value !== 'hour') {
+      next.groups[gi].conditions.push({
+        type: 'sensor',
+        field: firstRole.value,
+        operator: (firstRole.operators[0] as Condition['operator']) || 'gte',
+        value: firstRole.defaultValue ?? 0,
+        unit: firstRole.unit,
+      })
+    } else {
+      next.groups[gi].conditions.push(createEmptyCondition())
+    }
   }
   emit('update:modelValue', next)
 }
@@ -444,7 +524,7 @@ function addGroup() {
   padding: 8px 12px; border: 1px solid var(--border-input); border-radius: 8px;
   font-size: 14px; background: var(--bg-input); color: var(--text-primary);
 }
-.field-select { min-width: 100px; }
+.field-select { min-width: 160px; }
 .op-select { min-width: 80px; }
 .value-input { min-width: 80px; max-width: 120px; }
 .value-input.small { min-width: 60px; max-width: 80px; }
@@ -469,12 +549,6 @@ function addGroup() {
   padding: 10px; font-size: 14px; color: var(--text-muted); cursor: pointer;
 }
 .btn-add-group:hover { border-color: var(--text-muted); color: var(--text-secondary); }
-
-/* 미구현 뱃지 */
-.unimplemented-badge {
-  padding: 4px 12px; background: #fff3e0; color: #e65100; border-radius: 8px;
-  font-size: 13px; font-weight: 500;
-}
 
 /* 히스테리시스 */
 .hysteresis-row {

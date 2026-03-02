@@ -16,6 +16,7 @@ import { WeatherModule } from './modules/weather/weather.module';
 import { HarvestModule } from './modules/harvest/harvest.module';
 import { SensorAlertsModule } from './modules/sensor-alerts/sensor-alerts.module';
 import { HarvestRecModule } from './modules/harvest-rec/harvest-rec.module';
+import { EnvConfigModule } from './modules/env-config/env-config.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { HarvestRecModule } from './modules/harvest-rec/harvest-rec.module';
     HarvestModule,
     SensorAlertsModule,
     HarvestRecModule,
+    EnvConfigModule,
   ],
 })
 export class AppModule {}

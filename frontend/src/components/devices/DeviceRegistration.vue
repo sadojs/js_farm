@@ -11,8 +11,8 @@
         <div v-if="!hasTuyaProject" class="warning-box">
           <div class="warning-icon">⚠️</div>
           <div class="warning-content">
-            <h3>Tuya 프로젝트가 설정되지 않았습니다</h3>
-            <p>사용자 관리에서 Tuya Cloud 프로젝트 설정을 먼저 완료하세요.</p>
+            <h3>센서 프로젝트가 설정되지 않았습니다</h3>
+            <p>사용자 관리에서 센서 클라우드 프로젝트 설정을 먼저 완료하세요.</p>
             <ul>
               <li>Access ID (Client ID)</li>
               <li>Access Secret (Client Secret)</li>
@@ -25,7 +25,7 @@
         <div class="step-section" v-if="step === 1 && hasTuyaProject">
           <div class="step-header">
             <span class="step-number">1</span>
-            <h3>Tuya Cloud 기기 불러오기</h3>
+            <h3>센서 클라우드 기기 불러오기</h3>
           </div>
 
           <div class="project-info-box">
@@ -38,7 +38,7 @@
             @click="loadDevices"
             :disabled="loading"
           >
-            <span v-if="loading">⏳ Tuya Cloud에서 불러오는 중...</span>
+            <span v-if="loading">⏳ 센서 클라우드에서 불러오는 중...</span>
             <span v-else>📡 기기 목록 불러오기</span>
           </button>
 
@@ -51,8 +51,8 @@
           <div v-if="noDevicesFound" class="empty-devices-box">
             <div class="empty-icon">📭</div>
             <h3>등록된 장치가 없습니다</h3>
-            <p>Tuya Cloud에 연결된 장치가 없습니다.</p>
-            <p class="help-text">Tuya Smart 앱에서 장치를 먼저 추가한 후 다시 시도해주세요.</p>
+            <p>센서 클라우드에 연결된 장치가 없습니다.</p>
+            <p class="help-text">센서 앱에서 장치를 먼저 추가한 후 다시 시도해주세요.</p>
           </div>
         </div>
 
@@ -60,7 +60,7 @@
         <div class="step-section" v-if="step === 2">
           <div class="step-header">
             <span class="step-number">2</span>
-            <h3>Tuya 기기 선택</h3>
+            <h3>센서 기기 선택</h3>
           </div>
 
           <div class="search-box">
@@ -153,6 +153,103 @@
           </div>
         </div>
 
+        <!-- Step 4: 그룹 설정 위저드 -->
+        <div class="step-section" v-if="step === 4 && canManageGroups">
+
+          <!-- Step 4 - ask: 그룹 추가 여부 -->
+          <div v-if="wizardSubStep === 'ask'">
+            <div class="wizard-success-icon">✅</div>
+            <h3 class="wizard-success-title">장비 등록이 완료되었습니다!</h3>
+            <p class="wizard-success-desc">등록한 장비를 그룹에 추가하시겠습니까?</p>
+            <div class="wizard-ask-buttons">
+              <button
+                class="btn-wizard-option"
+                :class="{ disabled: groupStore.groups.length === 0 }"
+                :disabled="groupStore.groups.length === 0"
+                @click="wizardSubStep = 'existing'"
+              >
+                <span class="wizard-option-icon">📁</span>
+                <span class="wizard-option-label">기존 그룹에 추가</span>
+                <span v-if="groupStore.groups.length === 0" class="wizard-option-hint">그룹 없음</span>
+              </button>
+              <button class="btn-wizard-option" @click="wizardSubStep = 'create'">
+                <span class="wizard-option-icon">➕</span>
+                <span class="wizard-option-label">새 그룹 생성</span>
+              </button>
+            </div>
+            <button class="btn-skip" @click="closeModal">나중에</button>
+          </div>
+
+          <!-- Step 4a - existing: 기존 그룹 선택 -->
+          <div v-if="wizardSubStep === 'existing'">
+            <div class="step-header">
+              <span class="step-number">4</span>
+              <h3>그룹 선택</h3>
+            </div>
+            <div class="group-list">
+              <label
+                v-for="group in groupStore.groups"
+                :key="group.id"
+                class="group-radio-item"
+                :class="{ selected: selectedGroupId === group.id }"
+              >
+                <input type="radio" :value="group.id" v-model="selectedGroupId" />
+                <span class="group-radio-name">{{ group.name }}</span>
+                <span class="group-radio-count">{{ group.devices?.length ?? 0 }}개 장비</span>
+              </label>
+            </div>
+            <div v-if="groupWizardError" class="error-box"><p>{{ groupWizardError }}</p></div>
+            <div class="button-group">
+              <button class="btn-secondary" @click="wizardSubStep = 'ask'">← 이전</button>
+              <button
+                class="btn-primary"
+                :disabled="!selectedGroupId || groupAssigning"
+                @click="assignToExistingGroup"
+              >
+                {{ groupAssigning ? '추가 중...' : '선택 완료' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 4b - create: 새 그룹 생성 -->
+          <div v-if="wizardSubStep === 'create'">
+            <div class="step-header">
+              <span class="step-number">4</span>
+              <h3>새 그룹 생성</h3>
+            </div>
+            <div class="input-group">
+              <label>그룹 이름 *</label>
+              <input
+                type="text"
+                v-model="newGroupName"
+                class="form-input"
+                placeholder="예: 1동, 관수 구역 A"
+              />
+            </div>
+            <div class="input-group">
+              <label>설명 (선택)</label>
+              <textarea
+                v-model="newGroupDesc"
+                class="form-textarea"
+                rows="2"
+                placeholder="그룹에 대한 설명을 입력하세요"
+              ></textarea>
+            </div>
+            <div v-if="groupWizardError" class="error-box"><p>{{ groupWizardError }}</p></div>
+            <div class="button-group">
+              <button class="btn-secondary" @click="wizardSubStep = 'ask'">← 이전</button>
+              <button
+                class="btn-primary"
+                :disabled="!newGroupName.trim() || groupAssigning"
+                @click="createGroupAndAssign"
+              >
+                {{ groupAssigning ? '생성 중...' : '그룹 생성 및 장비 추가' }}
+              </button>
+            </div>
+          </div>
+
+        </div>
+
         <!-- Step 3: 장비 이름 설정 및 확인 -->
         <div class="step-section" v-if="step === 3">
           <div class="step-header">
@@ -198,7 +295,7 @@
                   class="form-input"
                   placeholder="장비 이름 입력"
                 />
-                <p class="device-name-id">Tuya ID: {{ device.id }}</p>
+                <p class="device-name-id">센서 ID: {{ device.id }}</p>
               </div>
               <div class="device-name-status">
                 <span :class="['status-dot', device.online ? 'online' : 'offline']"></span>
@@ -233,6 +330,7 @@
 import { ref, computed, watch } from 'vue'
 import { useAuthStore } from '../../stores/auth.store'
 import { useDeviceStore } from '../../stores/device.store'
+import { useGroupStore } from '../../stores/group.store'
 import apiClient from '../../api/client'
 
 import type { EquipmentType } from '../../types/device.types'
@@ -275,6 +373,18 @@ const emit = defineEmits<{
 
 const authStore = useAuthStore()
 const deviceStore = useDeviceStore()
+const groupStore = useGroupStore()
+
+const canManageGroups = computed(() => authStore.isAdmin || authStore.isFarmAdmin)
+
+// 위저드 Step 4 상태
+const wizardSubStep = ref<'ask' | 'existing' | 'create'>('ask')
+const registeredDeviceIds = ref<string[]>([])
+const selectedGroupId = ref<string | null>(null)
+const newGroupName = ref('')
+const newGroupDesc = ref('')
+const groupAssigning = ref(false)
+const groupWizardError = ref('')
 
 const step = ref(1)
 const loading = ref(false)
@@ -358,7 +468,7 @@ const loadDevices = async () => {
     loading.value = false
     step.value = 2
   } catch (err: any) {
-    errorMessage.value = err.response?.data?.message || '기기 목록을 불러오는데 실패했습니다. Tuya 프로젝트 설정을 확인하세요.'
+    errorMessage.value = err.response?.data?.message || '기기 목록을 불러오는데 실패했습니다. 센서 프로젝트 설정을 확인하세요.'
     loading.value = false
   }
 }
@@ -459,13 +569,50 @@ const registerDevices = async () => {
       ...(d.equipmentType?.startsWith('opener_') && openerGroupName.value ? { openerGroupName: openerGroupName.value } : {}),
     }))
 
-    await deviceStore.registerDevices(deviceList)
+    const result = await deviceStore.registerDevices(deviceList)
+    registeredDeviceIds.value = (result as any[]).map((d: any) => d.id)
     emit('registered', selectedDevices.value)
-    closeModal()
+
+    if (canManageGroups.value) {
+      await groupStore.fetchGroups()
+      step.value = 4
+      wizardSubStep.value = 'ask'
+    } else {
+      closeModal()
+    }
   } catch (err: any) {
     errorMessage.value = err.response?.data?.message || '장비 등록에 실패했습니다.'
   } finally {
     registering.value = false
+  }
+}
+
+const assignToExistingGroup = async () => {
+  if (!selectedGroupId.value) return
+  groupAssigning.value = true
+  groupWizardError.value = ''
+  try {
+    await groupStore.assignDevices(selectedGroupId.value, registeredDeviceIds.value)
+    closeModal()
+  } catch (err: any) {
+    groupWizardError.value = err.response?.data?.message || '그룹 할당에 실패했습니다.'
+  } finally {
+    groupAssigning.value = false
+  }
+}
+
+const createGroupAndAssign = async () => {
+  if (!newGroupName.value.trim()) return
+  groupAssigning.value = true
+  groupWizardError.value = ''
+  try {
+    const newGroup = await groupStore.createGroup({ name: newGroupName.value.trim(), description: newGroupDesc.value.trim() || undefined })
+    await groupStore.assignDevices(newGroup.id, registeredDeviceIds.value)
+    closeModal()
+  } catch (err: any) {
+    groupWizardError.value = err.response?.data?.message || '그룹 생성에 실패했습니다.'
+  } finally {
+    groupAssigning.value = false
   }
 }
 
@@ -478,6 +625,12 @@ const closeModal = () => {
   errorMessage.value = ''
   noDevicesFound.value = false
   openerGroupName.value = ''
+  wizardSubStep.value = 'ask'
+  registeredDeviceIds.value = []
+  selectedGroupId.value = null
+  newGroupName.value = ''
+  newGroupDesc.value = ''
+  groupWizardError.value = ''
 }
 </script>
 
@@ -1106,6 +1259,141 @@ const closeModal = () => {
 .equipment-select:focus {
   outline: none;
   border-color: #2e7d32;
+}
+
+/* Step 4 위저드 스타일 */
+.wizard-success-icon {
+  font-size: 48px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.wizard-success-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  margin: 0 0 8px 0;
+}
+
+.wizard-success-desc {
+  font-size: 15px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin: 0 0 28px 0;
+}
+
+.wizard-ask-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.btn-wizard-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 16px;
+  border: 2px solid var(--border-input);
+  border-radius: 12px;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  color: var(--text-primary);
+}
+
+.btn-wizard-option:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.btn-wizard-option.disabled,
+.btn-wizard-option:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.wizard-option-icon {
+  font-size: 28px;
+}
+
+.wizard-option-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.wizard-option-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.btn-skip {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: underline;
+}
+
+.btn-skip:hover {
+  color: var(--text-secondary);
+}
+
+.group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.group-radio-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 2px solid var(--border-input);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.group-radio-item:hover {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.group-radio-item.selected {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.group-radio-item input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+
+.group-radio-name {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.group-radio-count {
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
 @media (max-width: 768px) {

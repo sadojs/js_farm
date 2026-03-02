@@ -30,7 +30,7 @@
           />
           <StepActuatorSelect
             v-if="currentStep === 3"
-            v-model:selectedId="formData.actuatorDeviceId"
+            v-model:selectedIds="formData.actuatorDeviceIds"
             :groupId="formData.groupId"
           />
           <StepIrrigationCondition
@@ -42,6 +42,7 @@
             v-model="formData.conditions"
             :timeOnly="noSensor"
             :equipmentType="selectedEquipmentType"
+            :groupId="formData.groupId"
           />
           <StepReview
             v-if="currentStep === 5"
@@ -66,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import type { AutomationRule, WizardFormData, CreateRuleRequest, IrrigationConditions } from '../../types/automation.types'
 import { createEmptyWizardForm, createDefaultIrrigationConditions } from '../../utils/automation-helpers'
 import { useAutomationStore } from '../../stores/automation.store'
@@ -98,6 +99,7 @@ const stepList = [
 ]
 
 watch(() => props.visible, (open) => {
+  document.body.style.overflow = open ? 'hidden' : ''
   if (!open) return
   groupStore.fetchGroups().catch(() => undefined)
   currentStep.value = 1
@@ -105,10 +107,13 @@ watch(() => props.visible, (open) => {
     const rule = props.editRule
     const actions = rule.actions || {} as any
     const sensorIds = actions.sensorDeviceIds || []
+    const deviceIds = actions.targetDeviceIds?.length
+      ? actions.targetDeviceIds
+      : actions.targetDeviceId ? [actions.targetDeviceId] : []
     formData.value = {
       groupId: rule.groupId,
       sensorDeviceIds: sensorIds,
-      actuatorDeviceId: actions.targetDeviceIds?.[0] || (actions as any).targetDeviceId,
+      actuatorDeviceIds: deviceIds,
       conditions: rule.conditions && 'groups' in rule.conditions && Array.isArray(rule.conditions.groups)
         ? rule.conditions
         : createEmptyWizardForm().conditions,
@@ -130,11 +135,11 @@ watch(() => props.visible, (open) => {
   }
 })
 
-// 선택된 장비의 equipmentType
+// 선택된 장비의 equipmentType (첫 번째 선택 장비 기준)
 const selectedEquipmentType = computed(() => {
-  if (!formData.value.actuatorDeviceId || !formData.value.groupId) return undefined
+  if (formData.value.actuatorDeviceIds.length === 0 || !formData.value.groupId) return undefined
   const group = groupStore.groups.find(g => g.id === formData.value.groupId)
-  const device = group?.devices?.find((d: any) => d.id === formData.value.actuatorDeviceId)
+  const device = group?.devices?.find((d: any) => d.id === formData.value.actuatorDeviceIds[0])
   return (device as any)?.equipmentType as string | undefined
 })
 
@@ -143,7 +148,7 @@ const isIrrigation = computed(() => selectedEquipmentType.value === 'irrigation'
 const canNext = computed(() => {
   if (currentStep.value === 1) return !!formData.value.groupId
   if (currentStep.value === 2) return formData.value.sensorDeviceIds.length > 0 || noSensor.value
-  if (currentStep.value === 3) return !!formData.value.actuatorDeviceId
+  if (currentStep.value === 3) return formData.value.actuatorDeviceIds.length > 0
   if (currentStep.value === 4) {
     if (isIrrigation.value) {
       // 관수: 시작시간과 활성 구역 최소 1개
@@ -161,8 +166,10 @@ const canNext = computed(() => {
 })
 
 const canSave = computed(() => {
-  return !!formData.value.name.trim() && !!formData.value.actuatorDeviceId
+  return !!formData.value.name.trim() && formData.value.actuatorDeviceIds.length > 0
 })
+
+onBeforeUnmount(() => { document.body.style.overflow = '' })
 
 async function handleSave() {
   if (saving.value) return
@@ -176,8 +183,8 @@ async function handleSave() {
         ? irrigationForm.value
         : formData.value.conditions,
       actions: {
-        targetDeviceId: formData.value.actuatorDeviceId,
-        targetDeviceIds: formData.value.actuatorDeviceId ? [formData.value.actuatorDeviceId] : [],
+        targetDeviceId: formData.value.actuatorDeviceIds[0],
+        targetDeviceIds: formData.value.actuatorDeviceIds,
         sensorDeviceIds: formData.value.sensorDeviceIds,
       } as any,
       priority: formData.value.priority,
@@ -260,4 +267,22 @@ async function handleSave() {
   border-radius: 10px; font-size: 15px; font-weight: 500; cursor: pointer;
 }
 .btn-secondary:hover { background: var(--bg-hover); }
+
+@media (max-width: 768px) {
+  .modal-overlay { padding: 0; }
+  .modal-container {
+    width: 100%;
+    max-height: 100%;
+    height: 100vh;
+    height: 100dvh;
+    border-radius: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .stepper { gap: 16px; padding: 12px 16px 16px; }
+  .step-circle { width: 36px; height: 36px; font-size: 16px; }
+  .step-name { font-size: 13px; }
+  .modal-body { padding: 16px; }
+  .modal-header { padding: 16px 16px 8px; }
+  .modal-footer { padding: 12px 16px; }
+}
 </style>

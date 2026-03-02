@@ -14,6 +14,7 @@
         <div class="detail-list">
           <div v-if="actuatorDevices.length === 0" class="detail-empty">
             등록된 장비가 없습니다
+            <router-link to="/devices" class="empty-inline-link">설정하기</router-link>
           </div>
           <div
             v-for="device in actuatorDevices"
@@ -46,6 +47,7 @@
         <div class="detail-list">
           <div v-if="sensorDevices.length === 0" class="detail-empty">
             등록된 센서가 없습니다
+            <router-link to="/devices" class="empty-inline-link">설정하기</router-link>
           </div>
           <div
             v-for="device in sensorDevices"
@@ -266,6 +268,15 @@ onMounted(async () => {
   color: var(--text-muted);
   font-size: calc(15px * var(--content-scale, 1));
 }
+.empty-inline-link {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: calc(14px * var(--content-scale, 1));
+}
+.empty-inline-link:hover { text-decoration: underline; }
 
 .detail-item {
   display: flex;

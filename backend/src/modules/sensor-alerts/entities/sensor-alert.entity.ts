@@ -18,7 +18,7 @@ export class SensorAlert {
   sensorType: string;
 
   @Column({ name: 'alert_type' })
-  alertType: 'no_data' | 'flatline' | 'spike' | 'out_of_range';
+  alertType: 'no_data' | 'flatline' | 'spike' | 'out_of_range' | 'unstable';
 
   @Column()
   severity: 'warning' | 'critical';

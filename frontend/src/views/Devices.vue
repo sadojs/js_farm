@@ -7,9 +7,9 @@
       </div>
       <div class="header-actions">
         <button class="btn-outline" @click="handleTuyaSync" :disabled="syncing">
-          {{ syncing ? '동기화 중...' : 'Tuya 동기화' }}
+          {{ syncing ? '동기화 중...' : '센서 동기화' }}
         </button>
-        <button class="btn-primary" @click="showRegistrationModal = true">+ 장비 추가</button>
+        <button v-if="!authStore.isFarmUser" class="btn-primary" @click="showRegistrationModal = true">+ 장비 추가</button>
       </div>
     </header>
 
@@ -46,8 +46,8 @@
     <div v-else-if="filteredDevices.length === 0" class="empty-state">
       <div class="empty-icon">📭</div>
       <h3>{{ searchQuery ? '검색 결과가 없습니다' : '등록된 장비가 없습니다' }}</h3>
-      <p>{{ searchQuery ? '다른 검색어를 입력해보세요.' : 'Tuya Cloud에서 장비를 가져와 등록하세요.' }}</p>
-      <button v-if="!searchQuery" class="btn-primary" @click="showRegistrationModal = true">+ 장비 추가</button>
+      <p>{{ searchQuery ? '다른 검색어를 입력해보세요.' : '센서 동기화를 통해 장비를 가져와 등록하세요.' }}</p>
+      <button v-if="!searchQuery && !authStore.isFarmUser" class="btn-primary" @click="showRegistrationModal = true">+ 장비 추가</button>
     </div>
 
     <!-- 개폐기 그룹 -->
@@ -202,22 +202,49 @@
       @close="showRegistrationModal = false"
       @registered="handleDeviceRegistered"
     />
+
+    <DeleteBlockingModal
+      :show="blockingModal.show"
+      :type="blockingModal.type"
+      :target-name="blockingModal.targetName"
+      :rules="blockingModal.rules"
+      :groups="blockingModal.groups"
+      @close="blockingModal.show = false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import DeviceRegistration from '@/components/devices/DeviceRegistration.vue'
+import DeleteBlockingModal from '@/components/common/DeleteBlockingModal.vue'
 import { useDeviceStore } from '@/stores/device.store'
+import { useAuthStore } from '@/stores/auth.store'
 import { useConfirm } from '@/composables/useConfirm'
-import type { Device } from '@/types/device.types'
+import { deviceApi } from '@/api/device.api'
+import type { Device, DependencyRule } from '@/types/device.types'
 
 const deviceStore = useDeviceStore()
+const authStore = useAuthStore()
 const { confirm } = useConfirm()
 const showRegistrationModal = ref(false)
 const syncing = ref(false)
 const searchQuery = ref('')
 const activeTab = ref<'all' | 'actuator' | 'sensor'>('all')
+
+// 삭제 차단 모달 상태
+const blockingModal = ref<{
+  show: boolean
+  type: 'device' | 'opener-pair' | 'group'
+  targetName: string
+  rules: DependencyRule[]
+  groups?: { id: string; name: string }[]
+}>({
+  show: false,
+  type: 'device',
+  targetName: '',
+  rules: [],
+})
 
 const sensorDevices = computed(() => deviceStore.sensorDevices)
 const actuatorDevices = computed(() => deviceStore.actuatorDevices)
@@ -413,26 +440,68 @@ const handleControl = async (deviceId: string, turnOn: boolean) => {
 }
 
 const handleRemoveDevice = async (id: string) => {
-  const ok = await confirm({
-    title: '장비 삭제',
-    message: '이 장비를 삭제하시겠습니까?',
-    confirmText: '삭제',
-    variant: 'danger',
-  })
-  if (!ok) return
-  await deviceStore.removeDevice(id)
+  try {
+    const { data: deps } = await deviceApi.getDependencies(id)
+    const device = deviceStore.devices.find(d => d.id === id)
+
+    if (!deps.canDelete) {
+      blockingModal.value = {
+        show: true,
+        type: 'device',
+        targetName: device?.name ?? '',
+        rules: deps.automationRules,
+        groups: deps.groups,
+      }
+      return
+    }
+
+    const ok = await confirm({
+      title: '장비 삭제',
+      message: `"${device?.name ?? '이 장비'}"를 삭제하시겠습니까?`,
+      confirmText: '삭제',
+      variant: 'danger',
+    })
+    if (!ok) return
+    await deviceStore.removeDevice(id)
+  } catch (err: any) {
+    console.error('장비 삭제 실패:', err)
+    alert('장비 삭제에 실패했습니다.')
+  }
 }
 
 const handleRemoveOpenerGroup = async (group: OpenerGroup) => {
-  const ok = await confirm({
-    title: '개폐기 삭제',
-    message: `"${group.groupName}" 개폐기(열림/닫힘)를 모두 삭제하시겠습니까?`,
-    confirmText: '삭제',
-    variant: 'danger',
-  })
-  if (!ok) return
-  await deviceStore.removeDevice(group.openDevice.id)
-  await deviceStore.removeDevice(group.closeDevice.id)
+  try {
+    const { data: deps } = await deviceApi.getDependencies(group.openDevice.id)
+
+    if (!deps.canDelete) {
+      const allRules = [
+        ...deps.automationRules,
+        ...(deps.pairedDeviceAutomationRules ?? []),
+      ]
+      blockingModal.value = {
+        show: true,
+        type: 'opener-pair',
+        targetName: group.groupName,
+        rules: allRules,
+        groups: deps.groups,
+      }
+      return
+    }
+
+    const ok = await confirm({
+      title: '개폐기 삭제',
+      message: `"${group.groupName}" 개폐기(열림/닫힘)를 모두 삭제하시겠습니까?`,
+      confirmText: '삭제',
+      variant: 'danger',
+    })
+    if (!ok) return
+
+    await deviceApi.removeOpenerPair(group.openDevice.id)
+    await deviceStore.fetchDevices()
+  } catch (err: any) {
+    console.error('개폐기 삭제 실패:', err)
+    alert('개폐기 삭제에 실패했습니다.')
+  }
 }
 
 const handleTuyaSync = async () => {
@@ -1025,7 +1094,7 @@ input:checked + .toggle-slider:before {
   .header-actions .btn-primary { flex: 1; text-align: center; }
 
   .filter-bar { flex-direction: column; gap: 12px; }
-  .search-box { max-width: 100%; }
+  .search-box { display: none; }
   .tab-filter { width: 100%; }
   .tab { flex: 1; text-align: center; }
 

@@ -17,6 +17,11 @@ export class GroupsController {
     return this.groupsService.findAllGroups(this.getEffectiveUserId(user));
   }
 
+  @Get(':id/dependencies')
+  getDependencies(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.groupsService.getDependencies(id, this.getEffectiveUserId(user));
+  }
+
   @Post()
   createGroup(@CurrentUser() user: any, @Body() body: any) {
     return this.groupsService.createGroup(this.getEffectiveUserId(user), body);

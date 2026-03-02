@@ -18,7 +18,10 @@
     <!-- 센서 없음 -->
     <div v-else-if="sensorGroups.length === 0" class="empty-state">
       <h3>센서가 등록된 그룹이 없습니다</h3>
-      <p>그룹에 센서를 추가한 후 이용하세요.</p>
+      <p>1. 장비 관리에서 센서 장비를 등록하세요</p>
+      <p>2. 그룹 관리에서 그룹을 만들고 장비를 배치하세요</p>
+      <p>3. 이곳에서 실시간 센서 데이터를 확인하세요</p>
+      <router-link to="/devices" class="btn-cta">장비 관리로 이동</router-link>
     </div>
 
     <!-- 그룹별 센서 목록 -->
@@ -44,11 +47,23 @@
 
         <!-- 환경 모니터링 위젯 (확장 시) -->
         <div v-if="expandedGroups.has(group.id)" class="group-widgets">
-          <MonitoringWidgets
-            :widget-data="widgetData"
-            :weather-data="weatherData"
-            :loading="widgetLoading"
-          />
+          <div v-if="loadingResolvedFor[group.id]" class="env-loading">
+            <p>환경 데이터를 불러오는 중...</p>
+          </div>
+          <template v-else-if="resolvedByGroup[group.id]">
+            <ResolvedEnvPanel
+              v-if="isEnvConfigured(group.id)"
+              :resolved="resolvedByGroup[group.id]!"
+            />
+            <div v-else class="env-unconfigured">
+              <p>환경 설정이 필요합니다</p>
+              <router-link :to="`/groups?envConfig=${group.id}`" class="btn-cta">환경 설정하기</router-link>
+            </div>
+          </template>
+          <div v-else class="env-unconfigured">
+            <p>환경 설정이 필요합니다</p>
+            <router-link :to="`/groups?envConfig=${group.id}`" class="btn-cta">환경 설정하기</router-link>
+          </div>
         </div>
       </div>
     </div>
@@ -60,9 +75,9 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useGroupStore } from '@/stores/group.store'
 import { useDeviceStore } from '@/stores/device.store'
 import { useWebSocket } from '@/composables/useWebSocket'
-import { dashboardApi } from '@/api/dashboard.api'
-import type { WidgetDataResponse } from '@/api/dashboard.api'
-import MonitoringWidgets from '@/components/dashboard/MonitoringWidgets.vue'
+import { envConfigApi } from '@/api/env-config.api'
+import type { ResolvedValue } from '@/api/env-config.api'
+import ResolvedEnvPanel from '@/components/dashboard/ResolvedEnvPanel.vue'
 import type { Device } from '@/types/device.types'
 
 const groupStore = useGroupStore()
@@ -71,10 +86,9 @@ const loading = ref(true)
 const refreshing = ref(false)
 const expandedGroups = ref(new Set<string>())
 
-// 환경 모니터링 위젯 데이터
-const widgetData = ref<WidgetDataResponse | null>(null)
-const weatherData = ref<{ temperature: number | null; humidity: number | null } | null>(null)
-const widgetLoading = ref(false)
+// 그룹별 resolved 환경 데이터
+const resolvedByGroup = ref<Record<string, Record<string, ResolvedValue> | null>>({})
+const loadingResolvedFor = ref<Record<string, boolean>>({})
 
 // 센서 필드 메타데이터 (DB 기록은 전체, 화면 표시는 DISPLAY_FIELDS만)
 const SENSOR_FIELD_META: Record<string, { label: string; icon: string; unit: string; min: number; max: number; color: string }> = {
@@ -154,27 +168,32 @@ function formatSensorValue(field: string, value: number): string {
   return Math.round(value).toString()
 }
 
-function toggleGroup(groupId: string) {
+async function loadResolved(groupId: string) {
+  loadingResolvedFor.value[groupId] = true
+  try {
+    const res = await envConfigApi.getResolved(groupId)
+    resolvedByGroup.value[groupId] = res.data
+  } catch {
+    resolvedByGroup.value[groupId] = null
+  } finally {
+    loadingResolvedFor.value[groupId] = false
+  }
+}
+
+function isEnvConfigured(groupId: string): boolean {
+  const resolved = resolvedByGroup.value[groupId]
+  if (!resolved) return false
+  return Object.values(resolved).some(v => v.source !== '미설정')
+}
+
+async function toggleGroup(groupId: string) {
   if (expandedGroups.value.has(groupId)) {
     expandedGroups.value.delete(groupId)
   } else {
     expandedGroups.value.add(groupId)
-  }
-}
-
-async function fetchWidgetData() {
-  widgetLoading.value = true
-  try {
-    const [weatherRes, widgetRes] = await Promise.all([
-      dashboardApi.getWeather().catch(() => null),
-      dashboardApi.getWidgets().catch(() => ({ data: null })),
-    ])
-    if (weatherRes) {
-      weatherData.value = weatherRes.data.weather
+    if (!resolvedByGroup.value[groupId]) {
+      await loadResolved(groupId)
     }
-    widgetData.value = widgetRes.data
-  } finally {
-    widgetLoading.value = false
   }
 }
 
@@ -183,7 +202,7 @@ async function refreshAll() {
   try {
     await Promise.all([
       deviceStore.fetchDevices(),
-      fetchWidgetData(),
+      ...Object.keys(resolvedByGroup.value).map(gId => loadResolved(gId)),
     ])
     await deviceStore.fetchAllSensorStatuses()
   } finally {
@@ -198,7 +217,9 @@ let refreshTimer: ReturnType<typeof setTimeout> | null = null
 function handleSensorUpdate() {
   if (refreshTimer) clearTimeout(refreshTimer)
   refreshTimer = setTimeout(() => {
-    fetchWidgetData()
+    for (const gId of expandedGroups.value) {
+      loadResolved(gId)
+    }
     deviceStore.fetchAllSensorStatuses()
   }, 2000)
 }
@@ -207,13 +228,13 @@ onMounted(async () => {
   await Promise.all([
     groupStore.fetchGroups(),
     deviceStore.fetchDevices(),
-    fetchWidgetData(),
   ])
   await deviceStore.fetchAllSensorStatuses()
   for (const g of sensorGroups.value) {
     expandedGroups.value.add(g.id)
   }
   loading.value = false
+  await Promise.all(sensorGroups.value.map(g => loadResolved(g.id)))
   on('sensor:update', handleSensorUpdate)
 })
 
@@ -263,7 +284,20 @@ onUnmounted(() => {
   font-size: calc(16px * var(--content-scale, 1));
 }
 .empty-state h3 { font-size: calc(22px * var(--content-scale, 1)); color: var(--text-primary); margin-bottom: 8px; }
-.empty-state p { font-size: calc(16px * var(--content-scale, 1)); }
+.empty-state p { font-size: calc(14px * var(--content-scale, 1)); margin-bottom: 4px; }
+.btn-cta {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 10px 24px;
+  background: var(--accent);
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: calc(15px * var(--content-scale, 1));
+  transition: background 0.2s;
+}
+.btn-cta:hover { background: var(--accent-hover); }
 
 .groups-container {
   display: flex;
@@ -331,6 +365,23 @@ onUnmounted(() => {
 
 .group-widgets {
   padding: 0 20px 20px;
+}
+
+.env-loading {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-muted);
+  font-size: calc(14px * var(--content-scale, 1));
+}
+
+.env-unconfigured {
+  text-align: center;
+  padding: 32px 20px;
+  color: var(--text-secondary);
+  font-size: calc(15px * var(--content-scale, 1));
+}
+.env-unconfigured p {
+  margin-bottom: 12px;
 }
 
 @media (max-width: 768px) {

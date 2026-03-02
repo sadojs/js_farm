@@ -66,7 +66,7 @@ export interface IrrigationConditions {
 export interface WizardFormData {
   groupId?: string
   sensorDeviceIds: string[]
-  actuatorDeviceId?: string
+  actuatorDeviceIds: string[]
   conditions: ConditionGroup
   irrigationConditions?: IrrigationConditions
   name: string

@@ -1,5 +1,5 @@
 import apiClient from './client'
-import type { Device, RegisterDeviceRequest, TuyaDeviceInfo } from '../types/device.types'
+import type { Device, DeviceDependenciesResponse, RegisterDeviceRequest, TuyaDeviceInfo } from '../types/device.types'
 
 export const deviceApi = {
   getAll: () =>
@@ -25,4 +25,10 @@ export const deviceApi = {
 
   getStatus: (id: string) =>
     apiClient.get(`/devices/${id}/status`),
+
+  getDependencies: (id: string) =>
+    apiClient.get<DeviceDependenciesResponse>(`/devices/${id}/dependencies`),
+
+  removeOpenerPair: (id: string) =>
+    apiClient.delete<{ message: string; deletedIds: string[] }>(`/devices/${id}/opener-pair`),
 }

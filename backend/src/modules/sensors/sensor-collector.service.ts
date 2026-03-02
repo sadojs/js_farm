@@ -70,6 +70,8 @@ export class SensorCollectorService {
               const mapping = TUYA_SENSOR_MAP[status.code];
               if (!mapping) continue; // 매핑에 없는 코드는 무시
 
+              // null, undefined, 빈 문자열 → 0으로 변환되는 것 방지
+              if (status.value == null || status.value === '') continue;
               const numValue = Number(status.value);
               if (isNaN(numValue)) continue;
 

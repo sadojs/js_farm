@@ -107,9 +107,12 @@ const sensorNames = computed(() => {
 })
 
 const actuatorName = computed(() => {
-  if (!props.formData.actuatorDeviceId) return '-'
+  const ids = props.formData.actuatorDeviceIds
+  if (!ids || ids.length === 0) return '-'
   const devices = selectedGroup.value?.devices || []
-  return devices.find(d => d.id === props.formData.actuatorDeviceId)?.name || props.formData.actuatorDeviceId
+  return ids
+    .map(id => devices.find(d => d.id === id)?.name || id)
+    .join(', ')
 })
 
 const conditionSummary = computed(() => formatConditionGroup(props.formData.conditions))
