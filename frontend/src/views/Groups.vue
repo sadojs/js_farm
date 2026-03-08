@@ -466,6 +466,8 @@ import GroupCreation from '@/components/groups/GroupCreation.vue'
 import AutomationEditModal from '@/components/automation/AutomationEditModal.vue'
 import DeleteBlockingModal from '@/components/common/DeleteBlockingModal.vue'
 import { useConfirm } from '../composables/useConfirm'
+import { useNotificationStore } from '../stores/notification.store'
+import { translateTuyaError } from '../utils/tuya-errors'
 import { groupApi } from '../api/group.api'
 import { envConfigApi } from '../api/env-config.api'
 import type { EnvRole, SourcesResponse, SaveMappingItem } from '../api/env-config.api'
@@ -482,6 +484,7 @@ const deviceStore = useDeviceStore()
 const automationStore = useAutomationStore()
 const { isFarmUser } = useAuthStore()
 const { confirm } = useConfirm()
+const notify = useNotificationStore()
 const showGroupCreationModal = ref(false)
 
 // 삭제 차단 모달 상태
@@ -625,18 +628,39 @@ const openIrrigationStatusModal = (device: Device) => {
 }
 
 const handleIrrigationControl = async (device: Device, switchCode: string) => {
+  if (irrigationControlling.value) return
   irrigationControlling.value = device.id
+  const currentVal = device.switchStates?.[switchCode] ?? false
+  const newVal = !currentVal
+  const label = IRRIGATION_SWITCH_LABELS[switchCode] || switchCode
+  const loadingId = notify.add('info', '적용 중...', `${label} ${newVal ? 'ON' : 'OFF'} 명령 전송 중`, 0)
   try {
-    const currentVal = device.switchStates?.[switchCode] ?? false
-    await deviceStore.controlDevice(device.id, [{ code: switchCode, value: !currentVal }])
+    const result = await deviceStore.controlDevice(device.id, [{ code: switchCode, value: newVal }])
+    if (!result.success) {
+      notify.remove(loadingId)
+      notify.error('제어 실패', translateTuyaError(result.msg))
+      return
+    }
     const storeDevice = deviceStore.devices.find(d => d.id === device.id)
     if (storeDevice) {
       if (!storeDevice.switchStates) storeDevice.switchStates = {}
-      storeDevice.switchStates[switchCode] = !currentVal
+      storeDevice.switchStates[switchCode] = newVal
+    }
+    const verification = await deviceStore.verifyDeviceStatus(device.id, switchCode, newVal)
+    notify.remove(loadingId)
+    if (verification.verified) {
+      notify.success('적용 완료', `${label} ${newVal ? 'ON' : 'OFF'}`)
+    } else if (verification.actualValue !== undefined && storeDevice) {
+      notify.warning('상태 미변경', '명령은 전달되었으나 장비 상태가 변경되지 않았습니다')
+      if (!storeDevice.switchStates) storeDevice.switchStates = {}
+      storeDevice.switchStates[switchCode] = verification.actualValue
+    } else {
+      notify.warning('상태 확인 실패', '장비 상태를 확인할 수 없습니다')
     }
   } catch (err: any) {
     console.error('관수 장비 제어 실패:', err)
-    alert('장비 제어에 실패했습니다.')
+    notify.remove(loadingId)
+    notify.error('제어 실패', '네트워크 오류가 발생했습니다')
   } finally {
     irrigationControlling.value = null
   }
@@ -674,14 +698,33 @@ const getSensorUnit = (field: string): string => {
 const controllingId = ref<string | null>(null)
 
 const handleControl = async (deviceId: string, turnOn: boolean) => {
+  if (controllingId.value) return
   controllingId.value = deviceId
+  const device = deviceStore.devices.find(d => d.id === deviceId)
+  const loadingId = notify.add('info', '적용 중...', `${device?.name || '장비'} ${turnOn ? 'ON' : 'OFF'} 명령 전송 중`, 0)
   try {
-    await deviceStore.controlDevice(deviceId, [{ code: 'switch_1', value: turnOn }])
-    const device = deviceStore.devices.find(d => d.id === deviceId)
+    const result = await deviceStore.controlDevice(deviceId, [{ code: 'switch_1', value: turnOn }])
+    if (!result.success) {
+      notify.remove(loadingId)
+      notify.error('제어 실패', translateTuyaError(result.msg))
+      return
+    }
     if (device) device.switchState = turnOn
+    const verification = await deviceStore.verifyDeviceStatus(deviceId, 'switch_1', turnOn)
+    notify.remove(loadingId)
+    if (verification.verified) {
+      notify.success('적용 완료', `${device?.name || '장비'} ${turnOn ? 'ON' : 'OFF'}`)
+    } else if (verification.actualValue !== undefined && device) {
+      notify.warning('상태 미변경', '명령은 전달되었으나 장비 상태가 변경되지 않았습니다')
+      device.switchState = verification.actualValue
+    } else {
+      notify.warning('상태 확인 실패', '장비 상태를 확인할 수 없습니다')
+    }
   } catch (err: any) {
     console.error('장비 제어 실패:', err)
-    alert('장비 제어에 실패했습니다.')
+    notify.remove(loadingId)
+    notify.error('제어 실패', '네트워크 오류가 발생했습니다')
+    if (device) device.switchState = !turnOn
   } finally {
     controllingId.value = null
   }
@@ -1599,13 +1642,17 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
   .add-device-modal,
   .remove-device-modal,
   .env-config-modal {
-    border-radius: 16px 16px 0 0;
+    border-radius: 0;
     max-width: 100%;
     max-height: 100%;
     height: 100vh;
     height: 100dvh;
     overflow-y: auto;
     padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .add-modal-header,
+  .env-modal-header {
+    padding-top: calc(16px + env(safe-area-inset-top, 0px));
   }
 
   .btn-icon { min-width: 44px; min-height: 44px; }

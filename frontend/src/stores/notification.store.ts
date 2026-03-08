@@ -28,7 +28,7 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   function success(title: string, message = '') {
-    return add('success', title, message)
+    return add('success', title, message, 3000)
   }
 
   function error(title: string, message = '') {

@@ -45,13 +45,13 @@ import type { ResolvedValue } from '@/api/env-config.api'
 const props = defineProps<{ resolved: Record<string, ResolvedValue> }>()
 
 const ROLE_ICONS: Record<string, string> = {
-  indoor_temperature: '🌡',
-  indoor_humidity: '💧',
+  internal_temp: '🌡',
+  internal_humidity: '💧',
   co2: '🌫',
   uv: '☀️',
   rainfall: '🌧',
-  outdoor_temperature: '🌡',
-  outdoor_humidity: '💧',
+  external_temp: '🌡',
+  external_humidity: '💧',
   wind_speed: '💨',
 }
 

@@ -112,12 +112,14 @@ import { useGroupStore } from '../stores/group.store'
 import { useDeviceStore } from '../stores/device.store'
 import { formatAction, formatConditionGroup, isIrrigationConditions, formatIrrigationSchedule, formatIrrigationZones } from '../utils/automation-helpers'
 import { useConfirm } from '../composables/useConfirm'
+import { useNotificationStore } from '../stores/notification.store'
 import type { AutomationRule } from '../types/automation.types'
 import RuleWizardModal from '../components/automation/RuleWizardModal.vue'
 
 const automationStore = useAutomationStore()
 const groupStore = useGroupStore()
 const deviceStore = useDeviceStore()
+const notify = useNotificationStore()
 const { confirm } = useConfirm()
 
 type RuleKind = 'opener' | 'fan' | 'irrigation' | 'other'
@@ -211,10 +213,13 @@ function openWizard(rule?: AutomationRule) {
 }
 
 async function handleToggle(id: string) {
+  const rule = rules.value.find(r => r.id === id)
+  const newState = rule ? !rule.enabled : true
   try {
     await automationStore.toggleRule(id)
-  } catch (err) {
-    console.error('토글 실패:', err)
+    notify.success('적용 완료', `${rule?.name || '룰'}이(가) ${newState ? '활성화' : '비활성화'}되었습니다`)
+  } catch {
+    notify.error('적용 실패', '룰 상태 변경에 실패했습니다')
   }
 }
 

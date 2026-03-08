@@ -282,7 +282,7 @@ async function handleSave() {
   .step-circle { width: 36px; height: 36px; font-size: 16px; }
   .step-name { font-size: 13px; }
   .modal-body { padding: 16px; }
-  .modal-header { padding: 16px 16px 8px; }
+  .modal-header { padding: 16px 16px 8px; padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
   .modal-footer { padding: 12px 16px; }
 }
 </style>

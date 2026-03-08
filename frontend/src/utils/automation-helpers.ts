@@ -141,7 +141,7 @@ export function formatConditionGroup(cg: ConditionGroup | IrrigationConditions):
 
 const ACTION_LABELS: Record<string, string> = {
   open: '열기', close: '닫기', on: '켜기', off: '끄기',
-  start: '시작', stop: '정지',
+  start: '시작', stop: '정지', toggle: '전환',
 }
 
 export function localizeAction(command: string): string {

@@ -221,11 +221,14 @@ import DeleteBlockingModal from '@/components/common/DeleteBlockingModal.vue'
 import { useDeviceStore } from '@/stores/device.store'
 import { useAuthStore } from '@/stores/auth.store'
 import { useConfirm } from '@/composables/useConfirm'
+import { useNotificationStore } from '@/stores/notification.store'
 import { deviceApi } from '@/api/device.api'
+import { translateTuyaError } from '@/utils/tuya-errors'
 import type { Device, DependencyRule } from '@/types/device.types'
 
 const deviceStore = useDeviceStore()
 const authStore = useAuthStore()
+const notify = useNotificationStore()
 const { confirm } = useConfirm()
 const showRegistrationModal = ref(false)
 const syncing = ref(false)
@@ -267,27 +270,63 @@ const openerGroups = computed<OpenerGroup[]>(() => {
 const interlocking = ref(false)
 
 async function interlockControl(group: OpenerGroup, action: 'open' | 'close') {
+  if (interlocking.value) return
   const targetDevice = action === 'open' ? group.openDevice : group.closeDevice
   const oppositeDevice = action === 'open' ? group.closeDevice : group.openDevice
 
   interlocking.value = true
+  const loadingId = notify.add('info', '적용 중...', `${targetDevice.name} ${action === 'open' ? '열림' : '닫힘'} 명령 전송 중`, 0)
   try {
     // 이미 ON이면 OFF만
     if (targetDevice.switchState) {
-      await deviceStore.controlDevice(targetDevice.id, [{ code: 'switch_1', value: false }])
+      const result = await deviceStore.controlDevice(targetDevice.id, [{ code: 'switch_1', value: false }])
+      if (!result.success) {
+        notify.remove(loadingId)
+        notify.error('제어 실패', translateTuyaError(result.msg))
+        return
+      }
       targetDevice.switchState = false
+      const v = await deviceStore.verifyDeviceStatus(targetDevice.id, 'switch_1', false)
+      notify.remove(loadingId)
+      if (v.verified) {
+        notify.success('적용 완료', `${targetDevice.name} OFF`)
+      } else if (v.actualValue !== undefined) {
+        notify.warning('상태 미변경', '명령은 전달되었으나 장비 상태가 변경되지 않았습니다')
+        targetDevice.switchState = v.actualValue
+      }
       return
     }
-    // 반대쪽이 ON이면: 먼저 OFF → 1.5초 대기 → 대상 ON
+    // 반대쪽이 ON이면: 먼저 OFF → 1.5초 대기
     if (oppositeDevice.switchState) {
-      await deviceStore.controlDevice(oppositeDevice.id, [{ code: 'switch_1', value: false }])
+      const offResult = await deviceStore.controlDevice(oppositeDevice.id, [{ code: 'switch_1', value: false }])
+      if (!offResult.success) {
+        notify.remove(loadingId)
+        notify.error('제어 실패', translateTuyaError(offResult.msg))
+        return
+      }
       oppositeDevice.switchState = false
       await new Promise(resolve => setTimeout(resolve, 1500))
     }
-    await deviceStore.controlDevice(targetDevice.id, [{ code: 'switch_1', value: true }])
+    // 타겟 ON
+    const result = await deviceStore.controlDevice(targetDevice.id, [{ code: 'switch_1', value: true }])
+    if (!result.success) {
+      notify.remove(loadingId)
+      notify.error('제어 실패', translateTuyaError(result.msg))
+      return
+    }
     targetDevice.switchState = true
+    const v = await deviceStore.verifyDeviceStatus(targetDevice.id, 'switch_1', true)
+    notify.remove(loadingId)
+    if (v.verified) {
+      notify.success('적용 완료', `${targetDevice.name} ${action === 'open' ? '열림' : '닫힘'}`)
+    } else if (v.actualValue !== undefined) {
+      notify.warning('상태 미변경', '명령은 전달되었으나 장비 상태가 변경되지 않았습니다')
+      targetDevice.switchState = v.actualValue
+    }
   } catch (err) {
     console.error('인터록 제어 실패:', err)
+    notify.remove(loadingId)
+    notify.error('제어 실패', '네트워크 오류가 발생했습니다')
   } finally {
     interlocking.value = false
   }
@@ -321,15 +360,35 @@ const openIrrigationStatusModal = (device: Device) => {
 }
 
 async function handleIrrigationControl(device: Device, switchCode: string) {
+  if (irrigationControlling.value) return
   irrigationControlling.value = device.id
+  const currentVal = device.switchStates?.[switchCode] ?? false
+  const newVal = !currentVal
+  const label = IRRIGATION_SWITCH_LABELS[switchCode] || switchCode
+  const loadingId = notify.add('info', '적용 중...', `${label} ${newVal ? 'ON' : 'OFF'} 명령 전송 중`, 0)
   try {
-    const currentVal = device.switchStates?.[switchCode] ?? false
-    await deviceStore.controlDevice(device.id, [{ code: switchCode, value: !currentVal }])
+    const result = await deviceStore.controlDevice(device.id, [{ code: switchCode, value: newVal }])
+    if (!result.success) {
+      notify.remove(loadingId)
+      notify.error('제어 실패', translateTuyaError(result.msg))
+      return
+    }
     if (!device.switchStates) device.switchStates = {}
-    device.switchStates[switchCode] = !currentVal
+    device.switchStates[switchCode] = newVal
+    const verification = await deviceStore.verifyDeviceStatus(device.id, switchCode, newVal)
+    notify.remove(loadingId)
+    if (verification.verified) {
+      notify.success('적용 완료', `${label} ${newVal ? 'ON' : 'OFF'}`)
+    } else if (verification.actualValue !== undefined) {
+      notify.warning('상태 미변경', '명령은 전달되었으나 장비 상태가 변경되지 않았습니다')
+      device.switchStates[switchCode] = verification.actualValue
+    } else {
+      notify.warning('상태 확인 실패', '장비 상태를 확인할 수 없습니다')
+    }
   } catch (err) {
     console.error('관수 장비 제어 실패:', err)
-    alert('장비 제어에 실패했습니다.')
+    notify.remove(loadingId)
+    notify.error('제어 실패', '네트워크 오류가 발생했습니다')
   } finally {
     irrigationControlling.value = null
   }
@@ -426,14 +485,33 @@ const handleDeviceRegistered = () => {
 const controllingId = ref<string | null>(null)
 
 const handleControl = async (deviceId: string, turnOn: boolean) => {
+  if (controllingId.value) return
   controllingId.value = deviceId
+  const device = deviceStore.devices.find(d => d.id === deviceId)
+  const loadingId = notify.add('info', '적용 중...', `${device?.name || '장비'} ${turnOn ? 'ON' : 'OFF'} 명령 전송 중`, 0)
   try {
-    await deviceStore.controlDevice(deviceId, [{ code: 'switch_1', value: turnOn }])
-    const device = deviceStore.devices.find(d => d.id === deviceId)
+    const result = await deviceStore.controlDevice(deviceId, [{ code: 'switch_1', value: turnOn }])
+    if (!result.success) {
+      notify.remove(loadingId)
+      notify.error('제어 실패', translateTuyaError(result.msg))
+      return
+    }
     if (device) device.switchState = turnOn
+    const verification = await deviceStore.verifyDeviceStatus(deviceId, 'switch_1', turnOn)
+    notify.remove(loadingId)
+    if (verification.verified) {
+      notify.success('적용 완료', `${device?.name || '장비'} ${turnOn ? 'ON' : 'OFF'}`)
+    } else if (verification.actualValue !== undefined && device) {
+      notify.warning('상태 미변경', '명령은 전달되었으나 장비 상태가 변경되지 않았습니다')
+      device.switchState = verification.actualValue
+    } else {
+      notify.warning('상태 확인 실패', '장비 상태를 확인할 수 없습니다')
+    }
   } catch (err: any) {
     console.error('장비 제어 실패:', err)
-    alert('장비 제어에 실패했습니다.')
+    notify.remove(loadingId)
+    notify.error('제어 실패', '네트워크 오류가 발생했습니다')
+    if (device) device.switchState = !turnOn
   } finally {
     controllingId.value = null
   }

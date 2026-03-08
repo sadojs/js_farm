@@ -277,6 +277,8 @@
           <VueDatePicker
             v-model="form.sowDate"
             :model-type="'yyyy-MM-dd'"
+            :format="'yyyy-MM-dd'"
+            :locale="ko"
             :dark="isDark"
             :enable-time-picker="false"
             :teleport="false"
@@ -289,6 +291,8 @@
           <VueDatePicker
             v-model="form.transplantDate"
             :model-type="'yyyy-MM-dd'"
+            :format="'yyyy-MM-dd'"
+            :locale="ko"
             :dark="isDark"
             :enable-time-picker="false"
             :teleport="false"
@@ -336,6 +340,7 @@ import { useNotificationStore } from '../stores/notification.store'
 import RescheduleSheet from '../components/harvest/RescheduleSheet.vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
+import { ko } from 'date-fns/locale'
 import { useLocalStorage } from '@vueuse/core'
 
 const notificationStore = useNotificationStore()
@@ -969,12 +974,13 @@ onMounted(() => {
   .modal-overlay { padding: 0; }
   .modal-content {
     padding: 20px;
-    border-radius: 16px 16px 0 0;
+    border-radius: 0;
     max-width: 100%;
     max-height: 100%;
     height: 100vh;
     height: 100dvh;
     overflow-y: auto;
+    padding-top: calc(20px + env(safe-area-inset-top, 0px));
     padding-bottom: env(safe-area-inset-bottom, 0);
   }
   .calendar-cell { min-height: 44px; }

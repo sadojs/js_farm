@@ -231,7 +231,7 @@ async function handleSave() {
     padding-bottom: env(safe-area-inset-bottom, 0);
   }
   .modal-body { padding: 0 16px 16px; }
-  .modal-header { padding: 16px 16px 8px; }
+  .modal-header { padding: 16px 16px 8px; padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
   .modal-footer { padding: 12px 16px; }
   .edit-tabs { margin: 0 16px 12px; }
 }

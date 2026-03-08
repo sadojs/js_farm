@@ -197,6 +197,7 @@
     </main>
 
     <ConfirmDialog />
+    <ToastContainer />
   </div>
 </template>
 
@@ -207,6 +208,7 @@ import { useAuthStore } from './stores/auth.store'
 import { useNotificationStore } from './stores/notification.store'
 import { useWebSocket } from './composables/useWebSocket'
 import ConfirmDialog from './components/common/ConfirmDialog.vue'
+import ToastContainer from './components/common/ToastContainer.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

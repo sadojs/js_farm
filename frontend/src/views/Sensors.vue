@@ -55,6 +55,10 @@
               v-if="isEnvConfigured(group.id)"
               :resolved="resolvedByGroup[group.id]!"
             />
+            <GroupEnvScore
+              v-if="isEnvConfigured(group.id)"
+              :resolved-data="resolvedByGroup[group.id]!"
+            />
             <div v-else class="env-unconfigured">
               <p>환경 설정이 필요합니다</p>
               <router-link :to="`/groups?envConfig=${group.id}`" class="btn-cta">환경 설정하기</router-link>
@@ -78,6 +82,7 @@ import { useWebSocket } from '@/composables/useWebSocket'
 import { envConfigApi } from '@/api/env-config.api'
 import type { ResolvedValue } from '@/api/env-config.api'
 import ResolvedEnvPanel from '@/components/dashboard/ResolvedEnvPanel.vue'
+import GroupEnvScore from '@/components/dashboard/GroupEnvScore.vue'
 import type { Device } from '@/types/device.types'
 
 const groupStore = useGroupStore()

@@ -37,7 +37,29 @@ export const useDeviceStore = defineStore('device', () => {
   }
 
   async function controlDevice(deviceId: string, commands: { code: string; value: any }[]) {
-    return deviceApi.control(deviceId, commands)
+    const { data } = await deviceApi.control(deviceId, commands)
+    return data as { success: boolean; result?: any; msg?: string; code?: number; t?: number; tid?: string }
+  }
+
+  async function verifyDeviceStatus(
+    deviceId: string,
+    switchCode: string,
+    expectedValue: boolean
+  ): Promise<{ verified: boolean; actualValue?: boolean }> {
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    const data = await fetchDeviceStatus(deviceId)
+    if (!data || !data.success) {
+      return { verified: false }
+    }
+
+    const status = data.status?.find((s: any) => s.code === switchCode)
+    if (!status) return { verified: false }
+
+    return {
+      verified: status.value === expectedValue,
+      actualValue: status.value,
+    }
   }
 
   function updateDeviceStatus(deviceId: string, online: boolean) {
@@ -127,6 +149,7 @@ export const useDeviceStore = defineStore('device', () => {
     registerDevices,
     removeDevice,
     controlDevice,
+    verifyDeviceStatus,
     updateDeviceStatus,
     fetchDeviceStatus,
     fetchAllActuatorStatuses,

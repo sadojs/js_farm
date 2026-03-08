@@ -89,6 +89,7 @@ async function refreshWeather() {
 
   try {
     const weatherRes = await dashboardApi.getWeather()
+
     const data = weatherRes.data
     sourceAddress.value = data.location.address
     locationLabel.value = [data.location.level1, data.location.level2, data.location.level3]
