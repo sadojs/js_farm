@@ -225,7 +225,7 @@ const saveUser = async (userData: any) => {
       await fetchUsers()
     } else {
       // 신규 추가
-      await userApi.create({
+      const { data: newUser } = await userApi.create({
         email: userData.email,
         password: userData.password,
         name: userData.name,
@@ -233,6 +233,20 @@ const saveUser = async (userData: any) => {
         address: userData.address,
         parentUserId: userData.parentUserId,
       })
+
+      // 신규 사용자의 Tuya 프로젝트 정보 저장
+      if (userData.role !== 'farm_user' && userData.tuyaProject?.name && userData.tuyaProject?.accessId && userData.tuyaProject?.endpoint) {
+        const tuyaPayload: UpdateTuyaRequest = {
+          name: userData.tuyaProject.name,
+          accessId: userData.tuyaProject.accessId,
+          accessSecret: userData.tuyaProject.accessSecret || '',
+          endpoint: userData.tuyaProject.endpoint,
+          projectId: userData.tuyaProject.projectId,
+          enabled: userData.tuyaProject.enabled ?? true,
+        }
+        await userApi.updateTuya((newUser as any).id, tuyaPayload)
+      }
+
       await fetchUsers()
     }
     closeUserModal()
