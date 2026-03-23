@@ -10,7 +10,7 @@ export class SensorsController {
 
   @Get()
   queryData(
-    @CurrentUser('id') userId: string,
+    @CurrentUser() user: any,
     @Query('sensorType') sensorType: string,
     @Query('startTime') startTime: string,
     @Query('endTime') endTime: string,
@@ -19,6 +19,7 @@ export class SensorsController {
     @Query('limit') limit: string,
     @Query('offset') offset: string,
   ) {
+    const userId = user.role === 'farm_user' && user.parentUserId ? user.parentUserId : user.id;
     return this.sensorsService.queryData(userId, {
       sensorType,
       startTime,
@@ -31,7 +32,8 @@ export class SensorsController {
   }
 
   @Get('latest')
-  getLatest(@CurrentUser('id') userId: string) {
+  getLatest(@CurrentUser() user: any) {
+    const userId = user.role === 'farm_user' && user.parentUserId ? user.parentUserId : user.id;
     return this.sensorsService.getLatest(userId);
   }
 }

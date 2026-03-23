@@ -25,25 +25,24 @@
           </div>
         </div>
         <div class="weather-right">
-          <div class="weather-temp-big">{{ formatValue(weather.temperature, '') }}</div>
-          <div class="weather-temp-unit">°C</div>
+          <div class="weather-temp-line">
+            <span class="weather-temp-big">{{ formatValue(weather.temperature, '') }}</span>
+            <span class="weather-temp-unit">°C</span>
+          </div>
           <div class="weather-condition">{{ weather.condition === 'rain' ? '비' : '맑음' }}</div>
         </div>
       </div>
       <div class="weather-details-grid">
         <div class="weather-detail-item">
-          <span class="detail-icon">💧</span>
-          <span class="detail-label">습도</span>
+          <span class="detail-label">💧 습도</span>
           <span class="detail-value">{{ formatValue(weather.humidity, '%') }}</span>
         </div>
         <div class="weather-detail-item">
-          <span class="detail-icon">🌬️</span>
-          <span class="detail-label">풍속</span>
+          <span class="detail-label">💨 풍속</span>
           <span class="detail-value">{{ formatValue(weather.windSpeed, 'm/s') }}</span>
         </div>
         <div class="weather-detail-item">
-          <span class="detail-icon">🌧️</span>
-          <span class="detail-label">강수량</span>
+          <span class="detail-label">🌧️ 강수량</span>
           <span class="detail-value">{{ formatValue(weather.precipitation, 'mm') }}</span>
         </div>
       </div>
@@ -74,7 +73,6 @@ const weather = ref({
   windSpeed: null as number | null,
   condition: 'clear',
 })
-
 const weatherIcon = computed(() => {
   if (weather.value.condition === 'rain') return '🌧️'
   return '☀️'
@@ -90,8 +88,9 @@ async function refreshWeather() {
   errorMessage.value = ''
 
   try {
-    const { data } = await dashboardApi.getWeather()
+    const weatherRes = await dashboardApi.getWeather()
 
+    const data = weatherRes.data
     sourceAddress.value = data.location.address
     locationLabel.value = [data.location.level1, data.location.level2, data.location.level3]
       .filter(Boolean)
@@ -105,6 +104,7 @@ async function refreshWeather() {
     source.value = data.source
     weather.value = data.weather
     lastUpdate.value = new Date(data.fetchedAt).toLocaleString('ko-KR')
+
   } catch (err: any) {
     errorMessage.value = err.response?.data?.message || '날씨 정보를 불러오지 못했습니다.'
   } finally {
@@ -171,103 +171,100 @@ onMounted(() => {
 
 /* 날씨 카드 - 파란 그라데이션 */
 .weather-card {
-  background: linear-gradient(135deg, #4A90D9 0%, #357ABD 100%);
+  background: linear-gradient(135deg, #5B9BE6 0%, #4A7FD4 50%, #3B6BC2 100%);
   border-radius: 16px;
-  padding: 28px;
+  padding: 16px 20px;
   color: white;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 16px rgba(74, 144, 217, 0.3);
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(74, 144, 217, 0.25);
 }
 
 .weather-top {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 24px;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
 .weather-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
 }
 
 .weather-icon-big {
-  font-size: 48px;
+  font-size: 28px;
 }
 
 .weather-title {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 4px;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 2px;
 }
 
 .weather-location {
-  font-size: 16px;
+  font-size: 13px;
   opacity: 0.85;
 }
 
 .weather-right {
   text-align: right;
+}
+
+.weather-temp-line {
   display: flex;
-  align-items: baseline;
-  gap: 4px;
-  flex-wrap: wrap;
+  align-items: flex-start;
   justify-content: flex-end;
+  gap: 2px;
 }
 
 .weather-temp-big {
-  font-size: 48px;
+  font-size: 36px;
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
 .weather-temp-unit {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 500;
   opacity: 0.85;
+  margin-top: 2px;
 }
 
 .weather-condition {
-  width: 100%;
   font-size: 14px;
   opacity: 0.85;
+  text-align: right;
+  margin-top: 2px;
 }
 
 .weather-details-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 8px;
 }
 
 .weather-detail-item {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  padding: 14px 12px;
-  text-align: center;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.detail-icon {
-  font-size: 28px;
+  gap: 4px;
 }
 
 .detail-label {
-  font-size: 16px;
-  opacity: 0.8;
+  font-size: 13px;
+  opacity: 0.85;
   font-weight: 500;
 }
 
 .detail-value {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
-
 
 @media (max-width: 768px) {
   .page-container {
@@ -279,24 +276,19 @@ onMounted(() => {
   }
 
   .weather-card {
-    padding: 20px;
-  }
-
-  .weather-top {
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .weather-right {
-    justify-content: flex-start;
+    padding: 14px 16px;
   }
 
   .weather-details-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 
-  .info-grid {
-    grid-template-columns: 1fr;
+  .weather-temp-big {
+    font-size: 32px;
+  }
+
+  .detail-value {
+    font-size: 16px;
   }
 }
 </style>

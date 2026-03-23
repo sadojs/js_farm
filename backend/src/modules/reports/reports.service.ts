@@ -3,50 +3,50 @@ import { DataSource } from 'typeorm';
 
 interface ReportParams {
   groupId?: string;
-  houseId?: string;
   sensorType?: string;
   startDate?: string;
   endDate?: string;
-  aggregation?: string;
 }
 
 @Injectable()
 export class ReportsService {
   constructor(private dataSource: DataSource) {}
 
-  private buildConditions(userId: string, params: ReportParams, alias = 'sd') {
-    const conditions: string[] = [`${alias}.user_id = $1`];
+  private buildConditions(userId: string, params: ReportParams) {
+    const conditions: string[] = ['sd.user_id = $1'];
     const values: any[] = [userId];
     let paramIndex = 2;
 
     if (params.sensorType) {
-      conditions.push(`${alias}.sensor_type = $${paramIndex++}`);
+      conditions.push(`sd.sensor_type = $${paramIndex++}`);
       values.push(params.sensorType);
     }
     if (params.startDate) {
-      const timeCol = alias === 'sh' ? `${alias}.bucket` : `${alias}.time`;
-      conditions.push(`${timeCol} >= $${paramIndex++}`);
+      conditions.push(`sd.time >= $${paramIndex++}`);
       values.push(params.startDate);
     }
     if (params.endDate) {
-      const timeCol = alias === 'sh' ? `${alias}.bucket` : `${alias}.time`;
-      conditions.push(`${timeCol} <= $${paramIndex++}`);
+      conditions.push(`sd.time <= $${paramIndex++}`);
       values.push(params.endDate);
     }
-    if (params.houseId) {
-      conditions.push(`d.house_id = $${paramIndex++}`);
-      values.push(params.houseId);
-    }
     if (params.groupId) {
-      conditions.push(`h.group_id = $${paramIndex++}`);
+      conditions.push(`gd.group_id = $${paramIndex++}`);
       values.push(params.groupId);
     }
     return { conditions, values, paramIndex };
   }
 
+  private groupJoin(params: ReportParams): string {
+    if (params.groupId) {
+      return 'JOIN group_devices gd ON gd.device_id = sd.device_id';
+    }
+    return 'LEFT JOIN group_devices gd ON gd.device_id = sd.device_id';
+  }
+
   async getStatistics(userId: string, params: ReportParams) {
     const { conditions, values } = this.buildConditions(userId, params);
     const whereClause = conditions.join(' AND ');
+    const join = this.groupJoin(params);
 
     const query = `
       SELECT
@@ -55,65 +55,43 @@ export class ReportsService {
         ROUND(AVG(sd.value)::numeric, 2) as avg_value,
         ROUND(MIN(sd.value)::numeric, 2) as min_value,
         ROUND(MAX(sd.value)::numeric, 2) as max_value,
-        ROUND(STDDEV(sd.value)::numeric, 2) as stddev_value,
         sd.unit
       FROM sensor_data sd
-      JOIN devices d ON d.id = sd.device_id
-      LEFT JOIN houses h ON h.id = d.house_id
+      ${join}
       WHERE ${whereClause}
       GROUP BY sd.sensor_type, sd.unit
       ORDER BY sd.sensor_type
     `;
 
-    const stats = await this.dataSource.query(query, values);
+    return this.dataSource.query(query, values);
+  }
 
-    // Daily breakdown
-    const dailyQuery = `
+  async getHourlyData(userId: string, params: ReportParams) {
+    const { conditions, values } = this.buildConditions(userId, params);
+    const whereClause = conditions.join(' AND ');
+    const join = this.groupJoin(params);
+
+    const query = `
       SELECT
-        DATE(sd.time) as date,
+        date_trunc('hour', sd.time) as time,
         sd.sensor_type,
         ROUND(AVG(sd.value)::numeric, 2) as avg_value,
         ROUND(MIN(sd.value)::numeric, 2) as min_value,
         ROUND(MAX(sd.value)::numeric, 2) as max_value,
         COUNT(*) as count
       FROM sensor_data sd
-      JOIN devices d ON d.id = sd.device_id
-      LEFT JOIN houses h ON h.id = d.house_id
+      ${join}
       WHERE ${whereClause}
-      GROUP BY DATE(sd.time), sd.sensor_type
-      ORDER BY date ASC, sd.sensor_type
-    `;
-
-    const daily = await this.dataSource.query(dailyQuery, values);
-
-    return { statistics: stats, daily };
-  }
-
-  async getHourlyData(userId: string, params: ReportParams) {
-    const { conditions, values } = this.buildConditions(userId, params, 'sh');
-    const whereClause = conditions.join(' AND ');
-
-    const query = `
-      SELECT
-        sh.bucket as time,
-        sh.sensor_type,
-        ROUND(sh.avg_value::numeric, 2) as avg_value,
-        ROUND(sh.min_value::numeric, 2) as min_value,
-        ROUND(sh.max_value::numeric, 2) as max_value,
-        sh.sample_count as count
-      FROM sensor_data_hourly sh
-      JOIN devices d ON d.id = sh.device_id
-      LEFT JOIN houses h ON h.id = d.house_id
-      WHERE ${whereClause}
-      ORDER BY sh.bucket ASC
-      LIMIT 1000
+      GROUP BY date_trunc('hour', sd.time), sd.sensor_type
+      ORDER BY time ASC
+      LIMIT 2000
     `;
 
     return this.dataSource.query(query, values);
   }
 
   async getActuatorStats(userId: string, params: ReportParams) {
-    const conditions: string[] = ['al.user_id = $1'];
+    const conditions: string[] = ['al.user_id = $1', 'al.success = true'];
     const values: any[] = [userId];
     let paramIndex = 2;
 
@@ -135,7 +113,6 @@ export class ReportsService {
     const query = `
       SELECT
         date_trunc('hour', al.executed_at) as time,
-        COUNT(DISTINCT al.device_id) as active_devices,
         COUNT(*) as total_actions
       FROM automation_logs al
       LEFT JOIN automation_rules ar ON ar.id = al.rule_id
@@ -150,6 +127,7 @@ export class ReportsService {
   async exportCsv(userId: string, params: ReportParams): Promise<string> {
     const { conditions, values } = this.buildConditions(userId, params);
     const whereClause = conditions.join(' AND ');
+    const join = this.groupJoin(params);
 
     const query = `
       SELECT
@@ -158,13 +136,10 @@ export class ReportsService {
         sd.sensor_type,
         sd.value,
         sd.unit,
-        sd.status,
-        h.name as house_name,
-        hg.name as group_name
+        sd.status
       FROM sensor_data sd
       JOIN devices d ON d.id = sd.device_id
-      LEFT JOIN houses h ON h.id = d.house_id
-      LEFT JOIN house_groups hg ON hg.id = h.group_id
+      ${join}
       WHERE ${whereClause}
       ORDER BY sd.time ASC
       LIMIT 10000
@@ -172,7 +147,7 @@ export class ReportsService {
 
     const rows = await this.dataSource.query(query, values);
 
-    const header = '시간,장비명,센서종류,값,단위,상태,하우스,그룹';
+    const header = '시간,장비명,센서종류,값,단위,상태';
     const csvRows = rows.map((row: any) =>
       [
         row.time,
@@ -181,11 +156,42 @@ export class ReportsService {
         row.value,
         row.unit,
         row.status,
-        row.house_name || '',
-        row.group_name || '',
       ].join(','),
     );
 
     return [header, ...csvRows].join('\n');
+  }
+
+  async getWeatherHourly(userId: string, params: ReportParams) {
+    const conditions: string[] = ['wd.user_id = $1'];
+    const values: any[] = [userId];
+    let paramIndex = 2;
+
+    if (params.startDate) {
+      conditions.push(`wd.time >= $${paramIndex++}`);
+      values.push(params.startDate);
+    }
+    if (params.endDate) {
+      conditions.push(`wd.time <= $${paramIndex++}`);
+      values.push(params.endDate);
+    }
+
+    const whereClause = conditions.join(' AND ');
+
+    const query = `
+      SELECT
+        date_trunc('hour', wd.time) as time,
+        ROUND(AVG(wd.temperature)::numeric, 2) as temperature,
+        ROUND(AVG(wd.humidity)::numeric, 2) as humidity,
+        ROUND(AVG(wd.precipitation)::numeric, 2) as precipitation,
+        ROUND(AVG(wd.wind_speed)::numeric, 2) as wind_speed
+      FROM weather_data wd
+      WHERE ${whereClause}
+      GROUP BY date_trunc('hour', wd.time)
+      ORDER BY time ASC
+      LIMIT 2000
+    `;
+
+    return this.dataSource.query(query, values);
   }
 }

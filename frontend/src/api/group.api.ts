@@ -1,5 +1,5 @@
 import apiClient from './client'
-import type { HouseGroup, House, CreateGroupRequest, CreateHouseRequest } from '../types/group.types'
+import type { HouseGroup, House, CreateGroupRequest, CreateHouseRequest, GroupDependenciesResponse } from '../types/group.types'
 
 export const groupApi = {
   getGroups: () =>
@@ -34,4 +34,7 @@ export const groupApi = {
 
   removeDeviceFromGroup: (groupId: string, deviceId: string) =>
     apiClient.delete(`/groups/${groupId}/devices/${deviceId}`),
+
+  getDependencies: (id: string) =>
+    apiClient.get<GroupDependenciesResponse>(`/groups/${id}/dependencies`),
 }

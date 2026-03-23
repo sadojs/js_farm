@@ -2,7 +2,7 @@
   <div v-if="show" class="modal-overlay" @click.self="closeModal">
     <div class="modal-container">
       <div class="modal-header">
-        <h2>Tuya 프로젝트 할당</h2>
+        <h2>센서 프로젝트 할당</h2>
         <button class="close-btn" @click="closeModal">✕</button>
       </div>
 
@@ -16,7 +16,7 @@
         </div>
 
         <div class="projects-list">
-          <h4>사용 가능한 Tuya 프로젝트</h4>
+          <h4>사용 가능한 센서 프로젝트</h4>
           <div
             v-for="project in availableProjects"
             :key="project.id"

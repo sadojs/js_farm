@@ -71,6 +71,14 @@ export function useWebSocket() {
     socket?.emit('unsubscribe', { channel })
   }
 
+  function on(event: string, handler: (...args: any[]) => void) {
+    socket?.on(event, handler)
+  }
+
+  function off(event: string, handler: (...args: any[]) => void) {
+    socket?.off(event, handler)
+  }
+
   onUnmounted(() => {
     // Component-level cleanup is not needed for global socket
   })
@@ -81,5 +89,7 @@ export function useWebSocket() {
     disconnect,
     subscribe,
     unsubscribe,
+    on,
+    off,
   }
 }

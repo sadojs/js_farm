@@ -120,10 +120,10 @@ watch(() => props.modelValue, (val) => {
     selectedDevice.value = val.deviceType
     const a = val.action
     if (a.deviceType === 'roof_actuator') {
-      roofCommand.value = a.command
+      roofCommand.value = a.command ?? 'open'
       roofPercentage.value = (a.parameters as any).percentage ?? 100
     } else if (a.deviceType === 'ventilation_fan') {
-      fanCommand.value = a.command
+      fanCommand.value = a.command ?? 'on'
       fanSpeed.value = (a.parameters as any).speed ?? 'mid'
     } else if (a.deviceType === 'irrigation') {
       const p = a.parameters as any

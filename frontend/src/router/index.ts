@@ -31,7 +31,7 @@ const router = createRouter({
       path: '/automation',
       name: 'automation',
       component: () => import('../views/Automation.vue'),
-      meta: { title: '자동화', requiresAuth: true }
+      meta: { title: '자동화', requiresAuth: true, denyFarmUser: true }
     },
     {
       path: '/groups',
@@ -43,7 +43,7 @@ const router = createRouter({
       path: '/devices',
       name: 'devices',
       component: () => import('../views/Devices.vue'),
-      meta: { title: '장비 관리', requiresAuth: true }
+      meta: { title: '장비 관리', requiresAuth: true, denyFarmUser: true }
     },
     {
       path: '/users',
@@ -56,7 +56,25 @@ const router = createRouter({
       name: 'reports',
       component: () => import('../views/Reports.vue'),
       meta: { title: '리포트 및 통계', requiresAuth: true }
-    }
+    },
+    {
+      path: '/harvest',
+      name: 'harvest',
+      component: () => import('../views/Harvest.vue'),
+      meta: { title: '수확 관리', requiresAuth: true }
+    },
+    {
+      path: '/harvest-rec',
+      name: 'harvest-rec',
+      component: () => import('../views/HarvestRecommendation.vue'),
+      meta: { title: '수확 관리', requiresAuth: true }
+    },
+    {
+      path: '/alerts',
+      name: 'alerts',
+      component: () => import('../views/Alerts.vue'),
+      meta: { title: '센서 알림', requiresAuth: true }
+    },
   ]
 })
 
@@ -73,6 +91,14 @@ router.beforeEach((to, _from, next) => {
   // 인증이 필요한 페이지
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login')
+    return
+  }
+
+  // farm_user 접근 불가 페이지
+  if (to.meta.denyFarmUser && authStore.isFarmUser) {
+    const notificationStore = useNotificationStore()
+    notificationStore.error('접근 거부', '해당 메뉴에 접근할 수 없습니다.')
+    next('/dashboard')
     return
   }
 

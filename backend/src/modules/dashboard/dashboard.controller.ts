@@ -9,7 +9,14 @@ export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   @Get('weather')
-  getWeather(@CurrentUser('id') userId: string) {
-    return this.dashboardService.getWeatherForUser(userId);
+  getWeather(@CurrentUser() user: any) {
+    const effectiveUserId = user.role === 'farm_user' && user.parentUserId ? user.parentUserId : user.id;
+    return this.dashboardService.getWeatherForUser(effectiveUserId);
+  }
+
+  @Get('widgets')
+  getWidgets(@CurrentUser() user: any) {
+    const effectiveUserId = user.role === 'farm_user' && user.parentUserId ? user.parentUserId : user.id;
+    return this.dashboardService.getWidgetData(effectiveUserId);
   }
 }

@@ -2,7 +2,9 @@ export interface User {
   id: string
   email: string
   name: string
-  role: 'admin' | 'user'
+  role: 'admin' | 'farm_admin' | 'farm_user'
+  parentUserId?: string | null
+  parentUserName?: string | null
   address?: string
   status: 'active' | 'inactive'
   tuyaProject?: TuyaProject

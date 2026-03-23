@@ -5,8 +5,9 @@ export interface CreateUserRequest {
   email: string
   password: string
   name: string
-  role: 'admin' | 'user'
+  role: 'admin' | 'farm_admin' | 'farm_user'
   address?: string
+  parentUserId?: string
 }
 
 export interface UpdateTuyaRequest {
@@ -29,6 +30,9 @@ export const userApi = {
   // 관리자 전용
   getAll: () =>
     apiClient.get<User[]>('/users'),
+
+  getFarmAdmins: () =>
+    apiClient.get('/users/farm-admins'),
 
   getById: (id: string) =>
     apiClient.get<User>(`/users/${id}`),

@@ -40,3 +40,8 @@ export interface CreateHouseRequest {
   description?: string
   area?: number
 }
+
+export interface GroupDependenciesResponse {
+  canDelete: boolean
+  automationRules: { id: string; name: string; enabled: boolean }[]
+}

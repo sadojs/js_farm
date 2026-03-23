@@ -43,17 +43,27 @@
 
       <div class="summary-row">
         <span class="summary-label">장비</span>
-        <span class="summary-value">{{ actuatorNames }}</span>
+        <span class="summary-value">{{ actuatorName }}</span>
       </div>
 
-      <div class="summary-row">
-        <span class="summary-label">동작</span>
-        <span class="summary-value cmd" :class="formData.actuatorCommand">
-          {{ formData.actuatorCommand === 'on' ? 'ON (켜기)' : 'OFF (끄기)' }}
-        </span>
-      </div>
+      <!-- 관수 조건 요약 -->
+      <template v-if="irrigationConditions">
+        <div class="summary-row">
+          <span class="summary-label">시작시간</span>
+          <span class="summary-value">{{ irrigationConditions.startTime }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">활성 구역</span>
+          <span class="summary-value">{{ activeZonesSummary }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">스케줄</span>
+          <span class="summary-value">{{ scheduleSummary }}</span>
+        </div>
+      </template>
 
-      <div class="summary-row">
+      <!-- 일반 조건 요약 -->
+      <div v-else class="summary-row">
         <span class="summary-label">조건</span>
         <span class="summary-value">{{ conditionSummary }}</span>
       </div>
@@ -63,11 +73,18 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { WizardFormData } from '../../types/automation.types'
+import type { WizardFormData, IrrigationConditions } from '../../types/automation.types'
 import { useGroupStore } from '../../stores/group.store'
 import { formatConditionGroup } from '../../utils/automation-helpers'
 
-const props = defineProps<{ formData: WizardFormData }>()
+const DAY_LABELS: Record<number, string> = {
+  0: '일', 1: '월', 2: '화', 3: '수', 4: '목', 5: '금', 6: '토',
+}
+
+const props = defineProps<{
+  formData: WizardFormData
+  irrigationConditions?: IrrigationConditions
+}>()
 defineEmits<{
   'update:name': [value: string]
   'update:description': [value: string]
@@ -89,14 +106,32 @@ const sensorNames = computed(() => {
     .join(', ') || '-'
 })
 
-const actuatorNames = computed(() => {
+const actuatorName = computed(() => {
+  const ids = props.formData.actuatorDeviceIds
+  if (!ids || ids.length === 0) return '-'
   const devices = selectedGroup.value?.devices || []
-  return props.formData.actuatorDeviceIds
+  return ids
     .map(id => devices.find(d => d.id === id)?.name || id)
-    .join(', ') || '-'
+    .join(', ')
 })
 
 const conditionSummary = computed(() => formatConditionGroup(props.formData.conditions))
+
+const activeZonesSummary = computed(() => {
+  if (!props.irrigationConditions) return '-'
+  const active = props.irrigationConditions.zones.filter(z => z.enabled)
+  return active.map(z => `${z.name}(${z.duration}분)`).join(', ') || '없음'
+})
+
+const scheduleSummary = computed(() => {
+  if (!props.irrigationConditions) return '-'
+  const { days, repeat } = props.irrigationConditions.schedule
+  const dayStr = days
+    .sort((a, b) => (a === 0 ? 7 : a) - (b === 0 ? 7 : b))
+    .map(d => DAY_LABELS[d] || d)
+    .join(',')
+  return `${dayStr} ${repeat ? '(매주 반복)' : '(1회)'}`
+})
 </script>
 
 <style scoped>

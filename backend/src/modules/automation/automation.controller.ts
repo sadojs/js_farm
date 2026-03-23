@@ -9,44 +9,48 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class AutomationController {
   constructor(private automationService: AutomationService) {}
 
+  private getEffectiveUserId(user: any): string {
+    return user.role === 'farm_user' && user.parentUserId ? user.parentUserId : user.id;
+  }
+
   @Get('rules')
-  findAll(@CurrentUser('id') userId: string) {
-    return this.automationService.findAll(userId);
+  findAll(@CurrentUser() user: any) {
+    return this.automationService.findAll(this.getEffectiveUserId(user));
   }
 
   @Post('rules')
-  create(@CurrentUser('id') userId: string, @Body() dto: CreateRuleDto) {
-    return this.automationService.create(userId, dto);
+  create(@CurrentUser() user: any, @Body() dto: CreateRuleDto) {
+    return this.automationService.create(this.getEffectiveUserId(user), dto);
   }
 
   @Put('rules/:id')
-  update(@Param('id') id: string, @CurrentUser('id') userId: string, @Body() dto: UpdateRuleDto) {
-    return this.automationService.update(id, userId, dto);
+  update(@Param('id') id: string, @CurrentUser() user: any, @Body() dto: UpdateRuleDto) {
+    return this.automationService.update(id, this.getEffectiveUserId(user), dto);
   }
 
   @Patch('rules/:id/toggle')
-  toggle(@Param('id') id: string, @CurrentUser('id') userId: string) {
-    return this.automationService.toggle(id, userId);
+  toggle(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.automationService.toggle(id, this.getEffectiveUserId(user));
   }
 
   @Post('rules/:id/run')
-  runNow(@Param('id') id: string, @CurrentUser('id') userId: string) {
-    return this.automationService.runRuleNow(id, userId);
+  runNow(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.automationService.runRuleNow(id, this.getEffectiveUserId(user));
   }
 
   @Delete('rules/:id')
-  remove(@Param('id') id: string, @CurrentUser('id') userId: string) {
-    return this.automationService.remove(id, userId);
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.automationService.remove(id, this.getEffectiveUserId(user));
   }
 
   @Get('logs')
   getLogs(
-    @CurrentUser('id') userId: string,
+    @CurrentUser() user: any,
     @Query('ruleId') ruleId?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    return this.automationService.getLogs(userId, {
+    return this.automationService.getLogs(this.getEffectiveUserId(user), {
       ruleId,
       page: page ? Number(page) : undefined,
       limit: limit ? Number(limit) : undefined,

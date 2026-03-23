@@ -4,7 +4,7 @@
       <div class="login-header">
         <div class="logo">🌱</div>
         <h1>스마트 농업 플랫폼</h1>
-        <p>Tuya IoT 기반 농업 자동화 시스템</p>
+        <p>IoT 기반 농업 자동화 시스템</p>
       </div>
 
       <form class="login-form" @submit.prevent="handleLogin">
@@ -58,20 +58,6 @@
       </div>
     </div>
 
-    <!-- Demo 계정 정보 (개발 환경에서만 표시) -->
-    <div v-if="isDev" class="demo-info">
-      <h3>🔐 데모 계정</h3>
-      <div class="demo-accounts">
-        <div class="demo-account" @click="fillDemo('admin')">
-          <strong>관리자:</strong>
-          <p>admin@farm.com / admin123</p>
-        </div>
-        <div class="demo-account" @click="fillDemo('user')">
-          <strong>사용자:</strong>
-          <p>user@farm.com / user123</p>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -84,8 +70,6 @@ import { useNotificationStore } from '../stores/notification.store'
 const router = useRouter()
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
-
-const isDev = import.meta.env.DEV
 
 interface LoginData {
   email: string
@@ -101,11 +85,6 @@ const loginData = ref<LoginData>({
 
 const isLoading = ref(false)
 const errorMessage = ref('')
-
-function fillDemo(type: 'admin' | 'user') {
-  loginData.value.email = type === 'admin' ? 'admin@farm.com' : 'user@farm.com'
-  loginData.value.password = type === 'admin' ? 'admin123' : 'user123'
-}
 
 const handleLogin = async () => {
   isLoading.value = true
@@ -276,47 +255,6 @@ const handleLogin = async () => {
   font-size: 13px;
   color: var(--text-muted);
   margin: 0;
-}
-
-.demo-info {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 12px;
-  padding: 20px;
-  max-width: 440px;
-  width: 100%;
-}
-
-.demo-info h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 16px 0;
-  text-align: center;
-}
-
-.demo-accounts {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.demo-account {
-  padding: 12px;
-  background: #f5f5f5;
-  border-radius: 8px;
-  font-size: 13px;
-}
-
-.demo-account strong {
-  display: block;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.demo-account p {
-  margin: 0;
-  color: var(--text-link);
-  font-family: monospace;
 }
 
 @media (max-width: 480px) {

@@ -5,6 +5,7 @@ import { AutomationController } from './automation.controller';
 import { AutomationRule } from './entities/automation-rule.entity';
 import { AutomationLog } from './entities/automation-log.entity';
 import { AutomationRunnerService } from './automation-runner.service';
+import { IrrigationSchedulerService } from './irrigation-scheduler.service';
 import { Device } from '../devices/entities/device.entity';
 import { TuyaProject } from '../users/entities/tuya-project.entity';
 import { TuyaModule } from '../integrations/tuya/tuya.module';
@@ -17,7 +18,7 @@ import { GatewayModule } from '../gateway/gateway.module';
     GatewayModule,
   ],
   controllers: [AutomationController],
-  providers: [AutomationService, AutomationRunnerService],
+  providers: [AutomationService, AutomationRunnerService, IrrigationSchedulerService],
   exports: [AutomationService],
 })
 export class AutomationModule {}

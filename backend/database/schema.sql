@@ -14,7 +14,8 @@ CREATE TABLE users (
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   name VARCHAR(100) NOT NULL,
-  role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'user')),
+  role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'farm_admin', 'farm_user')),
+  parent_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
   address TEXT,
   status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -23,6 +24,7 @@ CREATE TABLE users (
 
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_users_parent ON users(parent_user_id);
 
 -- ==========================================
 -- 2. Tuya 프로젝트 설정
@@ -199,6 +201,25 @@ SELECT add_continuous_aggregate_policy('sensor_data_daily',
 SELECT add_retention_policy('sensor_data', INTERVAL '3 months');
 
 -- ==========================================
+-- 8-1. 날씨 데이터 (시계열 데이터) - TimescaleDB Hypertable
+-- ==========================================
+
+CREATE TABLE weather_data (
+  time TIMESTAMPTZ NOT NULL,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  temperature DECIMAL(5, 2),
+  humidity DECIMAL(5, 2),
+  precipitation DECIMAL(5, 2),
+  wind_speed DECIMAL(5, 2),
+  condition VARCHAR(20) DEFAULT 'clear',
+  nx INT,
+  ny INT
+);
+
+SELECT create_hypertable('weather_data', 'time');
+CREATE INDEX idx_weather_data_user ON weather_data(user_id, time DESC);
+
+-- ==========================================
 -- 9. 자동화 룰
 -- ==========================================
 
@@ -309,9 +330,134 @@ CREATE TRIGGER update_automation_rules_updated_at BEFORE UPDATE ON automation_ru
 INSERT INTO users (email, password_hash, name, role, address)
 VALUES ('admin@farm.com', '$2b$10$placeholder_hash', '관리자', 'admin', '서울시 강남구');
 
--- 테스트 사용자 (비밀번호: user123)
+-- 테스트 농장 관리자 (비밀번호: user123)
 INSERT INTO users (email, password_hash, name, role, address)
-VALUES ('user@farm.com', '$2b$10$placeholder_hash', '사용자', 'user', '경기도 화성시 농업로 123');
+VALUES ('user@farm.com', '$2b$10$placeholder_hash', '김농부', 'farm_admin', '경기도 화성시 농업로 123');
+
+-- ==========================================
+-- 13. 수확 배치 (Crop Batches)
+-- ==========================================
+
+CREATE TABLE crop_batches (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  crop_name VARCHAR(100) NOT NULL,
+  variety VARCHAR(100),
+  house_name VARCHAR(100) NOT NULL,
+  sow_date DATE NOT NULL,
+  grow_days INT NOT NULL CHECK (grow_days BETWEEN 1 AND 365),
+  stage VARCHAR(50) DEFAULT 'seedling',
+  memo TEXT,
+  status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'completed')),
+  completed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_crop_batches_user ON crop_batches(user_id, status);
+
+CREATE TRIGGER update_crop_batches_updated_at BEFORE UPDATE ON crop_batches
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ==========================================
+-- 14. 센서 이상 알림 (Sensor Alerts)
+-- ==========================================
+
+CREATE TABLE sensor_alerts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  device_id UUID NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+  device_name VARCHAR(255),
+  sensor_type VARCHAR(50) NOT NULL,
+  alert_type VARCHAR(30) NOT NULL CHECK (alert_type IN ('no_data', 'flatline', 'spike', 'out_of_range')),
+  severity VARCHAR(20) NOT NULL CHECK (severity IN ('warning', 'critical')),
+  message TEXT NOT NULL,
+  value DECIMAL(10, 4),
+  threshold TEXT,
+  resolved BOOLEAN DEFAULT false,
+  resolved_at TIMESTAMPTZ,
+  snoozed_until TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_sensor_alerts_user ON sensor_alerts(user_id, resolved, created_at DESC);
+CREATE INDEX idx_sensor_alerts_device ON sensor_alerts(device_id, alert_type, resolved);
+
+-- ==========================================
+-- 12. 작업 달력 (Task Calendar)
+-- ==========================================
+
+-- crop_batches에 house_id FK 추가
+ALTER TABLE crop_batches ADD COLUMN IF NOT EXISTS house_id UUID REFERENCES houses(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_crop_batches_house ON crop_batches(house_id);
+
+-- 작업 템플릿
+CREATE TABLE task_templates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  task_name VARCHAR(100) NOT NULL,
+  interval_days INT NOT NULL CHECK (interval_days BETWEEN 1 AND 365),
+  start_offset_days INT NOT NULL DEFAULT 0 CHECK (start_offset_days >= 0),
+  default_reschedule_mode VARCHAR(20) NOT NULL DEFAULT 'anchor'
+    CHECK (default_reschedule_mode IN ('anchor', 'shift', 'one_time')),
+  is_preset BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX idx_task_templates_user ON task_templates(user_id);
+CREATE TRIGGER update_task_templates_updated_at BEFORE UPDATE ON task_templates
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- 배치-템플릿 연결
+CREATE TABLE batch_tasks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  batch_id UUID NOT NULL REFERENCES crop_batches(id) ON DELETE CASCADE,
+  template_id UUID NOT NULL REFERENCES task_templates(id) ON DELETE CASCADE,
+  anchor_date DATE NOT NULL,
+  reschedule_mode VARCHAR(20) NOT NULL DEFAULT 'anchor'
+    CHECK (reschedule_mode IN ('anchor', 'shift', 'one_time')),
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(batch_id, template_id)
+);
+CREATE INDEX idx_batch_tasks_batch ON batch_tasks(batch_id);
+
+-- 개별 작업 일정
+CREATE TABLE task_occurrences (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  batch_task_id UUID NOT NULL REFERENCES batch_tasks(id) ON DELETE CASCADE,
+  batch_id UUID NOT NULL REFERENCES crop_batches(id) ON DELETE CASCADE,
+  scheduled_date DATE NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'planned'
+    CHECK (status IN ('planned', 'done', 'skipped')),
+  done_date DATE,
+  memo TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX idx_task_occurrences_batch ON task_occurrences(batch_id, scheduled_date);
+CREATE INDEX idx_task_occurrences_date ON task_occurrences(scheduled_date, status);
+CREATE INDEX idx_task_occurrences_batch_task ON task_occurrences(batch_task_id, scheduled_date);
+
+-- ==========================================
+-- 15. 생육단계 기반 작업 관리 확장
+-- ==========================================
+
+-- crop_batches 확장: 그룹 연동 + 정식일 + 생육단계
+ALTER TABLE crop_batches ADD COLUMN IF NOT EXISTS group_id UUID REFERENCES house_groups(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_crop_batches_group ON crop_batches(group_id);
+ALTER TABLE crop_batches ADD COLUMN IF NOT EXISTS transplant_date DATE;
+ALTER TABLE crop_batches ADD COLUMN IF NOT EXISTS current_stage VARCHAR(30) DEFAULT 'seedling';
+ALTER TABLE crop_batches ADD COLUMN IF NOT EXISTS stage_started_at TIMESTAMPTZ DEFAULT NOW();
+
+-- task_templates 확장: 작물유형 + 단계 + 유연간격
+ALTER TABLE task_templates ADD COLUMN IF NOT EXISTS crop_type VARCHAR(50) DEFAULT 'cherry_tomato';
+ALTER TABLE task_templates ADD COLUMN IF NOT EXISTS stage_name VARCHAR(30);
+ALTER TABLE task_templates ADD COLUMN IF NOT EXISTS interval_min_days INT;
+ALTER TABLE task_templates ADD COLUMN IF NOT EXISTS interval_max_days INT;
+
+-- task_occurrences 확장: 생육피드백 + 허용윈도우
+ALTER TABLE task_occurrences ADD COLUMN IF NOT EXISTS growth_feedback VARCHAR(20);
+ALTER TABLE task_occurrences ADD COLUMN IF NOT EXISTS window_end_date DATE;
 
 -- 코멘트
 COMMENT ON TABLE sensor_data IS '센서 시계열 데이터 (TimescaleDB Hypertable)';
@@ -320,3 +466,49 @@ COMMENT ON TABLE sensor_data_daily IS '1일 단위 센서 데이터 집계';
 COMMENT ON TABLE devices IS 'IoT 장비 정보 (센서, 액추에이터)';
 COMMENT ON TABLE automation_rules IS '자동화 규칙';
 COMMENT ON TABLE automation_logs IS '자동화 실행 로그';
+COMMENT ON TABLE task_templates IS '작업 템플릿 (단계별 SOP 반복 작업 정의)';
+COMMENT ON TABLE batch_tasks IS '배치-템플릿 연결';
+COMMENT ON TABLE task_occurrences IS '개별 작업 일정 (생육피드백 + 허용윈도우 포함)';
+
+-- ==========================================
+-- 12. 센서 환경 설정 (그룹별 매핑)
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS env_roles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  role_key VARCHAR(50) UNIQUE NOT NULL,
+  label VARCHAR(100) NOT NULL,
+  category VARCHAR(20) NOT NULL DEFAULT 'internal',
+  unit VARCHAR(20) NOT NULL DEFAULT '',
+  sort_order INT NOT NULL DEFAULT 0,
+  is_default BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+INSERT INTO env_roles (role_key, label, category, unit, sort_order) VALUES
+  ('internal_temp',     '내부 온도',  'internal', '°C',  1),
+  ('internal_humidity', '내부 습도',  'internal', '%',   2),
+  ('external_temp',     '외부 온도',  'external', '°C',  3),
+  ('external_humidity', '외부 습도',  'external', '%',   4),
+  ('co2',               'CO2',       'internal', 'ppm', 5),
+  ('uv',                'UV',        'external', '',    6),
+  ('rainfall',          '강우량',    'external', 'mm',  7)
+ON CONFLICT (role_key) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS env_mappings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  group_id UUID NOT NULL REFERENCES house_groups(id) ON DELETE CASCADE,
+  role_key VARCHAR(50) NOT NULL REFERENCES env_roles(role_key) ON DELETE CASCADE,
+  source_type VARCHAR(20) NOT NULL CHECK (source_type IN ('sensor', 'weather')),
+  device_id UUID REFERENCES devices(id) ON DELETE SET NULL,
+  sensor_type VARCHAR(50),
+  weather_field VARCHAR(50),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(group_id, role_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_env_mappings_group ON env_mappings(group_id);
+
+COMMENT ON TABLE env_roles IS '환경 역할 정의 (내부 온도, 외부 습도 등)';
+COMMENT ON TABLE env_mappings IS '그룹별 환경 역할 → 소스 매핑';

@@ -2,7 +2,6 @@ import apiClient from './client'
 
 export interface ReportParams {
   groupId?: string
-  houseId?: string
   sensorType?: string
   startDate: string
   endDate: string
@@ -15,7 +14,7 @@ export const reportApi = {
   getHourlyData: (params: ReportParams) =>
     apiClient.get('/reports/hourly', { params }),
 
-  getActuatorStats: (params: Omit<ReportParams, 'houseId' | 'sensorType'>) =>
+  getActuatorStats: (params: Omit<ReportParams, 'sensorType'>) =>
     apiClient.get('/reports/actuator-stats', { params }),
 
   exportCsv: (params: ReportParams) =>
@@ -24,9 +23,6 @@ export const reportApi = {
       responseType: 'blob',
     }),
 
-  exportPdf: (params: ReportParams) =>
-    apiClient.get('/reports/export/pdf', {
-      params,
-      responseType: 'blob',
-    }),
+  getWeatherHourly: (params: Pick<ReportParams, 'startDate' | 'endDate'>) =>
+    apiClient.get('/reports/weather-hourly', { params }),
 }

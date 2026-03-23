@@ -18,7 +18,10 @@ export class User {
   name: string;
 
   @Column({ type: 'varchar', length: 20 })
-  role: 'admin' | 'user';
+  role: 'admin' | 'farm_admin' | 'farm_user';
+
+  @Column({ name: 'parent_user_id', type: 'uuid', nullable: true })
+  parentUserId: string | null;
 
   @Column({ nullable: true })
   address: string;

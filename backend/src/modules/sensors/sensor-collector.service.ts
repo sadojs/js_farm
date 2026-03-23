@@ -10,19 +10,17 @@ import { EventsGateway } from '../gateway/events.gateway';
 
 // Tuya 상태 코드 → 센서 타입 매핑
 const TUYA_SENSOR_MAP: Record<string, { field: string; unit: string; divisor: number }> = {
-  // 온도 (공통)
+  // hjjcy 센서 (내부 온습도)
   va_temperature: { field: 'temperature', unit: '°C', divisor: 10 },
   temp_current: { field: 'temperature', unit: '°C', divisor: 10 },
-  // 습도 (공통)
   va_humidity: { field: 'humidity', unit: '%', divisor: 1 },
   humidity_value: { field: 'humidity', unit: '%', divisor: 1 },
-  // CO2 (hjjcy 센서)
   co2_value: { field: 'co2', unit: 'ppm', divisor: 1 },
-  // 강우량 (qxj 센서)
+  // qxj 센서 (외부 온습도)
+  temp_current_external: { field: 'temperature', unit: '°C', divisor: 10 },
+  humidity_outdoor: { field: 'humidity', unit: '%', divisor: 1 },
   rain_1h: { field: 'rainfall', unit: 'mm', divisor: 10 },
-  // UV (qxj 센서)
   uv_index: { field: 'uv', unit: '', divisor: 1 },
-  // 이슬점 (qxj 센서)
   dew_point_temp: { field: 'dew_point', unit: '°C', divisor: 10 },
 };
 
@@ -72,6 +70,8 @@ export class SensorCollectorService {
               const mapping = TUYA_SENSOR_MAP[status.code];
               if (!mapping) continue; // 매핑에 없는 코드는 무시
 
+              // null, undefined, 빈 문자열 → 0으로 변환되는 것 방지
+              if (status.value == null || status.value === '') continue;
               const numValue = Number(status.value);
               if (isNaN(numValue)) continue;
 

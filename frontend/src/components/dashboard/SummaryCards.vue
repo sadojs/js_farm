@@ -14,6 +14,7 @@
         <div class="detail-list">
           <div v-if="actuatorDevices.length === 0" class="detail-empty">
             등록된 장비가 없습니다
+            <router-link to="/devices" class="empty-inline-link">설정하기</router-link>
           </div>
           <div
             v-for="device in actuatorDevices"
@@ -46,6 +47,7 @@
         <div class="detail-list">
           <div v-if="sensorDevices.length === 0" class="detail-empty">
             등록된 센서가 없습니다
+            <router-link to="/devices" class="empty-inline-link">설정하기</router-link>
           </div>
           <div
             v-for="device in sensorDevices"
@@ -54,7 +56,10 @@
           >
             <div class="sensor-item-top">
               <span :class="['status-dot', device.online ? 'online' : 'offline']"></span>
-              <span class="item-name">{{ device.name }}</span>
+              <div class="item-info">
+                <span class="item-name">{{ device.name }}</span>
+                <span class="item-location">{{ getDeviceLocation(device) }}</span>
+              </div>
             </div>
             <div v-if="device.sensorData && device.online" class="sensor-chip-row">
               <span
@@ -76,7 +81,7 @@
 
     <!-- 하단 요약 카드 -->
     <div class="summary-row">
-      <div class="summary-item">
+      <div :class="['summary-item', canNavigate(0) && 'summary-item-link']" @click="navigateTo(0)">
         <div class="summary-icon equip">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         </div>
@@ -85,7 +90,7 @@
           <span class="summary-label">전체 장비</span>
         </div>
       </div>
-      <div class="summary-item">
+      <div :class="['summary-item', canNavigate(1) && 'summary-item-link']" @click="navigateTo(1)">
         <div class="summary-icon group">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </div>
@@ -94,7 +99,7 @@
           <span class="summary-label">활성 그룹</span>
         </div>
       </div>
-      <div class="summary-item">
+      <div :class="['summary-item', canNavigate(2) && 'summary-item-link']" @click="navigateTo(2)">
         <div class="summary-icon auto">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </div>
@@ -103,7 +108,7 @@
           <span class="summary-label">자동화 룰</span>
         </div>
       </div>
-      <div class="summary-item">
+      <div :class="['summary-item', canNavigate(3) && 'summary-item-link']" @click="navigateTo(3)">
         <div class="summary-icon online">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
         </div>
@@ -118,14 +123,35 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useDeviceStore } from '../../stores/device.store'
 import { useGroupStore } from '../../stores/group.store'
 import { useAutomationStore } from '../../stores/automation.store'
+import { useAuthStore } from '../../stores/auth.store'
 import type { Device } from '../../types/device.types'
 
+const router = useRouter()
 const deviceStore = useDeviceStore()
 const groupStore = useGroupStore()
 const automationStore = useAutomationStore()
+const authStore = useAuthStore()
+
+const summaryCards = [
+  { route: '/devices',    denyFarmUser: true  },
+  { route: '/groups',     denyFarmUser: false },
+  { route: '/automation', denyFarmUser: true  },
+  { route: '/devices',    denyFarmUser: true  },
+]
+
+function canNavigate(index: number): boolean {
+  if (summaryCards[index].denyFarmUser && authStore.isFarmUser) return false
+  return true
+}
+
+function navigateTo(index: number) {
+  if (!canNavigate(index)) return
+  router.push(summaryCards[index].route)
+}
 
 const DISPLAY_FIELDS = ['temperature', 'humidity', 'co2', 'rainfall', 'uv', 'dew_point']
 
@@ -150,10 +176,14 @@ const ruleActive = computed(() => automationStore.rules.filter(r => r.enabled).l
 const onlineTotal = computed(() => deviceStore.onlineDevices.length)
 
 function getDeviceLocation(device: Device): string {
-  if (!device.houseId) return ''
   for (const group of groupStore.groups) {
-    const house = (group.houses || []).find(h => h.id === device.houseId)
-    if (house) return `${group.name} > ${house.name}`
+    if (device.houseId) {
+      const house = (group.houses || []).find(h => h.id === device.houseId)
+      if (house) return `${group.name} > ${house.name}`
+    }
+    if ((group.devices || []).some(d => d.id === device.id)) {
+      return group.name
+    }
   }
   return ''
 }
@@ -266,6 +296,15 @@ onMounted(async () => {
   color: var(--text-muted);
   font-size: calc(15px * var(--content-scale, 1));
 }
+.empty-inline-link {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: calc(14px * var(--content-scale, 1));
+}
+.empty-inline-link:hover { text-decoration: underline; }
 
 .detail-item {
   display: flex;
@@ -383,6 +422,20 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+.summary-item-link {
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.summary-item-link:hover {
+  background: var(--bg-hover);
+  transform: translateY(-1px);
+}
+
+.summary-item-link:active {
+  transform: translateY(0);
 }
 
 .summary-icon {

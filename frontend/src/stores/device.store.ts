@@ -37,7 +37,29 @@ export const useDeviceStore = defineStore('device', () => {
   }
 
   async function controlDevice(deviceId: string, commands: { code: string; value: any }[]) {
-    return deviceApi.control(deviceId, commands)
+    const { data } = await deviceApi.control(deviceId, commands)
+    return data as { success: boolean; result?: any; msg?: string; code?: number; t?: number; tid?: string }
+  }
+
+  async function verifyDeviceStatus(
+    deviceId: string,
+    switchCode: string,
+    expectedValue: boolean
+  ): Promise<{ verified: boolean; actualValue?: boolean }> {
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    const data = await fetchDeviceStatus(deviceId)
+    if (!data || !data.success) {
+      return { verified: false }
+    }
+
+    const status = data.status?.find((s: any) => s.code === switchCode)
+    if (!status) return { verified: false }
+
+    return {
+      verified: status.value === expectedValue,
+      actualValue: status.value,
+    }
   }
 
   function updateDeviceStatus(deviceId: string, online: boolean) {
@@ -61,14 +83,29 @@ export const useDeviceStore = defineStore('device', () => {
             device.switchState = switchStatus.value
           }
 
+          // 관수 장비: 개별 스위치 상태 저장
+          if (device.equipmentType === 'irrigation') {
+            const states: Record<string, boolean> = {}
+            for (const s of data.status) {
+              if (typeof s.value === 'boolean' && (s.code.startsWith('switch_') || s.code.startsWith('switch_usb'))) {
+                states[s.code] = s.value
+              }
+            }
+            device.switchStates = states
+          }
+
           // 센서: Tuya 코드를 센서 필드로 매핑 (확장 가능)
           if (device.deviceType === 'sensor') {
             const TUYA_SENSOR_MAP: Record<string, { field: string; divisor: number }> = {
+              // hjjcy 센서 (내부 온습도)
               'va_temperature': { field: 'temperature', divisor: 10 },
               'temp_current': { field: 'temperature', divisor: 10 },
               'va_humidity': { field: 'humidity', divisor: 1 },
               'humidity_value': { field: 'humidity', divisor: 1 },
               'co2_value': { field: 'co2', divisor: 1 },
+              // qxj 센서 (외부 온습도)
+              'temp_current_external': { field: 'temperature', divisor: 10 },
+              'humidity_outdoor': { field: 'humidity', divisor: 1 },
               'rain_1h': { field: 'rainfall', divisor: 10 },
               'uv_index': { field: 'uv', divisor: 1 },
               'dew_point_temp': { field: 'dew_point', divisor: 10 },
@@ -112,6 +149,7 @@ export const useDeviceStore = defineStore('device', () => {
     registerDevices,
     removeDevice,
     controlDevice,
+    verifyDeviceStatus,
     updateDeviceStatus,
     fetchDeviceStatus,
     fetchAllActuatorStatuses,

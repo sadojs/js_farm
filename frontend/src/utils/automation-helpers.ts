@@ -1,7 +1,23 @@
 import type {
   Condition, ConditionGroup, ConditionSet,
-  WizardFormData, RuleAction,
+  WizardFormData, RuleAction, IrrigationConditions,
 } from '../types/automation.types'
+
+// === 환경설정 역할별 필드 설정 ===
+
+export const ENV_ROLE_FIELD_CONFIG: Record<string, {
+  operators: string[]
+  defaultValue: number
+  icon: string
+}> = {
+  internal_temp: { operators: ['gte', 'lte', 'gt', 'lt', 'eq', 'between'], defaultValue: 25, icon: '🌡️' },
+  internal_humidity: { operators: ['gte', 'lte', 'gt', 'lt', 'eq', 'between'], defaultValue: 60, icon: '💧' },
+  external_temp: { operators: ['gte', 'lte', 'gt', 'lt', 'eq', 'between'], defaultValue: 25, icon: '🌡️' },
+  external_humidity: { operators: ['gte', 'lte', 'gt', 'lt', 'eq', 'between'], defaultValue: 60, icon: '💧' },
+  co2: { operators: ['gte', 'lte', 'gt', 'lt', 'eq', 'between'], defaultValue: 800, icon: '💨' },
+  uv: { operators: ['gte', 'lte', 'gt', 'lt', 'eq'], defaultValue: 5, icon: '☀️' },
+  rainfall: { operators: ['gte', 'lte', 'gt', 'lt', 'eq'], defaultValue: 0, icon: '🌧️' },
+}
 
 // === 라벨 매핑 ===
 
@@ -16,6 +32,13 @@ export const FIELD_LABELS: Record<string, string> = {
   ph: 'PH',
   ec: 'EC',
   rain: '비 센서',
+  // env role keys
+  internal_temp: '내부 온도',
+  internal_humidity: '내부 습도',
+  external_temp: '외부 온도',
+  external_humidity: '외부 습도',
+  uv: 'UV',
+  rainfall: '강우량',
 }
 
 export const FIELD_UNITS: Record<string, string> = {
@@ -26,6 +49,13 @@ export const FIELD_UNITS: Record<string, string> = {
   soil_moisture: '%',
   ph: '',
   ec: 'mS/cm',
+  // env role keys
+  internal_temp: '°C',
+  internal_humidity: '%',
+  external_temp: '°C',
+  external_humidity: '%',
+  uv: '',
+  rainfall: 'mm',
 }
 
 export const OPERATOR_LABELS: Record<string, string> = {
@@ -71,7 +101,32 @@ export function formatCondition(c: Condition): string {
   return `${fieldLabel} ${op} ${c.value}${unit}`
 }
 
-export function formatConditionGroup(cg: ConditionGroup): string {
+export function isIrrigationConditions(cond: any): cond is IrrigationConditions {
+  return cond && cond.type === 'irrigation'
+}
+
+const DAY_LABELS_SHORT: Record<number, string> = {
+  0: '일', 1: '월', 2: '화', 3: '수', 4: '목', 5: '금', 6: '토',
+}
+
+export function formatIrrigationSchedule(cond: IrrigationConditions): string {
+  const days = cond.schedule.days
+    .sort((a, b) => (a === 0 ? 7 : a) - (b === 0 ? 7 : b))
+    .map(d => DAY_LABELS_SHORT[d] || d)
+    .join(',')
+  const repeat = cond.schedule.repeat ? '매주 반복' : '1회'
+  return `${cond.startTime} | ${days} | ${repeat}`
+}
+
+export function formatIrrigationZones(cond: IrrigationConditions): string {
+  const active = cond.zones.filter(z => z.enabled)
+  return active.map(z => `${z.name}(${z.duration}분)`).join(', ') || '구역 없음'
+}
+
+export function formatConditionGroup(cg: ConditionGroup | IrrigationConditions): string {
+  if (isIrrigationConditions(cg)) {
+    return formatIrrigationSchedule(cg)
+  }
   if (!cg.groups || cg.groups.length === 0) return '조건 없음'
 
   const parts = cg.groups.map((set) => {
@@ -84,12 +139,23 @@ export function formatConditionGroup(cg: ConditionGroup): string {
   return parts.join(` ${cg.logic} `)
 }
 
+const ACTION_LABELS: Record<string, string> = {
+  open: '열기', close: '닫기', on: '켜기', off: '끄기',
+  start: '시작', stop: '정지', toggle: '전환',
+}
+
+export function localizeAction(command: string): string {
+  return ACTION_LABELS[command] || command
+}
+
 export function formatAction(a: RuleAction): string {
-  if (a.targetDeviceIds?.length) {
-    const cmd = a.command === 'on' ? 'ON' : 'OFF'
-    return `${a.targetDeviceIds.length}개 장비 ${cmd}`
+  if (a.targetDeviceId) {
+    return `장비 제어 (조건에 따라 ON/OFF)`
   }
-  return `${a.command}`
+  if (a.targetDeviceIds?.length) {
+    return `${a.targetDeviceIds.length}개 장비 제어`
+  }
+  return localizeAction(a.command || '제어')
 }
 
 // === 기본값 생성 ===
@@ -99,7 +165,6 @@ export function createEmptyWizardForm(): WizardFormData {
     groupId: undefined,
     sensorDeviceIds: [],
     actuatorDeviceIds: [],
-    actuatorCommand: 'on',
     conditions: { logic: 'AND', groups: [createEmptyConditionSet()] },
     name: '',
     description: '',
@@ -126,6 +191,24 @@ export function createEmptyCondition(): Condition {
 
 export function createEmptyIrrigationStep() {
   return { type: 'water' as const, value: 10, unit: 'minutes' as const }
+}
+
+export function createDefaultIrrigationConditions(): import('../types/automation.types').IrrigationConditions {
+  return {
+    type: 'irrigation',
+    startTime: '10:00',
+    timerSwitch: false,
+    zones: [
+      { zone: 1, name: '1구역', duration: 30, waitTime: 5, enabled: true },
+      { zone: 2, name: '2구역', duration: 30, waitTime: 5, enabled: true },
+      { zone: 3, name: '3구역', duration: 30, waitTime: 5, enabled: true },
+      { zone: 4, name: '4구역', duration: 30, waitTime: 5, enabled: true },
+      { zone: 5, name: '5구역', duration: 30, waitTime: 5, enabled: false },
+    ],
+    mixer: { enabled: false },
+    fertilizer: { duration: 10, preStopWait: 5 },
+    schedule: { days: [1, 2, 3, 4, 5, 6, 0], repeat: true },
+  }
 }
 
 // === ruleType 자동 결정 ===

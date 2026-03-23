@@ -2,7 +2,7 @@
   <div class="page-container">
     <header class="page-header">
       <h2>👥 사용자 관리</h2>
-      <p class="page-description">사용자 계정을 생성하고 Tuya 프로젝트를 할당하세요</p>
+      <p class="page-description">사용자 계정을 생성하고 센서 프로젝트를 할당하세요</p>
       <button class="btn-primary" @click="showUserModal = true">
         + 새 사용자 추가
       </button>
@@ -18,7 +18,7 @@
             <th>이메일</th>
             <th>역할</th>
             <th>주소</th>
-            <th>Tuya 프로젝트</th>
+            <th>센서 프로젝트</th>
             <th>등록일</th>
             <th>상태</th>
             <th>작업</th>
@@ -35,7 +35,10 @@
             <td>{{ user.email }}</td>
             <td>
               <span class="role-badge" :class="user.role">
-                {{ user.role === 'admin' ? '관리자' : '사용자' }}
+                {{ roleLabel(user.role) }}
+              </span>
+              <span v-if="user.parentUserName" class="parent-badge">
+                {{ user.parentUserName }}
               </span>
             </td>
             <td>
@@ -64,7 +67,7 @@
                 </button>
                 <button
                   class="btn-icon"
-                  title="Tuya 프로젝트 할당"
+                  title="센서 프로젝트 할당"
                   @click="assignProject(user)"
                 >
                   🔗
@@ -117,11 +120,22 @@ interface User {
   id: string
   name: string
   email: string
-  role: 'admin' | 'user'
+  role: 'admin' | 'farm_admin' | 'farm_user'
+  parentUserId?: string
+  parentUserName?: string
   address?: string
   tuyaProject?: any
   createdAt: string
   status: 'active' | 'inactive'
+}
+
+function roleLabel(role: string): string {
+  switch (role) {
+    case 'admin': return '플랫폼 관리자'
+    case 'farm_admin': return '농장 관리자'
+    case 'farm_user': return '농장 사용자'
+    default: return role
+  }
 }
 
 const authStore = useAuthStore()
@@ -181,6 +195,7 @@ const saveUser = async (userData: any) => {
       if (userData.role) payload.role = userData.role
       if (userData.status) payload.status = userData.status
       if (userData.password) payload.password = userData.password
+      if (userData.parentUserId !== undefined) payload.parentUserId = userData.parentUserId || null
 
       // 자기 자신이면 /users/me, 아니면 관리자 경로
       if (selectedUser.value.id === authStore.user?.id) {
@@ -190,8 +205,8 @@ const saveUser = async (userData: any) => {
         await userApi.update(selectedUser.value.id, payload)
       }
 
-      // Tuya 프로젝트 정보가 있으면 함께 업데이트
-      if (userData.tuyaProject?.name && userData.tuyaProject?.accessId && userData.tuyaProject?.endpoint) {
+      // Tuya 프로젝트 정보가 있으면 함께 업데이트 (farm_user는 parent 것을 사용하므로 제외)
+      if (userData.role !== 'farm_user' && userData.tuyaProject?.name && userData.tuyaProject?.accessId && userData.tuyaProject?.endpoint) {
         const tuyaPayload: UpdateTuyaRequest = {
           name: userData.tuyaProject.name,
           accessId: userData.tuyaProject.accessId,
@@ -214,8 +229,9 @@ const saveUser = async (userData: any) => {
         email: userData.email,
         password: userData.password,
         name: userData.name,
-        role: userData.role || 'user',
+        role: userData.role || 'farm_admin',
         address: userData.address,
+        parentUserId: userData.parentUserId,
       })
       await fetchUsers()
     }
@@ -350,10 +366,12 @@ const handleProjectAssign = async (project: any) => {
 }
 
 .role-badge {
+  display: inline-block;
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .role-badge.admin {
@@ -361,9 +379,24 @@ const handleProjectAssign = async (project: any) => {
   color: #1976d2;
 }
 
-.role-badge.user {
-  background: #f3e5f5;
-  color: #7b1fa2;
+.role-badge.farm_admin {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.role-badge.farm_user {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.parent-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  background: var(--bg-badge);
+  color: var(--text-muted);
 }
 
 .address-text {
@@ -372,6 +405,7 @@ const handleProjectAssign = async (project: any) => {
 }
 
 .project-badge {
+  display: inline-block;
   padding: 4px 10px;
   background: #e8f5e9;
   color: #2e7d32;
@@ -379,6 +413,7 @@ const handleProjectAssign = async (project: any) => {
   font-size: 12px;
   font-weight: 500;
   font-family: monospace;
+  white-space: nowrap;
 }
 
 .text-muted {
@@ -388,10 +423,12 @@ const handleProjectAssign = async (project: any) => {
 }
 
 .status-badge {
+  display: inline-block;
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .status-badge.active {
@@ -443,7 +480,7 @@ const handleProjectAssign = async (project: any) => {
   }
 
   .users-table {
-    min-width: 900px;
+    min-width: 1100px;
   }
 }
 </style>

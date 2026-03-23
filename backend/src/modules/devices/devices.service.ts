@@ -1,11 +1,27 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Device } from './entities/device.entity';
 import { TuyaProject } from '../users/entities/tuya-project.entity';
+import { AutomationRule } from '../automation/entities/automation-rule.entity';
 import { TuyaService } from '../integrations/tuya/tuya.service';
 import { EventsGateway } from '../gateway/events.gateway';
+
+const DEVICE_DEPENDENCY_SQL = `
+  SELECT id, name, enabled FROM automation_rules
+  WHERE user_id = $1
+  AND EXISTS (
+    SELECT 1 FROM jsonb_array_elements(
+      CASE WHEN jsonb_typeof(actions) = 'array'
+           THEN actions
+           ELSE jsonb_build_array(actions)
+      END
+    ) AS action
+    WHERE action->>'targetDeviceId' = $2
+       OR action->'targetDeviceIds' ? $2
+  )
+`;
 
 @Injectable()
 export class DevicesService {
@@ -14,6 +30,7 @@ export class DevicesService {
   constructor(
     @InjectRepository(Device) private devicesRepo: Repository<Device>,
     @InjectRepository(TuyaProject) private tuyaProjectRepo: Repository<TuyaProject>,
+    @InjectRepository(AutomationRule) private rulesRepo: Repository<AutomationRule>,
     private tuyaService: TuyaService,
     private eventsGateway: EventsGateway,
   ) {}
@@ -61,6 +78,21 @@ export class DevicesService {
         });
         results.push(await this.devicesRepo.save(entity));
       }
+    }
+
+    // 개폐기 페어링: opener_open + opener_close 쌍이 있으면 상호 pairedDeviceId 설정
+    const openerOpen = results.find(d => d.equipmentType === 'opener_open');
+    const openerClose = results.find(d => d.equipmentType === 'opener_close');
+    if (openerOpen && openerClose) {
+      openerOpen.pairedDeviceId = openerClose.id;
+      openerClose.pairedDeviceId = openerOpen.id;
+      // openerGroupName 설정 (프론트에서 전달)
+      const groupName = devices.find(d => (d as any).openerGroupName)?.['openerGroupName'];
+      if (groupName) {
+        openerOpen.openerGroupName = groupName;
+        openerClose.openerGroupName = groupName;
+      }
+      await this.devicesRepo.save([openerOpen, openerClose]);
     }
 
     return results;
@@ -124,9 +156,110 @@ export class DevicesService {
     }
   }
 
+  async getDependencies(id: string, userId: string) {
+    const device = await this.devicesRepo.findOne({ where: { id, userId } });
+    if (!device) throw new NotFoundException();
+
+    const isOpener = device.equipmentType === 'opener_open' || device.equipmentType === 'opener_close';
+    const isOpenerPair = isOpener && !!device.pairedDeviceId;
+
+    const automationRules: { id: string; name: string; enabled: boolean }[] =
+      await this.devicesRepo.query(DEVICE_DEPENDENCY_SQL, [userId, id]);
+
+    let pairedDevice: Device | null = null;
+    let pairedDeviceAutomationRules: { id: string; name: string; enabled: boolean }[] = [];
+
+    if (isOpenerPair) {
+      pairedDevice = await this.devicesRepo.findOne({ where: { id: device.pairedDeviceId } });
+      if (pairedDevice) {
+        pairedDeviceAutomationRules = await this.devicesRepo.query(
+          DEVICE_DEPENDENCY_SQL,
+          [userId, device.pairedDeviceId],
+        );
+      }
+    }
+
+    // 장비가 속한 그룹 목록 조회
+    const groups: { id: string; name: string }[] = await this.devicesRepo.query(
+      `SELECT g.id, g.name FROM house_groups g
+       INNER JOIN group_devices gd ON gd.group_id = g.id
+       WHERE gd.device_id = $1`,
+      [id],
+    );
+
+    const canDelete = automationRules.length === 0 && pairedDeviceAutomationRules.length === 0 && groups.length === 0;
+
+    return {
+      canDelete,
+      isOpenerPair,
+      pairedDevice: pairedDevice
+        ? { id: pairedDevice.id, name: pairedDevice.name, equipmentType: pairedDevice.equipmentType }
+        : null,
+      automationRules,
+      ...(isOpenerPair && { pairedDeviceAutomationRules }),
+      groups,
+    };
+  }
+
+  async removeOpenerPair(id: string, userId: string) {
+    const device = await this.devicesRepo.findOne({ where: { id, userId } });
+    if (!device) throw new NotFoundException();
+
+    const isOpener = device.equipmentType === 'opener_open' || device.equipmentType === 'opener_close';
+    if (!isOpener) throw new BadRequestException('개폐기 장비가 아닙니다.');
+
+    const pairedDevice = device.pairedDeviceId
+      ? await this.devicesRepo.findOne({ where: { id: device.pairedDeviceId } })
+      : null;
+
+    const ids = [id, pairedDevice?.id].filter(Boolean) as string[];
+
+    // 두 장비 모두 의존성 검사
+    const allRules: { id: string; name: string; enabled: boolean }[] = [];
+    for (const deviceId of ids) {
+      const rules = await this.devicesRepo.query(DEVICE_DEPENDENCY_SQL, [userId, deviceId]);
+      allRules.push(...rules);
+    }
+
+    if (allRules.length > 0) {
+      throw new ConflictException({
+        message: '자동화 룰에서 사용 중인 장비는 삭제할 수 없습니다.',
+        dependencies: { automationRules: allRules },
+      });
+    }
+
+    // 원자적 삭제
+    await this.devicesRepo.query(
+      'DELETE FROM group_devices WHERE device_id = ANY($1)',
+      [ids],
+    );
+    await this.devicesRepo.delete({ id: In(ids) });
+
+    return { message: '개폐기 페어가 삭제되었습니다.', deletedIds: ids };
+  }
+
   async remove(id: string, userId: string) {
     const device = await this.devicesRepo.findOne({ where: { id, userId } });
     if (!device) throw new NotFoundException();
+
+    // 개폐기는 개별 삭제 불가 — opener-pair 엔드포인트 사용
+    if (device.equipmentType === 'opener_open' || device.equipmentType === 'opener_close') {
+      throw new BadRequestException('개폐기 장비는 /devices/:id/opener-pair 를 통해 쌍으로 삭제해야 합니다.');
+    }
+
+    // 자동화 의존성 체크
+    const rules: { id: string; name: string; enabled: boolean }[] =
+      await this.devicesRepo.query(DEVICE_DEPENDENCY_SQL, [userId, id]);
+
+    if (rules.length > 0) {
+      throw new ConflictException({
+        message: '자동화 룰에서 사용 중인 장비는 삭제할 수 없습니다.',
+        dependencies: { automationRules: rules },
+      });
+    }
+
+    // group_devices 조인 테이블에서 먼저 제거 (외래키 제약 방지)
+    await this.devicesRepo.query('DELETE FROM group_devices WHERE device_id = $1', [id]);
     await this.devicesRepo.remove(device);
     return { message: '삭제되었습니다.' };
   }

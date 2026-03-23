@@ -31,6 +31,14 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  // 팜 관리자 목록 (farm_user 등록 시 소속 선택용) — :id 위에 배치
+  @Get('farm-admins')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  findFarmAdmins() {
+    return this.usersService.findFarmAdmins();
+  }
+
   @Get(':id')
   @UseGuards(RolesGuard)
   @Roles('admin')

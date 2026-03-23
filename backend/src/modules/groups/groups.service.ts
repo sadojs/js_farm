@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { HouseGroup } from './entities/house-group.entity';
 import { House } from './entities/house.entity';
 import { Device } from '../devices/entities/device.entity';
+import { AutomationRule } from '../automation/entities/automation-rule.entity';
 
 @Injectable()
 export class GroupsService {
@@ -11,6 +12,7 @@ export class GroupsService {
     @InjectRepository(HouseGroup) private groupsRepo: Repository<HouseGroup>,
     @InjectRepository(House) private housesRepo: Repository<House>,
     @InjectRepository(Device) private devicesRepo: Repository<Device>,
+    @InjectRepository(AutomationRule) private rulesRepo: Repository<AutomationRule>,
   ) {}
 
   async findAllGroups(userId: string) {
@@ -65,9 +67,40 @@ export class GroupsService {
     return this.groupsRepo.findOne({ where: { id }, relations: ['houses'] });
   }
 
+  async getDependencies(id: string, userId: string) {
+    const group = await this.groupsRepo.findOne({ where: { id, userId } });
+    if (!group) throw new NotFoundException();
+
+    const automationRules = await this.rulesRepo.find({
+      where: { groupId: id, userId },
+      select: ['id', 'name', 'enabled'],
+    });
+
+    return {
+      canDelete: automationRules.length === 0,
+      automationRules: automationRules.map(r => ({ id: r.id, name: r.name, enabled: r.enabled })),
+    };
+  }
+
   async removeGroup(id: string, userId: string) {
     const group = await this.groupsRepo.findOne({ where: { id, userId } });
     if (!group) throw new NotFoundException();
+
+    // 자동화 의존성 체크
+    const rules = await this.rulesRepo.find({
+      where: { groupId: id, userId },
+      select: ['id', 'name', 'enabled'],
+    });
+
+    if (rules.length > 0) {
+      throw new ConflictException({
+        message: '자동화 룰에서 사용 중인 그룹은 삭제할 수 없습니다.',
+        dependencies: {
+          automationRules: rules.map(r => ({ id: r.id, name: r.name, enabled: r.enabled })),
+        },
+      });
+    }
+
     await this.groupsRepo.remove(group);
     return { message: '삭제되었습니다.' };
   }

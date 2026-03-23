@@ -1,10 +1,13 @@
-import { Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository, Like } from 'typeorm';
 import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
 import { User } from '../users/entities/user.entity';
+import { Device } from '../devices/entities/device.entity';
+import { SensorData } from '../sensors/entities/sensor-data.entity';
+import { CropBatch } from '../harvest/entities/crop-batch.entity';
 
 interface PositionEntry {
   code: string;
@@ -25,11 +28,17 @@ interface KmaItem {
 
 @Injectable()
 export class DashboardService {
+  private readonly logger = new Logger(DashboardService.name);
   private readonly positions: PositionEntry[];
 
   constructor(
     @InjectRepository(User)
     private readonly usersRepo: Repository<User>,
+    @InjectRepository(Device)
+    private readonly devicesRepo: Repository<Device>,
+    @InjectRepository(CropBatch)
+    private readonly batchRepo: Repository<CropBatch>,
+    private readonly dataSource: DataSource,
   ) {
     const filePath = path.join(process.cwd(), 'src/modules/dashboard/position.json');
     const raw = fs.readFileSync(filePath, 'utf-8');
@@ -100,6 +109,115 @@ export class DashboardService {
         endpoint: 'getUltraSrtNcst',
       },
     };
+  }
+
+  async getWidgetData(userId: string) {
+    // 1) qxj 디바이스 찾기
+    const qxjDevices = await this.devicesRepo.find({
+      where: { userId, category: Like('%qxj%') },
+    });
+    const qxjIds = qxjDevices.map(d => d.id);
+
+    if (qxjIds.length === 0) {
+      this.logger.warn(`qxj 센서 없음 (userId: ${userId})`);
+      return { inside: null, history: null, trend6h: null, uvStats14d: null, currentStage: null };
+    }
+
+    // 2~6) 병렬 실행 (활성 배치 currentStage 포함)
+    const [inside, history, trend6h, uvStats14d, activeBatch] = await Promise.all([
+      this.getLatestSensorValues(qxjIds),
+      this.getHistoryValues(qxjIds),
+      this.getTrend6h(qxjIds),
+      this.getUvStats14d(qxjIds),
+      this.batchRepo.findOne({
+        where: { userId, status: 'active' },
+        order: { createdAt: 'DESC' },
+        select: ['currentStage'],
+      }),
+    ]);
+
+    return {
+      inside, history, trend6h, uvStats14d,
+      currentStage: activeBatch?.currentStage || null,
+    };
+  }
+
+  private async getLatestSensorValues(deviceIds: string[]) {
+    const rows = await this.dataSource.query(
+      `SELECT DISTINCT ON (sensor_type) sensor_type, value, time
+       FROM sensor_data
+       WHERE device_id = ANY($1)
+         AND sensor_type IN ('temperature', 'humidity', 'dew_point', 'uv', 'rainfall')
+       ORDER BY sensor_type, time DESC`,
+      [deviceIds],
+    );
+    const map = new Map(rows.map((r: any) => [r.sensor_type, Number(r.value)]));
+    return {
+      temperature: map.get('temperature') ?? null,
+      humidity: map.get('humidity') ?? null,
+      dewPoint: map.get('dew_point') ?? null,
+      uv: map.get('uv') ?? null,
+      rainfall: map.get('rainfall') ?? null,
+    };
+  }
+
+  private async getHistoryValues(deviceIds: string[]) {
+    const rows = await this.dataSource.query(
+      `SELECT DISTINCT ON (sensor_type) sensor_type, value, time
+       FROM sensor_data
+       WHERE device_id = ANY($1)
+         AND sensor_type IN ('temperature', 'humidity')
+         AND time BETWEEN (NOW() - INTERVAL '15 minutes') AND (NOW() - INTERVAL '8 minutes')
+       ORDER BY sensor_type, time DESC`,
+      [deviceIds],
+    );
+    if (rows.length === 0) return null;
+    const map = new Map<string, { value: number; time: Date }>(
+      rows.map((r: any) => [r.sensor_type, { value: Number(r.value), time: r.time }]),
+    );
+    return {
+      temperature: map.get('temperature')?.value ?? null,
+      humidity: map.get('humidity')?.value ?? null,
+      timestamp: (map.get('temperature')?.time || map.get('humidity')?.time || null)?.toISOString?.() ?? null,
+    };
+  }
+
+  private async getTrend6h(deviceIds: string[]) {
+    const rows = await this.dataSource.query(
+      `SELECT sensor_type, value, time
+       FROM sensor_data
+       WHERE device_id = ANY($1)
+         AND sensor_type IN ('temperature', 'humidity', 'uv')
+         AND time >= NOW() - INTERVAL '6 hours'
+       ORDER BY time ASC`,
+      [deviceIds],
+    );
+    const result: Record<string, { time: string; value: number }[]> = {
+      temperature: [],
+      humidity: [],
+      uv: [],
+    };
+    for (const row of rows) {
+      const key = row.sensor_type as string;
+      if (result[key]) {
+        result[key].push({ time: row.time, value: Number(row.value) });
+      }
+    }
+    return result;
+  }
+
+  private async getUvStats14d(deviceIds: string[]) {
+    const rows = await this.dataSource.query(
+      `SELECT MIN(value) as min, MAX(value) as max
+       FROM sensor_data
+       WHERE device_id = ANY($1)
+         AND sensor_type = 'uv'
+         AND time >= NOW() - INTERVAL '14 days'
+         AND value > 0`,
+      [deviceIds],
+    );
+    if (!rows[0] || rows[0].min == null) return null;
+    return { min: Number(rows[0].min), max: Number(rows[0].max) };
   }
 
   private getServiceKey(): string {

@@ -44,9 +44,23 @@
           <div class="form-group">
             <label>역할 *</label>
             <select v-model="formData.role" class="form-select" required>
-              <option value="user">사용자</option>
-              <option value="admin">관리자</option>
+              <option value="farm_admin">농장 관리자</option>
+              <option value="farm_user">농장 사용자</option>
+              <option value="admin">플랫폼 관리자</option>
             </select>
+          </div>
+
+          <div v-if="formData.role === 'farm_user'" class="form-group">
+            <label>소속 농장 (농장 관리자) *</label>
+            <select v-model="formData.parentUserId" class="form-select" required>
+              <option value="">선택하세요</option>
+              <option v-for="admin in farmAdmins" :key="admin.id" :value="admin.id">
+                {{ admin.name }} ({{ admin.email }})
+              </option>
+            </select>
+            <p class="help-text">
+              농장 사용자는 선택한 농장 관리자의 장비/센서/그룹 데이터를 공유합니다
+            </p>
           </div>
 
           <div class="form-group">
@@ -84,10 +98,10 @@
             </p>
           </div>
 
-          <div class="form-section">
-            <h3 class="section-title">🔗 Tuya Cloud 프로젝트 설정</h3>
+          <div v-if="formData.role !== 'farm_user'" class="form-section">
+            <h3 class="section-title">🔗 센서 클라우드 프로젝트 설정</h3>
             <p class="section-description">
-              사용자가 사용할 Tuya Cloud 프로젝트의 인증 정보를 입력하세요
+              사용자가 사용할 센서 클라우드 프로젝트의 인증 정보를 입력하세요
             </p>
 
             <div class="form-group">
@@ -105,11 +119,11 @@
               <input
                 v-model="formData.tuyaProject.accessId"
                 type="text"
-                placeholder="Tuya IoT Platform의 Access ID"
+                placeholder="IoT Platform의 Access ID"
                 class="form-input"
               />
               <p class="help-text">
-                Tuya IoT Platform → Cloud → Development에서 확인
+                IoT Platform → Cloud → Development에서 확인
               </p>
             </div>
 
@@ -118,7 +132,7 @@
               <input
                 v-model="formData.tuyaProject.accessSecret"
                 type="password"
-                :placeholder="hasExistingTuya ? '저장됨 - 변경 시에만 입력' : 'Tuya IoT Platform의 Access Secret'"
+                :placeholder="hasExistingTuya ? '저장됨 - 변경 시에만 입력' : 'IoT Platform의 Access Secret'"
                 class="form-input"
               />
               <p class="help-text">
@@ -159,10 +173,10 @@
                   v-model="formData.tuyaProject.enabled"
                   type="checkbox"
                 />
-                <span>Tuya 프로젝트 활성화</span>
+                <span>센서 프로젝트 활성화</span>
               </label>
               <p class="help-text">
-                체크 해제 시 사용자는 Tuya 장비를 사용할 수 없습니다
+                체크 해제 시 사용자는 센서 장비를 사용할 수 없습니다
               </p>
             </div>
 
@@ -203,7 +217,8 @@ interface UserFormData {
   id?: string
   name: string
   email: string
-  role: 'admin' | 'user'
+  role: 'admin' | 'farm_admin' | 'farm_user'
+  parentUserId?: string
   address?: string
   tuyaProject?: any
   password?: string
@@ -230,7 +245,7 @@ const emit = defineEmits<{
 const formData = ref<UserFormData>({
   name: '',
   email: '',
-  role: 'user',
+  role: 'farm_admin',
   address: '',
   tuyaProject: {
     name: '',
@@ -241,6 +256,23 @@ const formData = ref<UserFormData>({
     enabled: true
   },
   password: ''
+})
+
+const farmAdmins = ref<{ id: string; name: string; email: string }[]>([])
+
+watch(() => props.show, async (show) => {
+  if (show) {
+    try {
+      const { data } = await userApi.getFarmAdmins()
+      farmAdmins.value = data as any
+    } catch { /* ignore */ }
+  }
+})
+
+watch(() => formData.value.role, (role) => {
+  if (role !== 'farm_user') {
+    formData.value.parentUserId = undefined
+  }
 })
 
 const selectedLevel1 = ref('')
@@ -300,7 +332,7 @@ watch(
       formData.value = {
         name: '',
         email: '',
-        role: 'user',
+        role: 'farm_admin',
         address: '',
         tuyaProject: {
           name: '',

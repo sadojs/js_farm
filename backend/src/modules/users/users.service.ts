@@ -18,20 +18,44 @@ export class UsersService {
     const result: any[] = [];
     for (const user of users) {
       const tuya = await this.tuyaRepo.findOne({ where: { userId: user.id } });
+      // farm_user는 parent의 tuya 정보를 사용
+      let tuyaProject: any = null;
+      if (tuya) {
+        tuyaProject = { name: tuya.name, accessId: tuya.accessId, endpoint: tuya.endpoint, projectId: tuya.projectId, enabled: tuya.enabled };
+      } else if (user.parentUserId) {
+        const parentTuya = await this.tuyaRepo.findOne({ where: { userId: user.parentUserId } });
+        if (parentTuya) {
+          tuyaProject = { name: parentTuya.name, accessId: parentTuya.accessId, endpoint: parentTuya.endpoint, projectId: parentTuya.projectId, enabled: parentTuya.enabled };
+        }
+      }
+      // parentUser 이름 조회
+      let parentUserName: string | null = null;
+      if (user.parentUserId) {
+        const parent = await this.usersRepo.findOne({ where: { id: user.parentUserId } });
+        parentUserName = parent?.name || null;
+      }
       result.push({
         ...this.sanitize(user),
-        tuyaProject: tuya
-          ? {
-              name: tuya.name,
-              accessId: tuya.accessId,
-              endpoint: tuya.endpoint,
-              projectId: tuya.projectId,
-              enabled: tuya.enabled,
-            }
-          : null,
+        parentUserName,
+        tuyaProject,
       });
     }
     return result;
+  }
+
+  async findFarmAdmins() {
+    const admins = await this.usersRepo.find({
+      where: { role: 'farm_admin' as any, status: 'active' as any },
+      order: { name: 'ASC' },
+    });
+    return admins.map(u => this.sanitize(u));
+  }
+
+  getEffectiveUserId(user: { id: string; role: string; parentUserId?: string | null }): string {
+    if (user.role === 'farm_user' && user.parentUserId) {
+      return user.parentUserId;
+    }
+    return user.id;
   }
 
   async findOne(id: string) {
@@ -48,7 +72,8 @@ export class UsersService {
       email: dto.email,
       passwordHash: await bcrypt.hash(dto.password, 10),
       name: dto.name,
-      role: dto.role || 'user',
+      role: dto.role || 'farm_admin',
+      parentUserId: dto.parentUserId || null,
       address: dto.address,
     });
     const saved = await this.usersRepo.save(user);
@@ -75,6 +100,7 @@ export class UsersService {
 
     if (dto.name) user.name = dto.name;
     if (dto.role) user.role = dto.role;
+    if (dto.parentUserId !== undefined) user.parentUserId = dto.parentUserId || null;
     if (dto.address !== undefined) user.address = dto.address;
     if (dto.status) user.status = dto.status;
     if (dto.password) user.passwordHash = await bcrypt.hash(dto.password, 10);
