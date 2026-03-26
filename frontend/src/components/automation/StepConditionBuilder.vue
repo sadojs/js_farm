@@ -3,7 +3,7 @@
     <h3 class="step-title">조건 설정</h3>
     <p class="step-desc">{{ timeOnly ? '시간 기반 조건을 설정하세요.' : '센서 데이터 조건을 설정하세요.' }} 조건 충족 시 장비가 동작합니다.</p>
 
-    <div class="condition-groups">
+    <div v-if="!(timeOnly && isFan)" class="condition-groups">
       <div
         v-for="(group, gi) in modelValue.groups"
         :key="gi"
@@ -102,7 +102,7 @@
                     <option value="false">아니오</option>
                   </select>
                 </template>
-                <template v-else-if="cond.field === 'hour' && cond.operator === 'between'">
+                <template v-else-if="cond.field === 'hour'">
                   <input
                     type="number" min="0" max="23"
                     :value="Array.isArray(cond.value) ? cond.value[0] : 0"
@@ -114,15 +114,6 @@
                     type="number" min="0" max="23"
                     :value="Array.isArray(cond.value) ? cond.value[1] : 23"
                     @input="changeTimeRange(gi, ci, 1, Number(($event.target as HTMLInputElement).value))"
-                    class="value-input small"
-                  />
-                  <span class="unit">시</span>
-                </template>
-                <template v-else-if="cond.field === 'hour'">
-                  <input
-                    type="number" min="0" max="23"
-                    :value="cond.value"
-                    @input="changeValue(gi, ci, Number(($event.target as HTMLInputElement).value))"
                     class="value-input small"
                   />
                   <span class="unit">시</span>
@@ -190,10 +181,36 @@
         <input type="checkbox" v-model="repeatWeekly" />
         매주 반복
       </label>
+
+      <!-- 동작대기 (릴레이) 옵션 -->
+      <div class="relay-option scheduler-relay">
+        <label class="relay-toggle">
+          <input type="checkbox" :checked="schedulerRelay" @change="toggleSchedulerRelay" />
+          동작대기
+        </label>
+        <p class="relay-desc">설정한 시간대 동안 ON/OFF를 반복합니다. 예: 50분 ON → 10분 OFF → 50분 ON … 시간대가 끝나면 정지합니다.</p>
+        <div v-if="schedulerRelay" class="relay-inputs">
+          <input
+            type="number" min="1" max="120"
+            :value="schedulerRelayOn"
+            @input="updateSchedulerRelayOn(Number(($event.target as HTMLInputElement).value))"
+            class="value-input small"
+          />
+          <span class="unit">분 ON</span>
+          <span class="range-sep">/</span>
+          <input
+            type="number" min="1" max="120"
+            :value="schedulerRelayOff"
+            @input="updateSchedulerRelayOff(Number(($event.target as HTMLInputElement).value))"
+            class="value-input small"
+          />
+          <span class="unit">분 OFF 반복</span>
+        </div>
+      </div>
     </div>
 
     <!-- 그룹 추가 -->
-    <button class="btn-add-group" @click="addGroup">+ 조건 그룹 추가</button>
+    <button v-if="!(timeOnly && isFan)" class="btn-add-group" @click="addGroup">+ 조건 그룹 추가</button>
   </div>
 </template>
 
@@ -252,7 +269,27 @@ async function loadEnvData() {
   }
 }
 
-onMounted(loadEnvData)
+onMounted(() => {
+  loadEnvData()
+  // 기존 규칙 편집 시 시간대 스케줄러 릴레이 값 복원
+  const cond = props.modelValue?.groups?.[0]?.conditions?.[0]
+  if (cond) {
+    if (cond.timeSlots?.length) {
+      timeSlots.value = JSON.parse(JSON.stringify(cond.timeSlots))
+    }
+    if (cond.daysOfWeek?.length) {
+      selectedDays.value = [...cond.daysOfWeek]
+    }
+    if (cond.repeat != null) {
+      repeatWeekly.value = cond.repeat
+    }
+    if (cond.relay != null) {
+      schedulerRelay.value = cond.relay
+      schedulerRelayOn.value = cond.relayOnMinutes || 50
+      schedulerRelayOff.value = cond.relayOffMinutes || 10
+    }
+  }
+})
 watch(() => props.groupId, loadEnvData)
 
 function isFanHysteresis(cond: Condition): boolean {
@@ -281,14 +318,32 @@ function toggleDay(day: number) {
   else selectedDays.value.push(day)
 }
 
+// 시간대 스케줄러 릴레이(동작대기) state
+const schedulerRelay = ref(false)
+const schedulerRelayOn = ref(50)
+const schedulerRelayOff = ref(10)
+
+function toggleSchedulerRelay() {
+  schedulerRelay.value = !schedulerRelay.value
+}
+function updateSchedulerRelayOn(v: number) {
+  schedulerRelayOn.value = v
+}
+function updateSchedulerRelayOff(v: number) {
+  schedulerRelayOff.value = v
+}
+
 // 시간대 스케줄러가 변경되면 조건에 반영
-watch([timeSlots, selectedDays, repeatWeekly], () => {
+watch([timeSlots, selectedDays, repeatWeekly, schedulerRelay, schedulerRelayOn, schedulerRelayOff], () => {
   if (!props.timeOnly || !isFan.value) return
   const next = clone()
   if (next.groups[0]?.conditions[0]) {
     next.groups[0].conditions[0].timeSlots = JSON.parse(JSON.stringify(timeSlots.value))
     next.groups[0].conditions[0].daysOfWeek = [...selectedDays.value]
     next.groups[0].conditions[0].repeat = repeatWeekly.value
+    next.groups[0].conditions[0].relay = schedulerRelay.value
+    next.groups[0].conditions[0].relayOnMinutes = schedulerRelayOn.value
+    next.groups[0].conditions[0].relayOffMinutes = schedulerRelayOff.value
   }
   emit('update:modelValue', next)
 }, { deep: true })
@@ -344,7 +399,8 @@ const envRoleFields = computed(() => {
 
 const availableFields = computed(() => {
   if (props.timeOnly) return TIME_ONLY_FIELDS.map(f => ({ ...f, displayLabel: f.label }))
-  return envRoleFields.value
+  // 센서 모드: 시간 필드 제외 (시간 조건은 2단계 센서 선택에서 별도 관리)
+  return envRoleFields.value.filter(f => f.type !== 'time')
 })
 
 // timeOnly 모드로 전환 시, 기존 센서 조건을 시간 조건으로 변경
@@ -400,7 +456,7 @@ function changeField(gi: number, ci: number, field: string) {
     type: def?.type || 'sensor',
     field,
     operator: (def?.operators[0] as Condition['operator']) || 'gte',
-    value: def?.defaultValue ?? 0,
+    value: (def?.defaultValue ?? 0) as Condition['value'],
     unit: def?.unit || '',
   }
   emit('update:modelValue', next)
@@ -452,7 +508,7 @@ function changeTimeRange(gi: number, ci: number, idx: number, value: number) {
 function addCondition(gi: number) {
   const next = clone()
   if (props.timeOnly) {
-    next.groups[gi].conditions.push({ type: 'time', field: 'hour', operator: 'eq', value: 9, unit: '' })
+    next.groups[gi].conditions.push({ type: 'time', field: 'hour', operator: 'between', value: [6, 18] as [number, number], unit: '' })
   } else {
     // 첫 번째 env role을 기본값으로 사용
     const firstRole = envRoleFields.value[0]
@@ -461,7 +517,7 @@ function addCondition(gi: number) {
         type: 'sensor',
         field: firstRole.value,
         operator: (firstRole.operators[0] as Condition['operator']) || 'gte',
-        value: firstRole.defaultValue ?? 0,
+        value: (firstRole.defaultValue ?? 0) as Condition['value'],
         unit: firstRole.unit,
       })
     } else {
@@ -600,4 +656,15 @@ function addGroup() {
   font-size: 14px; color: var(--text-secondary); cursor: pointer;
 }
 .repeat-toggle input { width: 18px; height: 18px; cursor: pointer; }
+
+/* 스케줄러 내 릴레이 옵션 */
+.scheduler-relay {
+  border-top: 1px solid var(--border-input); padding-top: 12px; margin-top: 4px;
+}
+.relay-desc {
+  font-size: 12px; color: var(--text-muted); margin: 4px 0 0 0; line-height: 1.5;
+}
+.relay-inputs {
+  display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap;
+}
 </style>

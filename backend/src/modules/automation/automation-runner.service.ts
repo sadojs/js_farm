@@ -46,12 +46,13 @@ export class AutomationRunnerService {
     const conditionResult = await this.evaluateRuleConditions(rule, evaluatedAt);
 
     if (!conditionResult.matched) {
-      // 릴레이 모드 체크: 조건 불일치지만 릴레이 활성 시간대 내이면 릴레이 사이클 실행
-      const relayResult = this.checkRelayCycle(rule, evaluatedAt);
-      if (relayResult) {
-        return this.executeRelayAction(rule, relayResult, evaluatedAt);
-      }
       return { executed: false, reason: 'conditions_not_met', details: conditionResult.details };
+    }
+
+    // 릴레이 모드 체크: 조건이 매칭된 시간 범위 내에서 ON/OFF 사이클 실행
+    const relayResult = this.checkRelayCycle(rule, evaluatedAt);
+    if (relayResult) {
+      return this.executeRelayAction(rule, relayResult);
     }
 
     const actionResults: any[] = [];
@@ -289,6 +290,7 @@ export class AutomationRunnerService {
       return currentHour >= start || currentHour <= end;
     }
 
+    // 하위호환: 기존 eq 조건은 해당 시간 한 시간 범위로 처리
     if (operator === 'eq') {
       return currentHour === Number(value);
     }
@@ -661,7 +663,7 @@ export class AutomationRunnerService {
     await this.rulesRepo.save(rule);
   }
 
-  // 릴레이 사이클 체크: 조건에 relay=true가 있고, 현재 활성 시간대 내이면 릴레이 ON/OFF 결정
+  // 릴레이 사이클 체크: 조건에 relay=true가 있으면 시간 범위 시작부터 경과 분 기반 ON/OFF 결정
   private checkRelayCycle(rule: AutomationRule, now: Date): { isOnPhase: boolean; condition: any } | null {
     const conditions = rule.conditions;
     if (!conditions?.groups?.length) return null;
@@ -669,11 +671,20 @@ export class AutomationRunnerService {
     for (const group of conditions.groups) {
       for (const cond of group.conditions || []) {
         if (cond.relay) {
-          const minuteInHour = now.getMinutes();
           const onMinutes = cond.relayOnMinutes || 50;
           const offMinutes = cond.relayOffMinutes || 10;
           const cycleLength = onMinutes + offMinutes;
-          const cyclePosition = minuteInHour % cycleLength;
+
+          // 시간 범위 시작점부터 경과된 총 분을 기준으로 사이클 위치 계산
+          let startHour = 0;
+          if (cond.field === 'hour' && Array.isArray(cond.value)) {
+            startHour = Number(cond.value[0]);
+          }
+          const currentHour = now.getHours();
+          const currentMinute = now.getMinutes();
+          const elapsedMinutes = (currentHour - startHour) * 60 + currentMinute;
+
+          const cyclePosition = ((elapsedMinutes % cycleLength) + cycleLength) % cycleLength;
           const isOnPhase = cyclePosition < onMinutes;
           return { isOnPhase, condition: cond };
         }
@@ -682,7 +693,7 @@ export class AutomationRunnerService {
     return null;
   }
 
-  private async executeRelayAction(rule: AutomationRule, relay: { isOnPhase: boolean; condition: any }, now: Date) {
+  private async executeRelayAction(rule: AutomationRule, relay: { isOnPhase: boolean; condition: any }) {
     const action = Array.isArray(rule.actions) ? rule.actions[0] : rule.actions;
     const actionOverride = { ...action, command: relay.isOnPhase ? 'on' : 'off' };
 

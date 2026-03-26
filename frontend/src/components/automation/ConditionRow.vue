@@ -12,29 +12,13 @@
     </template>
 
     <template v-else-if="condition.field === 'hour'">
-      <select
-        v-if="currentOperators.length > 1"
-        class="form-select op-select"
-        :value="condition.operator"
-        @change="onOperatorChange($event)"
-      >
-        <option v-for="op in currentOperators" :key="op" :value="op">{{ opLabel(op) }}</option>
+      <select class="form-select hour-select" :value="String(rangeStart)" @change="onTimeRangeStart($event)">
+        <option v-for="h in hourOptions" :key="`start-${h}`" :value="h">{{ hourLabel(h) }}</option>
       </select>
-
-      <template v-if="condition.operator === 'between'">
-        <select class="form-select hour-select" :value="String(rangeStart)" @change="onTimeRangeStart($event)">
-          <option v-for="h in hourOptions" :key="`start-${h}`" :value="h">{{ hourLabel(h) }}</option>
-        </select>
-        <span class="sep">~</span>
-        <select class="form-select hour-select" :value="String(rangeEnd)" @change="onTimeRangeEnd($event)">
-          <option v-for="h in hourOptions" :key="`end-${h}`" :value="h">{{ hourLabel(h) }}</option>
-        </select>
-      </template>
-      <template v-else>
-        <select class="form-select hour-select" :value="String(condition.value)" @change="onSingleValue($event)">
-          <option v-for="h in hourOptions" :key="`eq-${h}`" :value="h">{{ hourLabel(h) }}</option>
-        </select>
-      </template>
+      <span class="sep">~</span>
+      <select class="form-select hour-select" :value="String(rangeEnd)" @change="onTimeRangeEnd($event)">
+        <option v-for="h in hourOptions" :key="`end-${h}`" :value="h">{{ hourLabel(h) }}</option>
+      </select>
 
       <template v-if="isIrrigationHour">
         <div class="repeat-toggle">

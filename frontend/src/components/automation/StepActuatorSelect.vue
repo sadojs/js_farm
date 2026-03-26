@@ -73,6 +73,7 @@ import { useGroupStore } from '../../stores/group.store'
 const props = defineProps<{
   selectedIds: string[]
   groupId?: string
+  noSensor?: boolean
 }>()
 const emit = defineEmits<{
   'update:selectedIds': [value: string[]]
@@ -84,11 +85,13 @@ const actuators = computed(() => {
   if (!props.groupId) return []
   const group = groupStore.groups.find(g => g.id === props.groupId)
   if (!group) return []
-  return (group.devices || []).filter((d: any) =>
-    d.deviceType === 'actuator' &&
-    d.equipmentType !== 'opener_open' &&
-    d.equipmentType !== 'opener_close'
-  )
+  return (group.devices || []).filter((d: any) => {
+    if (d.deviceType !== 'actuator') return false
+    if (d.equipmentType === 'opener_open' || d.equipmentType === 'opener_close') return false
+    // 센서 조건 선택 시 관수 장비 숨김 (관수는 시간 조건에서만 사용)
+    if (!props.noSensor && d.equipmentType === 'irrigation') return false
+    return true
+  })
 })
 
 const fans = computed(() => actuators.value.filter((d: any) => d.equipmentType === 'fan'))

@@ -279,9 +279,9 @@ export const SENSOR_CONDITION_FIELDS = [
     value: 'hour',
     label: '시간',
     type: 'time' as const,
-    operators: ['eq', 'between'],
+    operators: ['between'],
     unit: '',
-    defaultValue: 9,
+    defaultValue: [6, 18],
     icon: '🕐',
   },
 ]

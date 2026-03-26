@@ -32,6 +32,7 @@
             v-if="currentStep === 3"
             v-model:selectedIds="formData.actuatorDeviceIds"
             :groupId="formData.groupId"
+            :noSensor="noSensor"
           />
           <StepIrrigationCondition
             v-if="currentStep === 4 && isIrrigation"
