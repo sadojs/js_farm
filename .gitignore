@@ -47,3 +47,18 @@ temp/
 
 # OS
 Thumbs.db
+
+# Screenshots & captured images
+screenshots/
+screenshots_resized/
+capture-screenshots.ts
+capture-user-modals.ts
+
+# bkit / Claude tooling
+.bkit/
+.claude/
+frontend/.claude/
+package.json
+
+# PDCA snapshots (auto-generated)
+docs/.pdca-snapshots/
