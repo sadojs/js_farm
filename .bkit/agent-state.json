@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "enabled": true,
+  "teamName": "",
+  "feature": "remove-harvest",
+  "pdcaPhase": "plan",
+  "orchestrationPattern": "leader",
+  "ctoAgent": "opus",
+  "startedAt": "2026-03-27T12:27:02.682Z",
+  "lastUpdated": "2026-03-27T12:27:54.651Z",
+  "teammates": [
+    {
+      "name": "a90d6a7708e38fa5c",
+      "role": "bkit:gap-detector",
+      "model": "sonnet",
+      "status": "completed",
+      "currentTask": null,
+      "taskId": null,
+      "startedAt": "2026-03-27T12:27:02.683Z",
+      "lastActivityAt": "2026-03-27T12:27:54.648Z"
+    }
+  ],
+  "progress": {
+    "totalTasks": 0,
+    "completedTasks": 0,
+    "inProgressTasks": 0,
+    "failedTasks": 0,
+    "pendingTasks": 0
+  },
+  "recentMessages": [],
+  "sessionId": "6a4e0d8c-e9f8-4b3b-a68b-c17be7b64f45"
+}

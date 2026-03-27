@@ -172,10 +172,6 @@ onMounted(async () => {
 }
 
 @media (max-width: 768px) {
-  .detail-grid {
-    grid-template-columns: 1fr;
-  }
-
   .summary-row {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
@@ -187,10 +183,6 @@ onMounted(async () => {
 
   .summary-number {
     font-size: calc(20px * var(--content-scale, 1));
-  }
-
-  .detail-list {
-    max-height: 240px;
   }
 }
 </style>

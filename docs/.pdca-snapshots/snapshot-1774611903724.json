@@ -1,0 +1,302 @@
+{
+  "timestamp": "2026-03-27T11:45:03.719Z",
+  "reason": "compaction",
+  "status": {
+    "version": "2.0",
+    "lastUpdated": "2026-03-27T11:41:09.643Z",
+    "activeFeatures": [
+      "frontend",
+      "automation",
+      "remove-harvest",
+      "backend",
+      "router",
+      "api"
+    ],
+    "primaryFeature": "remove-harvest",
+    "features": {
+      "frontend": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-26T01:20:42.994Z",
+          "lastUpdated": "2026-03-27T11:39:02.803Z"
+        },
+        "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/main.ts"
+      },
+      "automation": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-26T01:21:19.559Z",
+          "lastUpdated": "2026-03-26T01:59:54.951Z"
+        },
+        "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/components/automation/StepConditionBuilder.vue"
+      },
+      "remove-harvest": {
+        "phase": "plan",
+        "phaseNumber": 1,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {
+          "plan": "docs/01-plan/features/remove-harvest.plan.md"
+        },
+        "timestamps": {
+          "started": "2026-03-27T11:28:27.741Z",
+          "lastUpdated": "2026-03-27T11:28:27.742Z"
+        }
+      },
+      "backend": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-27T11:29:32.554Z",
+          "lastUpdated": "2026-03-27T11:29:45.419Z"
+        },
+        "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/backend/src/app.module.ts"
+      },
+      "router": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-27T11:30:46.025Z",
+          "lastUpdated": "2026-03-27T11:30:46.025Z"
+        },
+        "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/router/index.ts"
+      },
+      "api": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-27T11:40:24.988Z",
+          "lastUpdated": "2026-03-27T11:41:09.643Z"
+        },
+        "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/api/automation-log.api.ts"
+      }
+    },
+    "pipeline": {
+      "currentPhase": 1,
+      "level": "Dynamic",
+      "phaseHistory": []
+    },
+    "session": {
+      "startedAt": "2026-03-25T08:26:08.845Z",
+      "onboardingCompleted": false,
+      "lastActivity": "2026-03-27T11:41:09.643Z"
+    },
+    "history": [
+      {
+        "timestamp": "2026-03-26T01:20:42.994Z",
+        "feature": "frontend",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:21:19.559Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:21:34.520Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:21:38.542Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:21:42.516Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:21:55.400Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:22:12.119Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:22:29.844Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:22:34.970Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:22:43.427Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:51:40.346Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:51:50.667Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:51:59.037Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:52:19.551Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:52:27.348Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:52:39.450Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:52:46.449Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:54:10.143Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:54:18.093Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:56:50.119Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:56:57.002Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:57:13.570Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-26T01:59:54.951Z",
+        "feature": "automation",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T11:29:32.554Z",
+        "feature": "backend",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T11:29:45.419Z",
+        "feature": "backend",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T11:30:46.025Z",
+        "feature": "router",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T11:31:11.458Z",
+        "feature": "frontend",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T11:31:26.379Z",
+        "feature": "frontend",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T11:38:18.810Z",
+        "feature": "frontend",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T11:39:02.803Z",
+        "feature": "frontend",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T11:40:24.988Z",
+        "feature": "api",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T11:41:09.643Z",
+        "feature": "api",
+        "phase": "do",
+        "action": "updated"
+      }
+    ]
+  }
+}
