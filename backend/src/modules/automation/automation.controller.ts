@@ -43,6 +43,11 @@ export class AutomationController {
     return this.automationService.remove(id, this.getEffectiveUserId(user));
   }
 
+  @Get('logs/stats')
+  getLogStats(@CurrentUser() user: any) {
+    return this.automationService.getLogStats(this.getEffectiveUserId(user));
+  }
+
   @Get('logs')
   getLogs(
     @CurrentUser() user: any,
