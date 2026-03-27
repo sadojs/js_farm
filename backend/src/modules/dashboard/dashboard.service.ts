@@ -7,7 +7,6 @@ import * as path from 'path';
 import { User } from '../users/entities/user.entity';
 import { Device } from '../devices/entities/device.entity';
 import { SensorData } from '../sensors/entities/sensor-data.entity';
-import { CropBatch } from '../harvest/entities/crop-batch.entity';
 
 interface PositionEntry {
   code: string;
@@ -36,8 +35,6 @@ export class DashboardService {
     private readonly usersRepo: Repository<User>,
     @InjectRepository(Device)
     private readonly devicesRepo: Repository<Device>,
-    @InjectRepository(CropBatch)
-    private readonly batchRepo: Repository<CropBatch>,
     private readonly dataSource: DataSource,
   ) {
     const filePath = path.join(process.cwd(), 'src/modules/dashboard/position.json');
@@ -148,22 +145,17 @@ export class DashboardService {
       return { inside: null, history: null, trend6h: null, uvStats14d: null, currentStage: null };
     }
 
-    // 2~6) 병렬 실행 (활성 배치 currentStage 포함)
-    const [inside, history, trend6h, uvStats14d, activeBatch] = await Promise.all([
+    // 2~5) 병렬 실행
+    const [inside, history, trend6h, uvStats14d] = await Promise.all([
       this.getLatestSensorValues(qxjIds),
       this.getHistoryValues(qxjIds),
       this.getTrend6h(qxjIds),
       this.getUvStats14d(qxjIds),
-      this.batchRepo.findOne({
-        where: { userId, status: 'active' },
-        order: { createdAt: 'DESC' },
-        select: ['currentStage'],
-      }),
     ]);
 
     return {
       inside, history, trend6h, uvStats14d,
-      currentStage: activeBatch?.currentStage || null,
+      currentStage: null,
     };
   }
 
