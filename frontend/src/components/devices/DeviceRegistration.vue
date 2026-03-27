@@ -85,7 +85,8 @@
                   <input
                     type="checkbox"
                     :checked="isDeviceSelected(device.id)"
-                    @click.stop
+                    class="no-interact"
+                    tabindex="-1"
                   />
                 </div>
                 <div class="device-icon">{{ getCategoryIcon(device.category) }}</div>
@@ -963,6 +964,9 @@ const closeModal = () => {
   width: 20px;
   height: 20px;
   cursor: pointer;
+}
+.device-checkbox input.no-interact {
+  pointer-events: none;
 }
 
 .device-icon {

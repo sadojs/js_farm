@@ -54,3 +54,11 @@
 3. 알림 삭제 엔드포인트
 4. SENSOR_ALERT_RULES 24개 센서 타입
 5. Alerts.vue 3탭 구조
+
+## 2026-03-27 추가 수정
+
+### 날짜 포맷 통일
+- **파일**: `Alerts.vue`
+- **이전**: `toLocaleString('ko-KR')` 사용 (브라우저/지역에 따라 표시 다름)
+- **수정**: `formatDateTime()` 유틸리티 사용 → 일관된 `yyyy-MM-dd HH:mm` 포맷
+- **import**: `import { formatDateTime } from '../utils/date-format'`

@@ -1335,3 +1335,37 @@ import { SensorAlertsModule } from './modules/sensor-alerts/sensor-alerts.module
 | 23 | Navigation | 데스크탑 + 모바일 메뉴 링크 |
 | 24 | AppModule | HarvestModule + SensorAlertsModule import |
 | 25 | Build | 백엔드 + 프론트엔드 빌드 통과 |
+
+---
+
+## 구현 후 보완 사항 (Analysis 결과 반영)
+
+### sensor_standby 테이블 추가
+
+- 센서 대기/정지 상태 관리 테이블 신규 도입
+- 정지된 센서로 인한 미보고 오경보 방지
+- 필드: `id`, `user_id`, `device_id`, `created_at`, `expires_at`
+
+### SENSOR_ALERT_RULES 확장
+
+- 기존 7개 센서 타입에서 24개 센서 타입으로 확장
+- 각 센서별 임계값 및 감지 로직 세분화
+- 새로운 센서 타입: CO2, 토양수분, 광도, 기압 등 추가
+
+### standbySet 필터링
+
+- 감지 로직에서 `sensor_standby` 테이블과의 JOIN을 통해 대기 센서 제외
+- 의도적으로 정지한 센서는 이상 감지 대상에서 자동 제외
+- 따라서 정지된 센서로 인한 불필요한 알림 차단
+
+### DELETE /sensor-alerts/history 엔드포인트
+
+- 이력 데이터 일괄 삭제 기능 추가
+- 파라미터: `beforeDate` (지정 날짜 이전 이력 모두 삭제)
+- 데이터 베이스 크기 관리 및 개인정보 보호 목적
+
+### 3-탭 UI 구조
+
+- **Sensors 탭**: 현재 활성 센서 목록
+- **Alerts 탭**: 감지된 이상 알림 (필터링 가능)
+- **Standby 탭**: 현재 대기 중인 센서 (정지 해제 버튼 포함)

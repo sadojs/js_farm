@@ -927,3 +927,25 @@ function getSelectedValue(roleKey: string): string {
 | 19 | Frontend | 매핑 저장 기능 |
 | 20 | Frontend | 내부/외부 섹션 구분 UI |
 | 21 | Build | 백엔드 + 프론트엔드 빌드 통과 |
+
+---
+
+## 구현 후 보완 사항 (Analysis 결과 반영)
+
+### targetDeviceId 배열 도입
+
+- 기존 `targetDeviceId` 필드와의 하위 호환성 유지
+- `targetDeviceIds` 배열 필드 추가로 다중 장비 선택 지원
+- 자동화 규칙의 actions JSONB에서 두 필드 모두 검색 가능하도록 구현
+
+### Fan(actuator) 다중 선택 UI
+
+- 환경설정 모달의 Fan 역할에 대해 다중 선택 체크박스 추가
+- 기존 드롭다운 단일 선택 방식에서 확장하여 여러 Fan 장비 동시 제어 가능
+- 체크박스 상태 관리: `selectedFans: Set<string>`
+
+### 고급 기능 추가
+
+- **Hysteresis 지원**: 온습도 센서의 히스테리시스 설정으로 온오프 진동 방지
+- **Relay Option**: 일반 릴레이 vs 매직밸브 등 다양한 제어 방식 선택
+- **Time Scheduler**: 환경설정별 시간대별 동작 스케줄 추가 가능

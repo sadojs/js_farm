@@ -179,7 +179,7 @@
               :class="{ selected: addDeviceSelected.includes(device.id) }"
               @click="toggleAddDevice(device.id)"
             >
-              <input type="checkbox" :checked="addDeviceSelected.includes(device.id)" @click.stop />
+              <input type="checkbox" :checked="addDeviceSelected.includes(device.id)" class="no-interact" tabindex="-1" />
               <span class="device-row-icon">{{ getCategoryIcon(device.category) }}</span>
               <span :class="['type-tag', device.deviceType === 'sensor' ? 'sensor' : 'actuator']">
                 {{ device.deviceType === 'sensor' ? '센서' : '장비' }}
@@ -341,7 +341,7 @@
               :class="{ selected: removeChecked.has(device.id) }"
               @click="toggleRemoveItem(device.id)"
             >
-              <input type="checkbox" :checked="removeChecked.has(device.id)" @click.stop />
+              <input type="checkbox" :checked="removeChecked.has(device.id)" class="no-interact" tabindex="-1" />
               <span :class="['status-dot', device.online ? 'online' : 'offline']" style="flex-shrink:0"></span>
               <span class="device-row-name">{{ device.name }}</span>
               <span v-if="loadingDepsFor.has(device.id)" class="dep-loading">확인 중...</span>
@@ -364,7 +364,7 @@
               :class="{ selected: removeChecked.has(og.openDevice.id) }"
               @click="toggleRemoveItem(og.openDevice.id)"
             >
-              <input type="checkbox" :checked="removeChecked.has(og.openDevice.id)" @click.stop />
+              <input type="checkbox" :checked="removeChecked.has(og.openDevice.id)" class="no-interact" tabindex="-1" />
               <span :class="['status-dot', og.openDevice.online || og.closeDevice.online ? 'online' : 'offline']" style="flex-shrink:0"></span>
               <span class="device-row-name">{{ og.groupName }} <span class="pair-hint">(열림/닫힘 쌍)</span></span>
               <span v-if="loadingDepsFor.has(og.openDevice.id)" class="dep-loading">확인 중...</span>
@@ -384,7 +384,7 @@
               :class="{ selected: removeChecked.has(device.id) }"
               @click="toggleRemoveItem(device.id)"
             >
-              <input type="checkbox" :checked="removeChecked.has(device.id)" @click.stop />
+              <input type="checkbox" :checked="removeChecked.has(device.id)" class="no-interact" tabindex="-1" />
               <span :class="['status-dot', device.online ? 'online' : 'offline']" style="flex-shrink:0"></span>
               <span class="device-row-name">{{ device.name }}</span>
               <span v-if="loadingDepsFor.has(device.id)" class="dep-loading">확인 중...</span>
@@ -407,7 +407,7 @@
               :class="{ selected: removeChecked.has(device.id) }"
               @click="toggleRemoveItem(device.id)"
             >
-              <input type="checkbox" :checked="removeChecked.has(device.id)" @click.stop />
+              <input type="checkbox" :checked="removeChecked.has(device.id)" class="no-interact" tabindex="-1" />
               <span :class="['status-dot', device.online ? 'online' : 'offline']" style="flex-shrink:0"></span>
               <span class="device-row-name">{{ device.name }}</span>
               <span v-if="loadingDepsFor.has(device.id)" class="dep-loading">확인 중...</span>
@@ -1430,6 +1430,7 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
 .device-row.clickable:hover { background: var(--bg-hover); }
 .device-row.selected { background: var(--accent-bg); }
 .device-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+.device-row input.no-interact { pointer-events: none; }
 .device-row-icon { font-size: calc(18px * var(--content-scale, 1)); flex-shrink: 0; }
 .device-row-name { flex: 1; }
 

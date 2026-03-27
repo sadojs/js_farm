@@ -184,6 +184,7 @@ import { useGroupStore } from '../stores/group.store'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { useLocalStorage } from '@vueuse/core'
+import { formatChartTimeLabel } from '../utils/date-format'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler)
 
@@ -267,11 +268,8 @@ const CHART_COLORS: Record<string, { border: string; bg: string }> = {
 
 // 시간 라벨 - 기간에 따라 포맷 변경
 function formatTimeLabel(dateStr: string) {
-  const d = new Date(dateStr)
-  if (dateRange.value === '12h' || dateRange.value === 'today') {
-    return `${String(d.getHours()).padStart(2, '0')}:00`
-  }
-  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}시`
+  const isShort = dateRange.value === '12h' || dateRange.value === 'today'
+  return formatChartTimeLabel(dateStr, isShort)
 }
 
 // 날씨 데이터를 시간 라벨 기준으로 매핑

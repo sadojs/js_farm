@@ -78,3 +78,12 @@
 1. **Remove duplicate `stage` field** from CropBatch entity (keep only `currentStage`)
 2. **Add database indexes** for performance optimization
 3. Update design documentation to reflect BatchTask entity and additional features
+
+## 2026-03-27 추가 수정
+
+### CropBatch 중복 stage 필드 정리
+- **파일**: `crop-batch.entity.ts`
+- **이전**: `stage`와 `currentStage` 두 필드가 동시에 존재하고 항상 동기화
+- **수정**: `stage` 필드에 `@deprecated` + `select: false` 적용
+- **서비스 코드**: `harvest.service.ts`, `harvest-task.service.ts`에 레거시 동기화 주석 추가
+- **향후 계획**: DB 컬럼은 호환성을 위해 유지, 추후 마이그레이션 시 제거 예정

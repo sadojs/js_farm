@@ -295,4 +295,19 @@ const handleNavigate = () => {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+@media (max-width: 768px) {
+  .blocking-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+  .blocking-dialog {
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0));
+    max-height: 90vh;
+    max-height: 90dvh;
+    overflow-y: auto;
+  }
+}
 </style>

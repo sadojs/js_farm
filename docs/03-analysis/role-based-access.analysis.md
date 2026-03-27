@@ -70,6 +70,17 @@
 - Implementation uses mix of inline logic and private helper methods
 - Functionally identical, minor DRY consideration only
 
+## 2026-03-27 추가 수정
+
+### 로그인 세션 유지 개선
+- **백엔드**: `auth.service.ts`, `auth.module.ts`
+  - accessToken 만료: `1h → 24h`
+  - refreshToken 만료: `7d → 30d`
+- **프론트엔드**: `auth.store.ts`, `client.ts`
+  - accessToken 저장소: `sessionStorage → localStorage` (브라우저 종료 후에도 유지)
+  - 자동 갱신 타이머: `scheduleTokenRefresh()` — 만료 20분 전 자동 refresh
+  - `clearRefreshTimer()` — 로그아웃 시 타이머 정리
+
 ## Conclusion
 
 All 23 verification items across 19 files **fully match** the design document.

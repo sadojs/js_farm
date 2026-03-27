@@ -447,3 +447,25 @@ function formatValue(item: ResolvedValue): string {
 | 10 | Reports.vue — env_mappings 미설정 그룹 선택 | 경고 배너 표시 |
 | 11 | Reports.vue — env_mappings 있는 그룹 선택 | 배너 없음 |
 | 12 | 빌드 — vue-tsc + vite | 에러 없음 |
+
+---
+
+## 구현 후 보완 사항 (Analysis 결과 반영)
+
+### GroupEnvScore.vue 컴포넌트 추가
+
+- `frontend/src/components/dashboard/GroupEnvScore.vue` 신규 생성
+- `env_mappings` 기반 그룹별 환경 점수 카드 컴포넌트
+- ResolvedValue들을 종합하여 0~100 점수 시각화
+
+### Number() 헬퍼를 통한 문자열 값 변환
+
+- PostgreSQL에서 반환되는 숫자 타입 값이 문자열로 올 수 있는 케이스 처리
+- `Number(value)` 변환으로 타입 안정성 확보
+- formatValue 함수에서 안전한 숫자 연산 보장
+
+### ROLE_ICONS에서 wind_speed 키 제거
+
+- ResolvedEnvPanel.vue의 ROLE_ICONS 객체에서 `wind_speed: '💨'` 키 제거
+- 기존 7개 역할로 축소 (indoor_temperature, indoor_humidity, co2, uv, rainfall, outdoor_temperature, outdoor_humidity)
+- 외부 날씨는 기상청 API로만 제공되므로 개별 장비 연결 불필요

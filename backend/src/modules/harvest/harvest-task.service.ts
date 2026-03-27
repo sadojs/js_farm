@@ -158,7 +158,7 @@ export class HarvestTaskService implements OnModuleInit {
       if (newIdx <= oldIdx) continue;
 
       batch.currentStage = expectedStage;
-      batch.stage = expectedStage;
+      batch.stage = expectedStage; // 레거시 컬럼 동기화
       batch.stageStartedAt = new Date();
       await this.batchRepo.save(batch);
 
@@ -548,7 +548,7 @@ export class HarvestTaskService implements OnModuleInit {
     // 3. 새 단계 판정
     const newStage = this.determineStage(batch.sowDate, batch.transplantDate);
     batch.currentStage = newStage;
-    batch.stage = newStage;
+    batch.stage = newStage; // 레거시 컬럼 동기화
     batch.stageStartedAt = new Date();
     await this.batchRepo.save(batch);
 

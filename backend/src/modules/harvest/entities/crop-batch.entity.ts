@@ -32,7 +32,8 @@ export class CropBatch {
   @Column({ name: 'grow_days', type: 'int' })
   growDays: number;
 
-  @Column({ default: 'vegetative' })
+  /** @deprecated 레거시 컬럼 — currentStage 사용. DB 컬럼은 호환성을 위해 유지 */
+  @Column({ default: 'vegetative', select: false })
   stage: string;
 
   @Column({ name: 'current_stage', default: 'vegetative' })

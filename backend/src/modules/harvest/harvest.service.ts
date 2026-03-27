@@ -27,7 +27,7 @@ export class HarvestService {
       userId,
       houseName: dto.houseName || '',
       currentStage: stage,
-      stage: stage,
+      stage: stage, // 레거시 컬럼 동기화 (향후 제거 예정)
       stageStartedAt: new Date(),
     });
     return this.batchRepo.save(batch);

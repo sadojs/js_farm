@@ -10,7 +10,7 @@ const apiClient = axios.create({
 
 // 요청 인터셉터: JWT 토큰 자동 첨부
 apiClient.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem('accessToken')
+  const token = localStorage.getItem('accessToken')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }

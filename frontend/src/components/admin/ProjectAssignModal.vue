@@ -375,10 +375,17 @@ const closeModal = () => {
 }
 
 @media (max-width: 768px) {
+  .modal-overlay {
+    padding: 0;
+    overscroll-behavior: contain;
+  }
   .modal-container {
     max-width: 100%;
-    max-height: 100vh;
+    max-height: 100%;
+    height: 100vh;
+    height: 100dvh;
     border-radius: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
   }
 }
 </style>

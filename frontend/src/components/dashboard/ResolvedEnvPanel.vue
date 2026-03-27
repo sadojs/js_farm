@@ -52,7 +52,6 @@ const ROLE_ICONS: Record<string, string> = {
   rainfall: '🌧',
   external_temp: '🌡',
   external_humidity: '💧',
-  wind_speed: '💨',
 }
 
 const internalItems = computed(() =>

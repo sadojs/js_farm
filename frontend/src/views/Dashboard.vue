@@ -57,6 +57,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { dashboardApi } from '../api/dashboard.api'
 import SummaryCards from '../components/dashboard/SummaryCards.vue'
+import { formatDateTime } from '../utils/date-format'
 
 const loading = ref(false)
 const errorMessage = ref('')
@@ -103,7 +104,7 @@ async function refreshWeather() {
 
     source.value = data.source
     weather.value = data.weather
-    lastUpdate.value = new Date(data.fetchedAt).toLocaleString('ko-KR')
+    lastUpdate.value = formatDateTime(data.fetchedAt)
 
   } catch (err: any) {
     errorMessage.value = err.response?.data?.message || '날씨 정보를 불러오지 못했습니다.'

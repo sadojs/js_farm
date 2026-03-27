@@ -651,3 +651,31 @@ SVG: `<svg viewBox="0 0 120 32"><path :d="path" fill="none" stroke="var(--accent
 | 19 | API Client | WidgetDataResponse 타입 + getWidgets() |
 | 20 | UI | 데이터 없음 시 "-" 표시 |
 | 21 | UI | CSS 변수 사용 (하드코딩 색상 없음) |
+
+---
+
+## 구현 후 보완 사항 (Analysis 결과 반영)
+
+### 방울토마토 작물 임계값 최적화
+
+- VPD(Vapor Pressure Deficit) 임계값 조정: 1.2 → 1.4 kPa
+- 방울토마토의 생리 특성을 반영한 더 정확한 환경 모니터링
+- `widget-calculations.ts`의 `calcVPD()` 상태 판정 로직 수정
+
+### 교차 분석 추천 기능
+
+- 온습도, CO2, UV, 강우량 간의 상관관계 분석
+- 환경 이상 감지 시 "이 지표도 확인해보세요" 추천 제시
+- 사용자의 문제 원인 파악 효율성 향상
+
+### WebSocket 2초 디바운스 실시간 업데이트
+
+- 센서 데이터 수신 시 2초 디바운스 적용
+- 과도한 렌더링 방지 및 화면 깜빡임 제거
+- `dashboardApi` 또는 WebSocket 핸들러에 디바운스 적용
+
+### Sensors.vue 그룹 카드 통합
+
+- 모니터링 위젯이 ResolvedEnvPanel로 교체되면서 Sensors.vue 그룹 렌더링 통합
+- 그룹별 환경 데이터와 센서 상태가 함께 표시
+- 그룹 확장 시 getResolved() 호출로 필요한 데이터만 로딩

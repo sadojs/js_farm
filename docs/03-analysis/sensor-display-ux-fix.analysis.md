@@ -32,4 +32,11 @@
 ## FR-04: Debug Log Removal
 - Zero console.log in device.store.ts - PASS
 
+## 2026-03-27 추가 수정
+
+### FR-01 관련: Dashboard 레이아웃 순서 변경
+- **파일**: `SummaryCards.vue`
+- **변경**: summary-row(4개 요약 카드)를 detail-grid(장비/센서 상세) 아래에서 위로 이동
+- **배치 순서**: 요약 카드 → 장비 상세 + 센서 상세
+
 ## Gaps Found: 0

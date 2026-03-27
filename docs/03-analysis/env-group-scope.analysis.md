@@ -559,6 +559,13 @@ The newly identified pre-existing issue (N1: ROLE_ICONS key name mismatch in Res
 
 **Recommendation**: Update the design document to include GroupEnvScore.vue specification, and consider aligning ResolvedEnvPanel's ROLE_ICONS keys with the actual database role keys.
 
+## 2026-03-27 추가 수정
+
+### ROLE_ICONS 키 정리 (ResolvedEnvPanel.vue)
+- **이전**: `wind_speed: '💨'` 포함 (DB env_roles에 없는 orphan 키)
+- **수정**: `wind_speed` 항목 제거
+- **현재 키**: `internal_temp`, `internal_humidity`, `co2`, `uv`, `rainfall`, `external_temp`, `external_humidity` (DB env_roles와 1:1 매칭)
+
 ---
 
 ## Version History

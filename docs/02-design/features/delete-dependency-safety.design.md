@@ -712,3 +712,25 @@ deviceStore.fetchDevices()  ← UI 갱신
 - 개폐기 페어 중 하나라도 자동화 의존성 있으면 전체가 차단됨
 - 의존성이 없는 일반 장비/그룹은 기존과 동일하게 삭제됨
 - 차단 모달의 "자동화 관리로 이동" 클릭 시 `/automation` 페이지로 이동됨
+
+---
+
+## 구현 후 보완 사항 (Analysis 결과 반영)
+
+### DeviceDependenciesResponse에 groups 필드 추가
+
+- 응답 스키마에 `groups: Array<{id, name}>` 필드 추가
+- 장비가 사용 중인 그룹 목록을 함께 제시
+- 삭제 차단 시 "다음 그룹에서 사용 중" 정보 제공
+
+### DeleteBlockingModal 3가지 케이스 처리
+
+- **자동화만**: 자동화 규칙에서만 사용 중
+- **그룹만**: 장비 그룹에만 속함 (의존성은 없음, 정보만 제시)
+- **둘 다**: 자동화 + 그룹 의존성 모두 표시
+
+### 모달 위치 이동
+
+- 기존 경로: `frontend/src/components/devices/DeleteBlockingModal.vue`
+- 신규 경로: `frontend/src/components/common/DeleteBlockingModal.vue`
+- 삭제 차단 모달이 Devices, Groups, 기타 페이지에서 공통으로 사용되므로 common 폴더로 이동

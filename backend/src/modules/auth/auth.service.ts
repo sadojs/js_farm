@@ -43,8 +43,8 @@ export class AuthService {
     };
 
     return {
-      accessToken: this.jwtService.sign(payload, { expiresIn: '1h' }),
-      refreshToken: this.jwtService.sign(payload, { expiresIn: '7d' }),
+      accessToken: this.jwtService.sign(payload, { expiresIn: '24h' }),
+      refreshToken: this.jwtService.sign(payload, { expiresIn: '30d' }),
       user: {
         id: user.id,
         email: user.email,
@@ -75,8 +75,8 @@ export class AuthService {
         parentUserId: payload.parentUserId || null,
       };
       return {
-        accessToken: this.jwtService.sign(newPayload, { expiresIn: '1h' }),
-        refreshToken: this.jwtService.sign(newPayload, { expiresIn: '7d' }),
+        accessToken: this.jwtService.sign(newPayload, { expiresIn: '24h' }),
+        refreshToken: this.jwtService.sign(newPayload, { expiresIn: '30d' }),
       };
     } catch {
       throw new UnauthorizedException('유효하지 않은 토큰입니다.');

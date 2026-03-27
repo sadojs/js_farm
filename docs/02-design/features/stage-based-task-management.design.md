@@ -864,3 +864,43 @@ defineEmits<{
 | Version | Date | Changes | Author |
 |---------|------|---------|--------|
 | 0.1 | 2026-02-24 | Initial design — stage-based redesign | AI Assistant |
+
+---
+
+## 구현 후 보완 사항 (Analysis 결과 반영)
+
+### BatchTask 중간 엔티티 추가
+
+- `batch_tasks` 테이블 신규 추가: Batch와 TaskTemplate의 다대다 관계 처리
+- 필드: `batch_id`, `template_id`, `status` (active/skipped), `started_at`
+- 배치당 여러 템플릿이 동시 진행되도록 유연성 향상
+
+### Batch clone/complete 작업
+
+- **Clone**: 기존 배치의 모든 설정 및 진행 상황을 복제하여 신규 배치 생성
+- **Complete**: 배치 완료 처리 및 최종 상태 기록
+- API: `POST /harvest/batches/:id/clone`, `POST /harvest/batches/:id/complete`
+
+### Task postpone(+1일), skip 기능
+
+- **Postpone**: 다음 작업을 1일 뒤로 연기 (최대 7일)
+- **Skip**: 현재 작업 스킵하고 다음 작업으로 진행
+- 사용자 선택에 따른 유연한 작업 일정 조정
+
+### Crop 프리셋 6개 품종
+
+- 토마토, 오이, 파프리카, 딸기, 상추, 당근 기본 품종 프리셋
+- 품종별 성장 단계 및 작업 템플릿 자동 적용
+- `task-presets.ts`에서 중앙 관리
+
+### Per-batch task summary API
+
+- `GET /harvest/batches/:id/task-summary` 엔드포인트
+- 응답: 오늘의 작업 1건 + 앞으로의 작업 2건 + 완료한 작업 요약
+- 배치별 현황을 한눈에 파악 가능
+
+### stage 필드 currentStage로 통합
+
+- 기존 `stage` 필드는 레거시로 표시
+- `current_stage` 필드로 현재 성장 단계 명확히 관리
+- 마이그레이션: 기존 데이터의 stage → current_stage로 일괄 변환

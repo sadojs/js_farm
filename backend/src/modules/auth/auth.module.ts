@@ -18,7 +18,7 @@ import { TuyaProject } from '../users/entities/tuya-project.entity';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.get('JWT_SECRET', 'smart-farm-jwt-secret-change-me'),
-        signOptions: { expiresIn: '1h' },
+        signOptions: { expiresIn: '24h' },
       }),
     }),
   ],

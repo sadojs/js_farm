@@ -8,6 +8,25 @@ export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref<string | null>(null)
   const refreshTokenValue = ref<string | null>(null)
   const loading = ref(false)
+  let refreshTimer: ReturnType<typeof setTimeout> | null = null
+
+  // accessToken 만료 전 자동 갱신 (만료 20분 전에 갱신)
+  function scheduleTokenRefresh() {
+    if (refreshTimer) clearTimeout(refreshTimer)
+    // accessToken 24시간 기준 → 23시간 40분 후 갱신 (= 23*60+40 = 1420분)
+    const REFRESH_INTERVAL = 23 * 60 * 60 * 1000 + 40 * 60 * 1000
+    refreshTimer = setTimeout(async () => {
+      const ok = await refreshToken()
+      if (ok) scheduleTokenRefresh()
+    }, REFRESH_INTERVAL)
+  }
+
+  function clearRefreshTimer() {
+    if (refreshTimer) {
+      clearTimeout(refreshTimer)
+      refreshTimer = null
+    }
+  }
 
   const isAuthenticated = computed(() => !!accessToken.value)
   const isAdmin = computed(() => user.value?.role === 'admin')
@@ -21,18 +40,20 @@ export const useAuthStore = defineStore('auth', () => {
       accessToken.value = data.accessToken
       refreshTokenValue.value = data.refreshToken
       user.value = data.user
-      sessionStorage.setItem('accessToken', data.accessToken)
+      localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
+      scheduleTokenRefresh()
     } finally {
       loading.value = false
     }
   }
 
   function logout() {
+    clearRefreshTimer()
     user.value = null
     accessToken.value = null
     refreshTokenValue.value = null
-    sessionStorage.removeItem('accessToken')
+    localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
   }
 
@@ -43,7 +64,7 @@ export const useAuthStore = defineStore('auth', () => {
       const { data } = await authApi.refresh(token)
       accessToken.value = data.accessToken
       refreshTokenValue.value = data.refreshToken
-      sessionStorage.setItem('accessToken', data.accessToken)
+      localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
       return true
     } catch {
@@ -62,17 +83,19 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function initAuth() {
-    const storedToken = sessionStorage.getItem('accessToken')
+    const storedToken = localStorage.getItem('accessToken')
     const storedRefresh = localStorage.getItem('refreshToken')
     if (storedToken) {
       accessToken.value = storedToken
       refreshTokenValue.value = storedRefresh
       await fetchUser()
+      if (isAuthenticated.value) scheduleTokenRefresh()
     } else if (storedRefresh) {
       refreshTokenValue.value = storedRefresh
       await refreshToken()
       if (accessToken.value) {
         await fetchUser()
+        scheduleTokenRefresh()
       }
     }
   }

@@ -192,6 +192,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { sensorAlertsApi, type SensorAlert, type SensorEntry, type AlertDetail } from '../api/sensor-alerts.api'
 import { useNotificationStore } from '../stores/notification.store'
+import { formatDateTime } from '../utils/date-format'
 
 const notificationStore = useNotificationStore()
 
@@ -332,7 +333,7 @@ function formatTimeAgo(dateStr: string): string {
 }
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleString('ko-KR')
+  return formatDateTime(dateStr)
 }
 
 async function loadAlerts() {

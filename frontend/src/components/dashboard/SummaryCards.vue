@@ -1,6 +1,46 @@
 <template>
   <div class="dashboard-detail">
-    <!-- 상단 2열: 가동 장비 + 센서 현황 -->
+    <!-- 요약 카드 4개 (전체 장비, 활성 그룹, 자동화 룰, 온라인 기기) -->
+    <div class="summary-row">
+      <div :class="['summary-item', canNavigate(0) && 'summary-item-link']" @click="navigateTo(0)">
+        <div class="summary-icon equip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div class="summary-text">
+          <span class="summary-number">{{ actuatorCount + sensorCount }}</span>
+          <span class="summary-label">전체 장비</span>
+        </div>
+      </div>
+      <div :class="['summary-item', canNavigate(1) && 'summary-item-link']" @click="navigateTo(1)">
+        <div class="summary-icon group">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="summary-text">
+          <span class="summary-number">{{ groupCount }}</span>
+          <span class="summary-label">활성 그룹</span>
+        </div>
+      </div>
+      <div :class="['summary-item', canNavigate(2) && 'summary-item-link']" @click="navigateTo(2)">
+        <div class="summary-icon auto">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <div class="summary-text">
+          <span class="summary-number">{{ ruleActive }} / {{ ruleCount }}</span>
+          <span class="summary-label">자동화 룰</span>
+        </div>
+      </div>
+      <div :class="['summary-item', canNavigate(3) && 'summary-item-link']" @click="navigateTo(3)">
+        <div class="summary-icon online">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div class="summary-text">
+          <span class="summary-number">{{ onlineTotal }}</span>
+          <span class="summary-label">온라인 기기</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 장비 + 센서 상세 현황 -->
     <div class="detail-grid">
       <!-- 가동 중인 장비 -->
       <div class="detail-card">
@@ -79,45 +119,6 @@
       </div>
     </div>
 
-    <!-- 하단 요약 카드 -->
-    <div class="summary-row">
-      <div :class="['summary-item', canNavigate(0) && 'summary-item-link']" @click="navigateTo(0)">
-        <div class="summary-icon equip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        </div>
-        <div class="summary-text">
-          <span class="summary-number">{{ actuatorCount + sensorCount }}</span>
-          <span class="summary-label">전체 장비</span>
-        </div>
-      </div>
-      <div :class="['summary-item', canNavigate(1) && 'summary-item-link']" @click="navigateTo(1)">
-        <div class="summary-icon group">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
-        <div class="summary-text">
-          <span class="summary-number">{{ groupCount }}</span>
-          <span class="summary-label">활성 그룹</span>
-        </div>
-      </div>
-      <div :class="['summary-item', canNavigate(2) && 'summary-item-link']" @click="navigateTo(2)">
-        <div class="summary-icon auto">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </div>
-        <div class="summary-text">
-          <span class="summary-number">{{ ruleActive }} / {{ ruleCount }}</span>
-          <span class="summary-label">자동화 룰</span>
-        </div>
-      </div>
-      <div :class="['summary-item', canNavigate(3) && 'summary-item-link']" @click="navigateTo(3)">
-        <div class="summary-icon online">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        </div>
-        <div class="summary-text">
-          <span class="summary-number">{{ onlineTotal }}</span>
-          <span class="summary-label">온라인 기기</span>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -406,11 +407,12 @@ onMounted(async () => {
   font-weight: 700;
 }
 
-/* 하단 요약 */
+/* 요약 카드 (상단) */
 .summary-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
+  margin-bottom: 16px;
 }
 
 .summary-item {
