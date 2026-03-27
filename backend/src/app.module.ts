@@ -15,6 +15,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { WeatherModule } from './modules/weather/weather.module';
 import { SensorAlertsModule } from './modules/sensor-alerts/sensor-alerts.module';
 import { EnvConfigModule } from './modules/env-config/env-config.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { EnvConfigModule } from './modules/env-config/env-config.module';
     WeatherModule,
     SensorAlertsModule,
     EnvConfigModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}
