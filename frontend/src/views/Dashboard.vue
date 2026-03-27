@@ -37,42 +37,45 @@
       <button @click="resetLayout()" class="btn-reset">기본값으로 초기화</button>
     </div>
 
-    <!-- 날씨 위젯 - 파란 그라데이션 -->
-    <div class="weather-card">
-      <div class="weather-top">
-        <div class="weather-left">
-          <div class="weather-icon-big">{{ weatherIcon }}</div>
-          <div>
-            <h3 class="weather-title">날씨 정보</h3>
-            <span class="weather-location">{{ locationLabel }}</span>
+    <!-- 위젯 동적 렌더링 -->
+    <template v-for="widget in visibleWidgets" :key="widget.id">
+      <!-- 날씨 위젯 -->
+      <div v-if="widget.type === 'weather'" class="weather-card">
+        <div class="weather-top">
+          <div class="weather-left">
+            <div class="weather-icon-big">{{ weatherIcon }}</div>
+            <div>
+              <h3 class="weather-title">날씨 정보</h3>
+              <span class="weather-location">{{ locationLabel }}</span>
+            </div>
+          </div>
+          <div class="weather-right">
+            <div class="weather-temp-line">
+              <span class="weather-temp-big">{{ formatValue(weather.temperature, '') }}</span>
+              <span class="weather-temp-unit">°C</span>
+            </div>
+            <div class="weather-condition">{{ weather.condition === 'rain' ? '비' : '맑음' }}</div>
           </div>
         </div>
-        <div class="weather-right">
-          <div class="weather-temp-line">
-            <span class="weather-temp-big">{{ formatValue(weather.temperature, '') }}</span>
-            <span class="weather-temp-unit">°C</span>
+        <div class="weather-details-grid">
+          <div class="weather-detail-item">
+            <span class="detail-label">💧 습도</span>
+            <span class="detail-value">{{ formatValue(weather.humidity, '%') }}</span>
           </div>
-          <div class="weather-condition">{{ weather.condition === 'rain' ? '비' : '맑음' }}</div>
+          <div class="weather-detail-item">
+            <span class="detail-label">💨 풍속</span>
+            <span class="detail-value">{{ formatValue(weather.windSpeed, 'm/s') }}</span>
+          </div>
+          <div class="weather-detail-item">
+            <span class="detail-label">🌧️ 강수량</span>
+            <span class="detail-value">{{ formatValue(weather.precipitation, 'mm') }}</span>
+          </div>
         </div>
       </div>
-      <div class="weather-details-grid">
-        <div class="weather-detail-item">
-          <span class="detail-label">💧 습도</span>
-          <span class="detail-value">{{ formatValue(weather.humidity, '%') }}</span>
-        </div>
-        <div class="weather-detail-item">
-          <span class="detail-label">💨 풍속</span>
-          <span class="detail-value">{{ formatValue(weather.windSpeed, 'm/s') }}</span>
-        </div>
-        <div class="weather-detail-item">
-          <span class="detail-label">🌧️ 강수량</span>
-          <span class="detail-value">{{ formatValue(weather.precipitation, 'mm') }}</span>
-        </div>
-      </div>
-    </div>
 
-    <!-- 요약 카드 -->
-    <SummaryCards />
+      <!-- 요약 카드 위젯 -->
+      <SummaryCards v-else-if="widget.type === 'summary'" />
+    </template>
   </div>
 </template>
 
@@ -83,7 +86,7 @@ import SummaryCards from '../components/dashboard/SummaryCards.vue'
 import { formatDateTime } from '../utils/date-format'
 import { useDashboardLayout } from '../composables/useDashboardLayout'
 
-const { isEditMode, layout, toggleWidget, moveWidget, enterEditMode, exitEditMode, resetLayout } = useDashboardLayout()
+const { isEditMode, layout, visibleWidgets, toggleWidget, moveWidget, enterEditMode, exitEditMode, resetLayout } = useDashboardLayout()
 
 const loading = ref(false)
 const errorMessage = ref('')
@@ -342,6 +345,7 @@ onMounted(() => {
   border: 1px solid var(--border-color, var(--color-border));
   border-radius: 6px;
   background: var(--bg-card, #fff);
+  color: var(--text-primary, #111);
   cursor: pointer;
   font-size: 14px;
   display: flex;

@@ -1,9 +1,9 @@
-import { ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 
 export interface DashboardWidget {
   id: string
-  type: 'weather' | 'summary' | 'devices' | 'sensors' | 'automation' | 'alerts' | 'harvest'
+  type: 'weather' | 'summary'
   title: string
   visible: boolean
   order: number
@@ -13,18 +13,15 @@ export interface DashboardWidget {
 const defaultLayout: DashboardWidget[] = [
   { id: 'weather', type: 'weather', title: '날씨', visible: true, order: 0, size: 'full' },
   { id: 'summary', type: 'summary', title: '요약 카드', visible: true, order: 1, size: 'full' },
-  { id: 'devices', type: 'devices', title: '장비 현황', visible: true, order: 2, size: 'md' },
-  { id: 'sensors', type: 'sensors', title: '센서 현황', visible: true, order: 3, size: 'md' },
-  { id: 'automation', type: 'automation', title: '자동화 로그', visible: true, order: 4, size: 'lg' },
-  { id: 'alerts', type: 'alerts', title: '최근 알림', visible: true, order: 5, size: 'md' },
-  { id: 'harvest', type: 'harvest', title: '수확 일정', visible: true, order: 6, size: 'md' },
 ]
 
 export function useDashboardLayout() {
   const layout = useLocalStorage<DashboardWidget[]>('sf-dashboard-layout', defaultLayout)
   const isEditMode = ref(false)
 
-  // 레이아웃에 없는 새 위젯 추가 (업데이트 시)
+  // 레이아웃을 defaultLayout 기준으로 정규화 (삭제된 위젯 제거, 새 위젯 추가)
+  const validIds = new Set(defaultLayout.map(w => w.id))
+  layout.value = layout.value.filter(w => validIds.has(w.id))
   const existingIds = new Set(layout.value.map(w => w.id))
   for (const dw of defaultLayout) {
     if (!existingIds.has(dw.id)) {
@@ -32,17 +29,11 @@ export function useDashboardLayout() {
     }
   }
 
-  const visibleWidgets = ref(
+  const visibleWidgets = computed(() =>
     layout.value
       .filter(w => w.visible)
       .sort((a, b) => a.order - b.order)
   )
-
-  watch(layout, (newLayout) => {
-    visibleWidgets.value = newLayout
-      .filter(w => w.visible)
-      .sort((a, b) => a.order - b.order)
-  }, { deep: true })
 
   function toggleWidget(id: string) {
     const widget = layout.value.find(w => w.id === id)

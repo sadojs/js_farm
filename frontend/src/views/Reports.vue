@@ -100,15 +100,6 @@
         <span class="download-label">다운로드</span>
         <button class="btn-download csv" @click="exportToCSV" :disabled="loadingData">CSV 다운로드</button>
         <button class="btn-download pdf" @click="exportToPDF" :disabled="loadingData">PDF 다운로드</button>
-        <div class="export-dropdown-wrap">
-          <button class="btn-outline export-toggle" @click="showExportMenu = !showExportMenu">
-            내보내기 ▼
-          </button>
-          <div v-if="showExportMenu" class="export-menu">
-            <button @click="handleExport('csv')">📊 CSV 내보내기</button>
-            <button @click="handleExport('excel')">📗 Excel 내보내기</button>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -233,7 +224,6 @@ const endDate = ref('')
 const loadingData = ref(false)
 const envWarning = ref(false)
 const reportTab = ref<'data' | 'compare'>('data')
-const showExportMenu = ref(false)
 
 const groups = computed(() => groupStore.groups)
 
@@ -636,14 +626,6 @@ function getSensorTypeLabel(type: string): string {
   return opt ? opt.label : type
 }
 
-function handleExport(format: 'csv' | 'excel') {
-  showExportMenu.value = false
-  if (!hourlyData.value || hourlyData.value.length === 0) return
-  const exportData = formatSensorDataForExport(hourlyData.value, getSensorTypeLabel)
-  const filename = `sensor-report-${new Date().toISOString().split('T')[0]}`
-  if (format === 'csv') exportToCsv(exportData, filename)
-  else exportToExcel(exportData, filename)
-}
 
 async function checkEnvWarning(groupId: string) {
   if (!groupId) {
@@ -939,35 +921,6 @@ onMounted(async () => {
 .main-tab.active {
   color: var(--color-primary);
   border-bottom-color: var(--color-primary);
-}
-.export-dropdown-wrap {
-  position: relative;
-}
-.export-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: var(--bg-card, var(--color-surface));
-  border: 1px solid var(--border-color, var(--color-border));
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  z-index: 100;
-  min-width: 180px;
-  padding: 4px 0;
-}
-.export-menu button {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 10px 16px;
-  border: none;
-  background: none;
-  font-size: 14px;
-  cursor: pointer;
-  color: var(--text-primary, var(--color-text-primary));
-}
-.export-menu button:hover {
-  background: var(--bg-hover, rgba(0,0,0,0.04));
 }
 </style>
 

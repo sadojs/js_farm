@@ -45,10 +45,6 @@
           <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
           <span>사용자 관리</span>
         </router-link>
-        <a class="sidebar-link" @click.prevent="tour.startTour()" href="#" style="cursor: pointer">
-          <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
-          <span>가이드 투어</span>
-        </a>
       </nav>
 
       <!-- 시스템 상태 위젯 -->
@@ -172,10 +168,6 @@
           <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
           <span>사용자 관리</span>
         </router-link>
-        <a class="sidebar-link" @click.prevent="tour.startTour()" href="#" style="cursor: pointer">
-          <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
-          <span>가이드 투어</span>
-        </a>
       </nav>
 
       <!-- 모바일 폰트 크기 조절 -->
@@ -218,7 +210,6 @@
 
     <ConfirmDialog />
     <ToastContainer />
-    <TourOverlay />
   </div>
 </template>
 
@@ -229,17 +220,14 @@ import { useAuthStore } from './stores/auth.store'
 import { useNotificationStore } from './stores/notification.store'
 import { useNotificationCenterStore } from './stores/notification-center.store'
 import { useWebSocket } from './composables/useWebSocket'
-import { useOnboardingTour } from './composables/useOnboardingTour'
 import ConfirmDialog from './components/common/ConfirmDialog.vue'
 import ToastContainer from './components/common/ToastContainer.vue'
 import NotificationCenter from './components/common/NotificationCenter.vue'
-import TourOverlay from './components/common/TourOverlay.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
 const notifCenter = useNotificationCenterStore()
-const tour = useOnboardingTour()
 const { connect, disconnect } = useWebSocket()
 
 const isAuthenticated = computed(() => authStore.isAuthenticated)
@@ -294,10 +282,7 @@ onMounted(async () => {
     connect()
     // 알림 센터 초기 로드
     notifCenter.fetchNotifications()
-    // 첫 방문 시 온보딩 투어
-    if (tour.shouldShowTour()) {
-      setTimeout(() => tour.startTour(), 2000)
-    }
+
   }
 })
 
