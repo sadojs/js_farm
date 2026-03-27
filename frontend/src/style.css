@@ -80,3 +80,124 @@
 .gap-1 { gap: var(--spacing-sm); }
 .gap-2 { gap: var(--spacing-md); }
 .gap-3 { gap: var(--spacing-lg); }
+
+/* ─── Accessibility ─── */
+
+/* 최소 터치 타겟 (모바일) — 아이콘 전용 버튼만 적용, 텍스트 버튼은 높이만 */
+@media (max-width: 768px) {
+  .btn-icon, [role="button"]:not(button) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  button {
+    min-height: 44px;
+  }
+}
+
+/* ─── 글로벌 모바일 page-header 수정 ─── */
+@media (max-width: 768px) {
+  .page-header {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  /* 제목 영역: 전체 너비 차지 */
+  .page-header > div:first-child {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  /* 설명 텍스트 숨김 → 공간 확보 */
+  .page-header .page-description {
+    display: none;
+  }
+
+  /* 제목 폰트 크기를 content-scale에 연동하되 모바일 최대값 제한 */
+  .page-header h2 {
+    font-size: min(calc(22px * var(--content-scale, 1)), 28px) !important;
+  }
+
+  /* 버튼 그룹: 우측 정렬, 한 줄 유지 */
+  .page-header .header-actions,
+  .page-header > button,
+  .page-header > .btn-primary,
+  .page-header > .btn-refresh,
+  .page-header > .btn-outline {
+    flex-shrink: 0;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  /* 모바일 버튼: 컴팩트 사이즈, content-scale 무시 */
+  .page-header button,
+  .page-header .btn-primary,
+  .page-header .btn-refresh,
+  .page-header .btn-outline,
+  .page-header .btn-header-sm,
+  .header-actions button {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    white-space: nowrap;
+    border-radius: 8px;
+  }
+}
+
+/* 포커스 인디케이터 */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 스크린리더 전용 텍스트 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* CSS Tooltip */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:focus::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  background: var(--color-text-primary, #333);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  animation: tooltip-fade 0.15s ease forwards;
+}
+
+@keyframes tooltip-fade {
+  to { opacity: 1; }
+}
+
+/* ─── Device Type Accent Colors ─── */
+:root {
+  --device-fan: #2196f3;
+  --device-opener: #ff9800;
+  --device-irrigation: #00bcd4;
+  --device-sensor: #9c27b0;
+  --device-other: #607d8b;
+}

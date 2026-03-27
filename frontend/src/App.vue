@@ -49,7 +49,31 @@
           <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
           <span>사용자 관리</span>
         </router-link>
+        <a class="sidebar-link" @click.prevent="tour.startTour()" href="#" style="cursor: pointer">
+          <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <span>가이드 투어</span>
+        </a>
       </nav>
+
+      <!-- 시스템 상태 위젯 -->
+      <div class="sidebar-status-widget">
+        <div class="status-widget-title">시스템 상태</div>
+        <div class="status-widget-items">
+          <div class="status-item">
+            <span class="status-icon online-dot"></span>
+            <span class="status-label">온라인</span>
+            <span class="status-count">{{ onlineDeviceCount }}</span>
+          </div>
+          <div class="status-item">
+            <span class="status-icon alert-dot"></span>
+            <span class="status-label">알림</span>
+            <span class="status-count">{{ notifCenter.unreadCount }}</span>
+          </div>
+        </div>
+        <div class="status-widget-items" style="margin-top: 4px;">
+          <NotificationCenter />
+        </div>
+      </div>
 
       <!-- 폰트 크기 조절 -->
       <div class="font-size-control">
@@ -92,7 +116,7 @@
         <span></span>
       </button>
       <div class="mobile-brand">스마트팜</div>
-      <div class="mobile-header-spacer"></div>
+      <NotificationCenter />
     </header>
 
     <!-- 모바일 드로어 오버레이 -->
@@ -156,6 +180,10 @@
           <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
           <span>사용자 관리</span>
         </router-link>
+        <a class="sidebar-link" @click.prevent="tour.startTour()" href="#" style="cursor: pointer">
+          <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <span>가이드 투어</span>
+        </a>
       </nav>
 
       <!-- 모바일 폰트 크기 조절 -->
@@ -198,6 +226,7 @@
 
     <ConfirmDialog />
     <ToastContainer />
+    <TourOverlay />
   </div>
 </template>
 
@@ -206,13 +235,19 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth.store'
 import { useNotificationStore } from './stores/notification.store'
+import { useNotificationCenterStore } from './stores/notification-center.store'
 import { useWebSocket } from './composables/useWebSocket'
+import { useOnboardingTour } from './composables/useOnboardingTour'
 import ConfirmDialog from './components/common/ConfirmDialog.vue'
 import ToastContainer from './components/common/ToastContainer.vue'
+import NotificationCenter from './components/common/NotificationCenter.vue'
+import TourOverlay from './components/common/TourOverlay.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
+const notifCenter = useNotificationCenterStore()
+const tour = useOnboardingTour()
 const { connect, disconnect } = useWebSocket()
 
 const isAuthenticated = computed(() => authStore.isAuthenticated)
@@ -225,6 +260,18 @@ const userRole = computed(() => {
   return '농장 사용자'
 })
 const userInitial = computed(() => userName.value.charAt(0))
+
+const onlineDeviceCount = computed(() => {
+  try {
+    const deviceStore = (window as any).__pinia?.state?.value?.device
+    if (deviceStore?.devices) {
+      const total = deviceStore.devices.length
+      const online = deviceStore.devices.filter((d: any) => d.online).length
+      return `${online}/${total}`
+    }
+  } catch {}
+  return '-'
+})
 
 const isDrawerOpen = ref(false)
 
@@ -253,6 +300,12 @@ onMounted(async () => {
   await authStore.initAuth()
   if (authStore.isAuthenticated) {
     connect()
+    // 알림 센터 초기 로드
+    notifCenter.fetchNotifications()
+    // 첫 방문 시 온보딩 투어
+    if (tour.shouldShowTour()) {
+      setTimeout(() => tour.startTour(), 2000)
+    }
   }
 })
 
@@ -621,6 +674,59 @@ body {
 
 .theme-buttons button:hover:not(.active) {
   background: var(--bg-hover);
+}
+
+/* ========== 사이드바 시스템 상태 위젯 ========== */
+.sidebar-status-widget {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-light);
+  margin-top: auto;
+}
+
+.status-widget-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.status-widget-items {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.status-label {
+  color: var(--text-secondary);
+}
+
+.status-count {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-left: auto;
+}
+
+.online-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+}
+
+.alert-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-warning);
 }
 
 /* ========== 사이드바 하단 ========== */
