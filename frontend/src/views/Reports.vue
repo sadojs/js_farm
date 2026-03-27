@@ -7,6 +7,13 @@
       </div>
     </header>
 
+    <!-- 메인 탭: 센서 데이터 / 비교 분석 -->
+    <div class="report-main-tabs">
+      <button class="main-tab" :class="{ active: reportTab === 'data' }" @click="reportTab = 'data'">센서 데이터</button>
+      <button class="main-tab" :class="{ active: reportTab === 'compare' }" @click="reportTab = 'compare'">비교 분석</button>
+    </div>
+
+    <template v-if="reportTab === 'data'">
     <!-- 필터 영역 -->
     <div class="filter-section">
       <div class="filter-row">
@@ -93,6 +100,15 @@
         <span class="download-label">다운로드</span>
         <button class="btn-download csv" @click="exportToCSV" :disabled="loadingData">CSV 다운로드</button>
         <button class="btn-download pdf" @click="exportToPDF" :disabled="loadingData">PDF 다운로드</button>
+        <div class="export-dropdown-wrap">
+          <button class="btn-outline export-toggle" @click="showExportMenu = !showExportMenu">
+            내보내기 ▼
+          </button>
+          <div v-if="showExportMenu" class="export-menu">
+            <button @click="handleExport('csv')">📊 CSV 내보내기</button>
+            <button @click="handleExport('excel')">📗 Excel 내보내기</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -168,6 +184,10 @@
     <div v-else class="empty-state">
       <p>{{ envWarning ? '환경 설정 후 리포트를 확인할 수 있습니다.' : '조회된 데이터가 없습니다. 기간을 선택하여 조회해주세요.' }}</p>
     </div>
+    </template>
+
+    <!-- 비교 분석 탭 -->
+    <SensorCompareChart v-if="reportTab === 'compare'" />
   </div>
 </template>
 
@@ -185,6 +205,8 @@ import { VueDatePicker } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { useLocalStorage } from '@vueuse/core'
 import { formatChartTimeLabel } from '../utils/date-format'
+import SensorCompareChart from '@/components/reports/SensorCompareChart.vue'
+import { exportToCsv, exportToExcel, formatSensorDataForExport } from '@/utils/export'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler)
 
@@ -210,6 +232,8 @@ const startDate = ref('')
 const endDate = ref('')
 const loadingData = ref(false)
 const envWarning = ref(false)
+const reportTab = ref<'data' | 'compare'>('data')
+const showExportMenu = ref(false)
 
 const groups = computed(() => groupStore.groups)
 
@@ -607,6 +631,20 @@ async function exportToPDF() {
   window.print()
 }
 
+function getSensorTypeLabel(type: string): string {
+  const opt = sensorTypeOptions.find(o => o.value === type)
+  return opt ? opt.label : type
+}
+
+function handleExport(format: 'csv' | 'excel') {
+  showExportMenu.value = false
+  if (!hourlyData.value || hourlyData.value.length === 0) return
+  const exportData = formatSensorDataForExport(hourlyData.value, getSensorTypeLabel)
+  const filename = `sensor-report-${new Date().toISOString().split('T')[0]}`
+  if (format === 'csv') exportToCsv(exportData, filename)
+  else exportToExcel(exportData, filename)
+}
+
 async function checkEnvWarning(groupId: string) {
   if (!groupId) {
     envWarning.value = false
@@ -826,6 +864,110 @@ onMounted(async () => {
 @media print {
   .filter-section, .download-row, .page-header { display: none; }
   .chart-card { break-inside: avoid; }
+}
+
+/* ─── A-02: 모바일 리포트 레이아웃 개선 ─── */
+@media (max-width: 768px) {
+  .period-buttons {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+    flex-wrap: nowrap !important;
+  }
+  .period-buttons::-webkit-scrollbar {
+    display: none;
+  }
+  .period-btn {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+    font-size: 13px;
+  }
+  .period-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .filter-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .chart-container, .chart-wrapper {
+    width: calc(100% + 32px);
+    margin-left: -16px;
+    padding: 0 8px;
+  }
+  .download-btn .btn-text,
+  .btn-download .btn-text {
+    display: none;
+  }
+  .download-btn, .btn-download {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+  }
+  .data-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .data-table {
+    min-width: 500px;
+  }
+}
+
+.report-main-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 16px;
+  border-bottom: 2px solid var(--border-color, var(--color-border));
+}
+.main-tab {
+  padding: 10px 20px;
+  border: none;
+  background: none;
+  font-size: calc(14px * var(--content-scale, 1));
+  font-weight: 500;
+  color: var(--text-secondary, var(--color-text-secondary));
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.main-tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+.export-dropdown-wrap {
+  position: relative;
+}
+.export-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--bg-card, var(--color-surface));
+  border: 1px solid var(--border-color, var(--color-border));
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  min-width: 180px;
+  padding: 4px 0;
+}
+.export-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--text-primary, var(--color-text-primary));
+}
+.export-menu button:hover {
+  background: var(--bg-hover, rgba(0,0,0,0.04));
 }
 </style>
 

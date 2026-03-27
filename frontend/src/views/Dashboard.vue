@@ -5,13 +5,36 @@
         <h2>대시보드</h2>
         <p class="page-description">농장의 현재 상태를 한눈에 확인하세요</p>
       </div>
-      <button @click="refreshWeather" class="btn-refresh" :disabled="loading">
-        {{ loading ? '조회 중...' : '새로고침' }}
-      </button>
+      <div class="header-actions">
+        <button @click="isEditMode ? exitEditMode() : enterEditMode()" class="btn-header-sm">
+          {{ isEditMode ? '완료' : '⚙ 편집' }}
+        </button>
+        <button @click="refreshWeather" class="btn-refresh" :disabled="loading">
+          {{ loading ? '조회 중...' : '새로고침' }}
+        </button>
+      </div>
     </header>
 
     <div v-if="errorMessage" class="error-banner">
       {{ errorMessage }}
+    </div>
+
+    <!-- 대시보드 편집 모드 -->
+    <div v-if="isEditMode" class="dashboard-edit-panel">
+      <h4>위젯 설정</h4>
+      <div class="widget-edit-list">
+        <div v-for="widget in layout" :key="widget.id" class="widget-edit-item">
+          <label class="widget-checkbox">
+            <input type="checkbox" :checked="widget.visible" @change="toggleWidget(widget.id)" />
+            <span>{{ widget.title }}</span>
+          </label>
+          <div class="widget-order-btns">
+            <button @click="moveWidget(widget.id, 'up')" class="btn-order" aria-label="위로">↑</button>
+            <button @click="moveWidget(widget.id, 'down')" class="btn-order" aria-label="아래로">↓</button>
+          </div>
+        </div>
+      </div>
+      <button @click="resetLayout()" class="btn-reset">기본값으로 초기화</button>
     </div>
 
     <!-- 날씨 위젯 - 파란 그라데이션 -->
@@ -58,6 +81,9 @@ import { computed, onMounted, ref } from 'vue'
 import { dashboardApi } from '../api/dashboard.api'
 import SummaryCards from '../components/dashboard/SummaryCards.vue'
 import { formatDateTime } from '../utils/date-format'
+import { useDashboardLayout } from '../composables/useDashboardLayout'
+
+const { isEditMode, layout, toggleWidget, moveWidget, enterEditMode, exitEditMode, resetLayout } = useDashboardLayout()
 
 const loading = ref(false)
 const errorMessage = ref('')
@@ -267,13 +293,97 @@ onMounted(() => {
   font-variant-numeric: tabular-nums;
 }
 
+.dashboard-edit-panel {
+  background: var(--bg-card, var(--color-surface));
+  border: 2px dashed var(--accent, var(--color-primary));
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.dashboard-edit-panel h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+.widget-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.widget-edit-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color, var(--color-border));
+  border-radius: 8px;
+  background: var(--bg-primary, #f5f7fa);
+}
+.widget-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.widget-checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+}
+.widget-order-btns {
+  display: flex;
+  gap: 4px;
+}
+.btn-order {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border-color, var(--color-border));
+  border-radius: 6px;
+  background: var(--bg-card, #fff);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-order:hover {
+  background: var(--accent-bg, rgba(46,125,50,0.06));
+}
+.btn-reset {
+  margin-top: 12px;
+  padding: 6px 14px;
+  border: 1px solid var(--border-color, var(--color-border));
+  border-radius: 8px;
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.btn-header-sm {
+  padding: 8px 14px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: calc(13px * var(--content-scale, 1));
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-header-sm:hover { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
+
 @media (max-width: 768px) {
   .page-container {
     padding: 16px;
-  }
-
-  .page-header h2 {
-    font-size: 24px;
   }
 
   .weather-card {

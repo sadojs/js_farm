@@ -15,10 +15,14 @@
 
     <div v-if="loading" class="loading-state">그룹 목록을 불러오는 중...</div>
 
-    <div v-else-if="groups.length === 0" class="empty-state">
-      <p>등록된 그룹이 없습니다.</p>
-      <button v-if="!isFarmUser" class="btn-primary" @click="showGroupCreationModal = true">첫 번째 그룹 만들기</button>
-    </div>
+    <EmptyState
+      v-else-if="groups.length === 0"
+      icon="group"
+      title="그룹을 만들어보세요"
+      description="장비를 그룹으로 묶어 효율적으로 관리하세요"
+      :action-label="!isFarmUser ? '그룹 추가' : undefined"
+      @action="showGroupCreationModal = true"
+    />
 
     <div v-else class="groups-list">
       <div v-for="group in groups" :key="group.id" class="group-card">
@@ -477,6 +481,7 @@ import type { Device } from '../types/device.types'
 import type { AutomationRule } from '../types/automation.types'
 import type { DependencyRule } from '../types/device.types'
 import { formatConditionGroup } from '../utils/automation-helpers'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const route = useRoute()
 const groupStore = useGroupStore()
@@ -1634,7 +1639,6 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
 
 @media (max-width: 768px) {
   .page-container { padding: 16px; }
-  .page-header h2 { font-size: calc(24px * var(--content-scale, 1)); }
   .device-sub-grid { grid-template-columns: 1fr; }
   .group-header { flex-direction: column; align-items: flex-start; }
   .group-header-actions { width: 100%; justify-content: flex-end; }

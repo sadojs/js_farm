@@ -43,16 +43,18 @@
     </div>
 
     <!-- 장비 없음 -->
-    <div v-else-if="filteredDevices.length === 0" class="empty-state">
-      <div class="empty-icon">📭</div>
-      <h3>{{ searchQuery ? '검색 결과가 없습니다' : '등록된 장비가 없습니다' }}</h3>
-      <p>{{ searchQuery ? '다른 검색어를 입력해보세요.' : '센서 동기화를 통해 장비를 가져와 등록하세요.' }}</p>
-      <button v-if="!searchQuery && !authStore.isFarmUser" class="btn-primary" @click="showRegistrationModal = true">+ 장비 추가</button>
-    </div>
+    <EmptyState
+      v-else-if="filteredDevices.length === 0"
+      :icon="searchQuery ? 'device' : 'sensor'"
+      :title="searchQuery ? '검색 결과가 없습니다' : '등록된 장비가 없습니다'"
+      :description="searchQuery ? '다른 검색어를 입력해보세요.' : 'Tuya 장비 동기화를 통해 센서와 장비를 가져오세요'"
+      :action-label="!searchQuery && !authStore.isFarmUser ? '장비 추가' : undefined"
+      @action="showRegistrationModal = true"
+    />
 
     <!-- 개폐기 그룹 -->
     <div v-if="openerGroups.length > 0 && (activeTab === 'all' || activeTab === 'actuator')" class="opener-groups">
-      <div v-for="group in openerGroups" :key="group.groupName" class="opener-group-card">
+      <div v-for="group in openerGroups" :key="group.groupName" class="opener-group-card" style="border-top: 3px solid var(--device-opener)">
         <div class="opener-header">
           <div class="opener-title">{{ group.groupName }}</div>
           <span class="type-badge actuator">장비</span>
@@ -85,7 +87,7 @@
 
     <!-- 관수 장비 그룹 -->
     <div v-if="irrigationDevices.length > 0 && (activeTab === 'all' || activeTab === 'actuator')" class="irrigation-groups">
-      <div v-for="device in irrigationDevices" :key="device.id" class="irrigation-group-card">
+      <div v-for="device in irrigationDevices" :key="device.id" class="irrigation-group-card" style="border-top: 3px solid var(--device-irrigation)">
         <div class="irrigation-header">
           <div class="irrigation-title">{{ device.name }}</div>
           <button class="btn-status" @click="openIrrigationStatusModal(device)">상태</button>
@@ -123,6 +125,8 @@
         v-for="device in filteredDevices"
         :key="device.id"
         class="device-card"
+        :data-type="device.equipmentType || device.deviceType || 'other'"
+        :style="{ borderTop: '3px solid var(--device-' + (device.equipmentType || device.deviceType || 'other') + ')' }"
       >
         <!-- 카드 상단 -->
         <div class="card-top">
@@ -225,6 +229,7 @@ import { useNotificationStore } from '@/stores/notification.store'
 import { deviceApi } from '@/api/device.api'
 import { translateTuyaError } from '@/utils/tuya-errors'
 import type { Device, DependencyRule } from '@/types/device.types'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 const deviceStore = useDeviceStore()
 const authStore = useAuthStore()
@@ -1165,11 +1170,6 @@ input:checked + .toggle-slider:before {
 
 @media (max-width: 768px) {
   .page-container { padding: 16px; }
-  .page-header h2 { font-size: calc(24px * var(--content-scale, 1)); }
-
-  .header-actions { width: 100%; }
-  .header-actions .btn-outline,
-  .header-actions .btn-primary { flex: 1; text-align: center; }
 
   .filter-bar { flex-direction: column; gap: 12px; }
   .search-box { display: none; }

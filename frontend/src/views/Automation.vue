@@ -8,6 +8,13 @@
       <button class="btn-primary" @click="openWizard()">+ 룰 추가</button>
     </header>
 
+    <!-- 메인 탭: 룰 목록 / 실행 로그 -->
+    <div class="main-tabs">
+      <button class="main-tab" :class="{ active: mainTab === 'rules' }" @click="mainTab = 'rules'">룰 목록</button>
+      <button class="main-tab" :class="{ active: mainTab === 'logs' }" @click="mainTab = 'logs'">실행 로그</button>
+    </div>
+
+    <template v-if="mainTab === 'rules'">
     <div class="automation-tabs">
       <button class="tab" :class="{ active: activeTab === 'all' }" @click="activeTab = 'all'">전체 ({{ rules.length }})</button>
       <button v-if="SHOW_OPENER_TAB" class="tab" :class="{ active: activeTab === 'opener' }" @click="activeTab = 'opener'">개폐기 ({{ openerRules.length }})</button>
@@ -20,10 +27,14 @@
     <div v-if="loading" class="loading-state">룰 목록을 불러오는 중...</div>
 
     <!-- 빈 상태 -->
-    <div v-else-if="filteredRules.length === 0" class="empty-state">
-      <p>등록된 자동화 룰이 없습니다.</p>
-      <button class="btn-primary" @click="openWizard()">첫 번째 룰 만들기</button>
-    </div>
+    <EmptyState
+      v-else-if="filteredRules.length === 0"
+      icon="rule"
+      title="자동화 룰이 없습니다"
+      description="센서 값에 따라 장비를 자동으로 제어하세요"
+      action-label="첫 번째 룰 만들기"
+      @action="openWizard()"
+    />
 
     <!-- 룰 목록 -->
     <div v-else class="rules-grid">
@@ -95,6 +106,11 @@
       </div>
     </div>
 
+    </template>
+
+    <!-- 실행 로그 탭 -->
+    <AutomationLogTimeline v-if="mainTab === 'logs'" />
+
     <!-- 위저드 모달 -->
     <RuleWizardModal
       :visible="wizardOpen"
@@ -115,6 +131,8 @@ import { useConfirm } from '../composables/useConfirm'
 import { useNotificationStore } from '../stores/notification.store'
 import type { AutomationRule } from '../types/automation.types'
 import RuleWizardModal from '../components/automation/RuleWizardModal.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import AutomationLogTimeline from '@/components/automation/AutomationLogTimeline.vue'
 
 const automationStore = useAutomationStore()
 const groupStore = useGroupStore()
@@ -126,6 +144,7 @@ type RuleKind = 'opener' | 'fan' | 'irrigation' | 'other'
 type TabType = 'all' | RuleKind
 // 개폐기 탭 표시 여부 (당분간 미사용, 필요 시 true로 변경)
 const SHOW_OPENER_TAB = false
+const mainTab = ref<'rules' | 'logs'>('rules')
 const activeTab = ref<TabType>('all')
 const wizardOpen = ref(false)
 const editingRule = ref<AutomationRule | null>(null)
@@ -493,8 +512,32 @@ input:checked + .toggle-slider:before { transform: translateX(22px); }
 
 @media (max-width: 768px) {
   .page-container { padding: 16px; }
-  .page-header h2 { font-size: calc(24px * var(--content-scale, 1)); }
   .rules-grid { grid-template-columns: 1fr; }
   .rule-body { grid-template-columns: 1fr; }
+}
+.main-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 16px;
+  border-bottom: 2px solid var(--border-color, var(--color-border));
+}
+.main-tab {
+  padding: 10px 20px;
+  border: none;
+  background: none;
+  font-size: calc(14px * var(--content-scale, 1));
+  font-weight: 500;
+  color: var(--text-secondary, var(--color-text-secondary));
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.main-tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+.main-tab:hover {
+  color: var(--text-primary, var(--color-text-primary));
 }
 </style>
