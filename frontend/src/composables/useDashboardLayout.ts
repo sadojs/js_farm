@@ -3,7 +3,7 @@ import { useLocalStorage } from '@vueuse/core'
 
 export interface DashboardWidget {
   id: string
-  type: 'weather' | 'summary'
+  type: 'weather' | 'summary' | 'device-status'
   title: string
   visible: boolean
   order: number
@@ -13,6 +13,7 @@ export interface DashboardWidget {
 const defaultLayout: DashboardWidget[] = [
   { id: 'weather', type: 'weather', title: '날씨', visible: true, order: 0, size: 'full' },
   { id: 'summary', type: 'summary', title: '요약 카드', visible: true, order: 1, size: 'full' },
+  { id: 'device-status', type: 'device-status', title: '장비 상태 정보', visible: true, order: 2, size: 'full' },
 ]
 
 export function useDashboardLayout() {

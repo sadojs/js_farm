@@ -75,6 +75,9 @@
 
       <!-- 요약 카드 위젯 -->
       <SummaryCards v-else-if="widget.type === 'summary'" />
+
+      <!-- 장비 상태 정보 위젯 -->
+      <DeviceStatusCards v-else-if="widget.type === 'device-status'" />
     </template>
   </div>
 </template>
@@ -83,6 +86,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { dashboardApi } from '../api/dashboard.api'
 import SummaryCards from '../components/dashboard/SummaryCards.vue'
+import DeviceStatusCards from '../components/dashboard/DeviceStatusCards.vue'
 import { formatDateTime } from '../utils/date-format'
 import { useDashboardLayout } from '../composables/useDashboardLayout'
 
