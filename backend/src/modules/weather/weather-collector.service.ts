@@ -39,6 +39,11 @@ export class WeatherCollectorService {
 
         const result = await this.dashboardService.getWeatherForUser(user.id);
 
+        if (!result.weather) {
+          this.logger.warn(`날씨 데이터 없음 [${user.id}]: ${result.error || 'unknown'}`);
+          continue;
+        }
+
         const weatherData = this.weatherRepo.create({
           time: now,
           userId: user.id,

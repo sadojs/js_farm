@@ -62,31 +62,65 @@ export class DashboardService {
     const serviceKey = this.getServiceKey();
     const { baseDate, baseTime } = this.getUltraSrtNcstBaseDateTime(new Date());
 
-    const { data } = await axios.get('https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst', {
-      params: {
-        serviceKey,
-        pageNo: 1,
-        numOfRows: 100,
-        dataType: 'JSON',
-        base_date: baseDate,
-        base_time: baseTime,
-        nx: position.nx,
-        ny: position.ny,
-      },
-      timeout: 10000,
-    });
+    try {
+      const { data } = await axios.get('https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst', {
+        params: {
+          serviceKey,
+          pageNo: 1,
+          numOfRows: 100,
+          dataType: 'JSON',
+          base_date: baseDate,
+          base_time: baseTime,
+          nx: position.nx,
+          ny: position.ny,
+        },
+        timeout: 10000,
+      });
 
-    const header = data?.response?.header;
-    if (header?.resultCode !== '00') {
-      throw new ServiceUnavailableException(`기상청 API 오류: ${header?.resultMsg || 'unknown error'}`);
+      const header = data?.response?.header;
+      if (header?.resultCode !== '00') {
+        this.logger.warn(`기상청 API 오류: ${header?.resultMsg || 'unknown error'}`);
+        return this.buildWeatherFallback(user.address, position, baseDate, baseTime, '기상청 API 오류');
+      }
+
+      const items = (data?.response?.body?.items?.item || []) as KmaItem[];
+      const parsed = this.parseNcstItems(items);
+
+      return {
+        location: {
+          address: user.address,
+          level1: position.level1,
+          level2: position.level2,
+          level3: position.level3,
+          nx: position.nx,
+          ny: position.ny,
+          longitude: position.longitude,
+          latitude: position.latitude,
+        },
+        weather: {
+          temperature: parsed.temperature,
+          humidity: parsed.humidity,
+          precipitation: parsed.precipitation,
+          windSpeed: parsed.windSpeed,
+          condition: parsed.condition,
+        },
+        fetchedAt: new Date().toISOString(),
+        source: {
+          baseDate,
+          baseTime,
+          endpoint: 'getUltraSrtNcst',
+        },
+      };
+    } catch (error) {
+      this.logger.warn(`날씨 API 호출 실패: ${error.message}`);
+      return this.buildWeatherFallback(user.address, position, baseDate, baseTime, error.message);
     }
+  }
 
-    const items = (data?.response?.body?.items?.item || []) as KmaItem[];
-    const parsed = this.parseNcstItems(items);
-
+  private buildWeatherFallback(address: string, position: PositionEntry, baseDate: string, baseTime: string, reason: string) {
     return {
       location: {
-        address: user.address,
+        address,
         level1: position.level1,
         level2: position.level2,
         level3: position.level3,
@@ -95,19 +129,10 @@ export class DashboardService {
         longitude: position.longitude,
         latitude: position.latitude,
       },
-      weather: {
-        temperature: parsed.temperature,
-        humidity: parsed.humidity,
-        precipitation: parsed.precipitation,
-        windSpeed: parsed.windSpeed,
-        condition: parsed.condition,
-      },
+      weather: null,
       fetchedAt: new Date().toISOString(),
-      source: {
-        baseDate,
-        baseTime,
-        endpoint: 'getUltraSrtNcst',
-      },
+      source: { baseDate, baseTime, endpoint: 'getUltraSrtNcst' },
+      error: reason,
     };
   }
 
