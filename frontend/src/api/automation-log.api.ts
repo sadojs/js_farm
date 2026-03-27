@@ -19,13 +19,13 @@ export interface AutomationLogStats {
 
 export const automationLogApi = {
   async getLogs(params: { page?: number; limit?: number; ruleId?: string } = {}): Promise<{ data: AutomationLogEntry[]; total: number }> {
-    const { data } = await client.get('/api/automation/logs', { params })
+    const { data } = await client.get('/automation/logs', { params })
     return data
   },
 
   async getStats(): Promise<AutomationLogStats> {
     try {
-      const { data } = await client.get('/api/automation/logs/stats')
+      const { data } = await client.get('/automation/logs/stats')
       return data
     } catch {
       return { todayCount: 0, successRate: 0, mostActiveRule: null }
