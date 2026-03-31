@@ -1,6 +1,6 @@
 export interface User {
   id: string
-  email: string
+  username: string
   name: string
   role: 'admin' | 'farm_admin' | 'farm_user'
   parentUserId?: string | null
@@ -22,7 +22,7 @@ export interface TuyaProject {
 }
 
 export interface LoginRequest {
-  email: string
+  username: string
   password: string
 }
 

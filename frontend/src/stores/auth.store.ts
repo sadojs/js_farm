@@ -33,10 +33,10 @@ export const useAuthStore = defineStore('auth', () => {
   const isFarmAdmin = computed(() => user.value?.role === 'farm_admin')
   const isFarmUser = computed(() => user.value?.role === 'farm_user')
 
-  async function login(email: string, password: string) {
+  async function login(username: string, password: string) {
     loading.value = true
     try {
-      const { data } = await authApi.login(email, password)
+      const { data } = await authApi.login(username, password)
       accessToken.value = data.accessToken
       refreshTokenValue.value = data.refreshToken
       user.value = data.user

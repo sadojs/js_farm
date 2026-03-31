@@ -19,14 +19,14 @@ export class AuthService {
   ) {}
 
   async login(dto: LoginDto) {
-    const user = await this.usersRepo.findOne({ where: { email: dto.email } });
+    const user = await this.usersRepo.findOne({ where: { username: dto.username } });
     if (!user) {
-      throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다.');
+      throw new UnauthorizedException('아이디 또는 비밀번호가 올바르지 않습니다.');
     }
 
     const isMatch = await bcrypt.compare(dto.password, user.passwordHash);
     if (!isMatch) {
-      throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다.');
+      throw new UnauthorizedException('아이디 또는 비밀번호가 올바르지 않습니다.');
     }
 
     if (user.status !== 'active') {
@@ -37,7 +37,7 @@ export class AuthService {
 
     const payload: JwtPayload = {
       sub: user.id,
-      email: user.email,
+      username: user.username,
       role: user.role,
       parentUserId: user.parentUserId || null,
     };
@@ -47,7 +47,7 @@ export class AuthService {
       refreshToken: this.jwtService.sign(payload, { expiresIn: '30d' }),
       user: {
         id: user.id,
-        email: user.email,
+        username: user.username,
         name: user.name,
         role: user.role,
         parentUserId: user.parentUserId || null,
@@ -70,7 +70,7 @@ export class AuthService {
       const payload = this.jwtService.verify<JwtPayload>(refreshToken);
       const newPayload: JwtPayload = {
         sub: payload.sub,
-        email: payload.email,
+        username: payload.username,
         role: payload.role,
         parentUserId: payload.parentUserId || null,
       };
@@ -91,7 +91,7 @@ export class AuthService {
 
     return {
       id: user.id,
-      email: user.email,
+      username: user.username,
       name: user.name,
       role: user.role,
       parentUserId: user.parentUserId || null,

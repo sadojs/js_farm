@@ -11,7 +11,7 @@ CREATE EXTENSION IF NOT EXISTS timescaledb;
 
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email VARCHAR(255) UNIQUE NOT NULL,
+  username VARCHAR(100) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   name VARCHAR(100) NOT NULL,
   role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'farm_admin', 'farm_user')),
@@ -22,7 +22,7 @@ CREATE TABLE users (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_username ON users(username);
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_parent ON users(parent_user_id);
 
@@ -98,6 +98,7 @@ CREATE TABLE devices (
   device_type VARCHAR(50) NOT NULL, -- 'sensor', 'actuator'
   equipment_type VARCHAR(50), -- 'opener', 'fan', 'irrigation', 'other' (액추에이터용)
   icon VARCHAR(50),
+  channel_mapping JSONB DEFAULT NULL, -- 관수 장비 릴레이 채널 커스텀 매핑 (NULL이면 시스템 기본값 사용)
   online BOOLEAN DEFAULT false,
   last_seen TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -327,12 +328,12 @@ CREATE TRIGGER update_automation_rules_updated_at BEFORE UPDATE ON automation_ru
 -- ==========================================
 
 -- 관리자 계정 (비밀번호: admin123)
-INSERT INTO users (email, password_hash, name, role, address)
-VALUES ('admin@farm.com', '$2b$10$placeholder_hash', '관리자', 'admin', '서울시 강남구');
+INSERT INTO users (username, password_hash, name, role, address)
+VALUES ('admin', '$2b$10$placeholder_hash', '관리자', 'admin', '서울시 강남구');
 
 -- 테스트 농장 관리자 (비밀번호: user123)
-INSERT INTO users (email, password_hash, name, role, address)
-VALUES ('user@farm.com', '$2b$10$placeholder_hash', '김농부', 'farm_admin', '경기도 화성시 농업로 123');
+INSERT INTO users (username, password_hash, name, role, address)
+VALUES ('user', '$2b$10$placeholder_hash', '김농부', 'farm_admin', '경기도 화성시 농업로 123');
 
 -- ==========================================
 -- 13. 수확 배치 (Crop Batches)

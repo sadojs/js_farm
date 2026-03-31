@@ -12,7 +12,7 @@ CREATE EXTENSION IF NOT EXISTS timescaledb;
 -- ==========================================
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email VARCHAR(255) UNIQUE NOT NULL,
+  username VARCHAR(100) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   name VARCHAR(100) NOT NULL,
   role VARCHAR(20) NOT NULL,
@@ -22,7 +22,25 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+
+-- email → username 마이그레이션 (기존 DB에 email 컬럼이 있는 경우)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'email') THEN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'username') THEN
+      ALTER TABLE users ADD COLUMN username VARCHAR(100);
+    END IF;
+    UPDATE users SET username = split_part(email, '@', 1) WHERE username IS NULL;
+    ALTER TABLE users DROP COLUMN email;
+    ALTER TABLE users ALTER COLUMN username SET NOT NULL;
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'users_username_key') THEN
+      ALTER TABLE users ADD CONSTRAINT users_username_key UNIQUE (username);
+    END IF;
+    DROP INDEX IF EXISTS idx_users_email;
+    RAISE NOTICE 'email → username 마이그레이션 완료';
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_users_parent ON users(parent_user_id);
 
@@ -109,6 +127,7 @@ CREATE INDEX IF NOT EXISTS idx_devices_category ON devices(category);
 ALTER TABLE devices ADD COLUMN IF NOT EXISTS equipment_type VARCHAR(50);
 ALTER TABLE devices ADD COLUMN IF NOT EXISTS paired_device_id UUID REFERENCES devices(id) ON DELETE SET NULL;
 ALTER TABLE devices ADD COLUMN IF NOT EXISTS opener_group_name VARCHAR(255);
+ALTER TABLE devices ADD COLUMN IF NOT EXISTS channel_mapping JSONB DEFAULT NULL;
 
 -- ==========================================
 -- 5-1. 그룹-장비 연결 (다대다)

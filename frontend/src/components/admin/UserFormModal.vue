@@ -20,11 +20,12 @@
           </div>
 
           <div class="form-group">
-            <label>이메일 *</label>
+            <label>아이디 *</label>
             <input
-              v-model="formData.email"
-              type="email"
-              placeholder="user@example.com"
+              v-model="formData.username"
+              type="text"
+              placeholder="영문 소문자로 시작 (3~50자)"
+              pattern="[a-z][a-z0-9_-]{2,49}"
               class="form-input"
               required
             />
@@ -55,7 +56,7 @@
             <select v-model="formData.parentUserId" class="form-select" required>
               <option value="">선택하세요</option>
               <option v-for="admin in farmAdmins" :key="admin.id" :value="admin.id">
-                {{ admin.name }} ({{ admin.email }})
+                {{ admin.name }} ({{ admin.username }})
               </option>
             </select>
             <p class="help-text">
@@ -216,7 +217,7 @@ import addressRegions from '../../data/address-regions.json'
 interface UserFormData {
   id?: string
   name: string
-  email: string
+  username: string
   role: 'admin' | 'farm_admin' | 'farm_user'
   parentUserId?: string
   address?: string
@@ -244,7 +245,7 @@ const emit = defineEmits<{
 
 const formData = ref<UserFormData>({
   name: '',
-  email: '',
+  username: '',
   role: 'farm_admin',
   address: '',
   tuyaProject: {
@@ -258,7 +259,7 @@ const formData = ref<UserFormData>({
   password: ''
 })
 
-const farmAdmins = ref<{ id: string; name: string; email: string }[]>([])
+const farmAdmins = ref<{ id: string; name: string; username: string }[]>([])
 
 watch(() => props.show, async (show) => {
   if (show) {
@@ -331,7 +332,7 @@ watch(
     } else {
       formData.value = {
         name: '',
-        email: '',
+        username: '',
         role: 'farm_admin',
         address: '',
         tuyaProject: {

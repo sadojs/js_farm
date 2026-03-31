@@ -2,8 +2,8 @@ import apiClient from './client'
 import type { LoginResponse, TokenResponse, User } from '../types/auth.types'
 
 export const authApi = {
-  login: (email: string, password: string) =>
-    apiClient.post<LoginResponse>('/auth/login', { email, password }),
+  login: (username: string, password: string) =>
+    apiClient.post<LoginResponse>('/auth/login', { username, password }),
 
   refresh: (refreshToken: string) =>
     apiClient.post<TokenResponse>('/auth/refresh', { refreshToken }),

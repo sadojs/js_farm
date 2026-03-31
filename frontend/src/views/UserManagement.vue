@@ -15,7 +15,7 @@
         <thead>
           <tr>
             <th>이름</th>
-            <th>이메일</th>
+            <th>아이디</th>
             <th>역할</th>
             <th>주소</th>
             <th>센서 프로젝트</th>
@@ -32,7 +32,7 @@
                 <span>{{ user.name }}</span>
               </div>
             </td>
-            <td>{{ user.email }}</td>
+            <td>{{ user.username }}</td>
             <td>
               <span class="role-badge" :class="user.role">
                 {{ roleLabel(user.role) }}
@@ -119,7 +119,7 @@ import { useAuthStore } from '../stores/auth.store'
 interface User {
   id: string
   name: string
-  email: string
+  username: string
   role: 'admin' | 'farm_admin' | 'farm_user'
   parentUserId?: string
   parentUserName?: string
@@ -226,7 +226,7 @@ const saveUser = async (userData: any) => {
     } else {
       // 신규 추가
       const { data: newUser } = await userApi.create({
-        email: userData.email,
+        username: userData.username,
         password: userData.password,
         name: userData.name,
         role: userData.role || 'farm_admin',

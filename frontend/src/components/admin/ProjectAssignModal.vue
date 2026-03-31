@@ -11,7 +11,7 @@
           <div class="user-avatar">{{ user.name.charAt(0) }}</div>
           <div>
             <h3>{{ user.name }}</h3>
-            <p>{{ user.email }}</p>
+            <p>{{ user.username }}</p>
           </div>
         </div>
 
@@ -67,7 +67,7 @@ import { ref } from 'vue'
 interface ProjectUser {
   id?: string
   name: string
-  email: string
+  username: string
   [key: string]: any
 }
 

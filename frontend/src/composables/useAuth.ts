@@ -7,9 +7,9 @@ export function useAuth() {
   const notificationStore = useNotificationStore()
   const router = useRouter()
 
-  async function login(email: string, password: string) {
+  async function login(username: string, password: string) {
     try {
-      await authStore.login(email, password)
+      await authStore.login(username, password)
       notificationStore.success('로그인 성공', `${authStore.user?.name}님 환영합니다.`)
       router.push('/dashboard')
     } catch (err: any) {
