@@ -1,8 +1,11 @@
 {
-  "sessionCount": 9,
+  "sessionCount": 16,
   "lastSession": {
-    "startedAt": "2026-03-27T11:46:28.435Z",
+    "startedAt": "2026-03-31T00:00:00.000Z",
     "platform": "claude",
     "level": "Enterprise"
-  }
+  },
+  "currentFeature": "account-username-format",
+  "currentPhase": "check",
+  "matchRate": 100
 }
