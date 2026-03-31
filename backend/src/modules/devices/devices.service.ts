@@ -1,4 +1,5 @@
-import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { DEFAULT_CHANNEL_MAPPING, AVAILABLE_SWITCH_CODES } from './channel-mapping.constants';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -105,6 +106,34 @@ export class DevicesService {
     );
   }
 
+  getEffectiveMapping(device: Device): Record<string, string> {
+    return device.channelMapping ?? DEFAULT_CHANNEL_MAPPING;
+  }
+
+  async updateChannelMapping(
+    deviceId: string,
+    userId: string,
+    userRole: string,
+    mapping: Record<string, string>,
+  ): Promise<Device> {
+    if (userRole !== 'admin' && userRole !== 'farm_admin') {
+      throw new ForbiddenException('채널 매핑 수정 권한이 없습니다.');
+    }
+    const device = await this.devicesRepo.findOne({ where: { id: deviceId, userId } });
+    if (!device) throw new NotFoundException('장비를 찾을 수 없습니다.');
+    if (device.equipmentType !== 'irrigation') {
+      throw new BadRequestException('관수 장비만 채널 매핑을 설정할 수 있습니다.');
+    }
+    const validCodes = new Set(AVAILABLE_SWITCH_CODES);
+    for (const [, sw] of Object.entries(mapping)) {
+      if (!validCodes.has(sw)) {
+        throw new BadRequestException(`유효하지 않은 switch 코드: ${sw}`);
+      }
+    }
+    device.channelMapping = mapping;
+    return this.devicesRepo.save(device);
+  }
+
   async controlDevice(id: string, userId: string, commands: { code: string; value: any }[]) {
     const device = await this.devicesRepo.findOne({ where: { id, userId } });
     if (!device) throw new NotFoundException('장비를 찾을 수 없습니다.');
@@ -118,8 +147,32 @@ export class DevicesService {
       endpoint: tuyaProject.endpoint,
     };
 
-    const result = await this.tuyaService.sendDeviceCommand(credentials, device.tuyaDeviceId, commands);
-    this.logger.log(`장비 제어: ${device.name} → ${JSON.stringify(commands)}`);
+    // 관수 장비의 원격제어 스위치 명령 시 연동 처리
+    let finalCommands = commands;
+    if (device.equipmentType === 'irrigation') {
+      const mapping = this.getEffectiveMapping(device);
+      const remoteControlSwitch = mapping['remote_control'];
+      const fertilizerBSwitch = mapping['fertilizer_b_contact'];
+      const remoteCmd = commands.find(c => c.code === remoteControlSwitch);
+
+      if (remoteCmd) {
+        const extraCommands: { code: string; value: any }[] = [
+          { code: fertilizerBSwitch, value: remoteCmd.value },
+        ];
+        if (remoteCmd.value === false) {
+          // 원격제어 OFF: 나머지 기능 전체 강제 OFF
+          for (const fn of ['zone_1', 'zone_2', 'zone_3', 'zone_4', 'mixer', 'fertilizer_motor']) {
+            const sw = mapping[fn];
+            if (sw) extraCommands.push({ code: sw, value: false });
+          }
+        }
+        finalCommands = [...commands, ...extraCommands];
+        this.logger.log(`관수 원격제어 연동: ${remoteCmd.value ? 'ON' : 'OFF'} → ${JSON.stringify(extraCommands)}`);
+      }
+    }
+
+    const result = await this.tuyaService.sendDeviceCommand(credentials, device.tuyaDeviceId, finalCommands);
+    this.logger.log(`장비 제어: ${device.name} → ${JSON.stringify(finalCommands)}`);
     return result;
   }
 

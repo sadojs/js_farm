@@ -8,6 +8,8 @@ import { Device } from '../devices/entities/device.entity';
 import { TuyaProject } from '../users/entities/tuya-project.entity';
 import { TuyaService } from '../integrations/tuya/tuya.service';
 import { EventsGateway } from '../gateway/events.gateway';
+import { DEFAULT_CHANNEL_MAPPING } from '../devices/channel-mapping.constants';
+import { DevicesService } from '../devices/devices.service';
 
 interface ScheduledAction {
   time: number; // ms offset from start
@@ -25,12 +27,12 @@ interface ActiveIrrigation {
   timers: ReturnType<typeof setTimeout>[];
 }
 
-const ZONE_SWITCH_MAP: Record<number, string> = {
-  1: 'switch_2',
-  2: 'switch_3',
-  3: 'switch_4',
-  4: 'switch_5',
-  5: 'switch_6',
+// zone 번호 → function_key 매핑 (실제 switch 코드는 장비별 channelMapping에서 결정)
+const ZONE_FUNCTION_KEY: Record<number, string> = {
+  1: 'zone_1',
+  2: 'zone_2',
+  3: 'zone_3',
+  4: 'zone_4',
 };
 
 @Injectable()
@@ -49,6 +51,7 @@ export class IrrigationSchedulerService {
     private readonly tuyaRepo: Repository<TuyaProject>,
     private readonly tuyaService: TuyaService,
     private readonly eventsGateway: EventsGateway,
+    private readonly devicesService: DevicesService,
   ) {}
 
   @Cron('0 * * * * *') // 매분 0초에 실행
@@ -111,8 +114,26 @@ export class IrrigationSchedulerService {
       endpoint: credentials.endpoint,
     };
 
+    // 장비 채널 매핑 로드
+    const mapping = this.devicesService.getEffectiveMapping(device);
+
+    // 원격제어(remote_control) OFF 상태면 스케줄 스킵
+    const remoteControlSwitch = mapping['remote_control'];
+    try {
+      const statusResult = await this.tuyaService.getDeviceStatus(tuyaCreds, device.tuyaDeviceId);
+      const remoteControlOn = (statusResult?.result || []).find(
+        (s: any) => s.code === remoteControlSwitch,
+      )?.value === true;
+      if (!remoteControlOn) {
+        this.logger.log(`관수 스케줄 스킵: 원격제어(${remoteControlSwitch}) OFF - ${rule.name}`);
+        return;
+      }
+    } catch (err: any) {
+      this.logger.warn(`원격제어 상태 확인 실패, 스케줄 진행: ${err.message}`);
+    }
+
     // 타임라인 생성
-    const timeline = this.buildTimeline(conditions);
+    const timeline = this.buildTimeline(conditions, mapping);
     this.logger.log(`관수 타임라인 (${timeline.length}개 액션): ${JSON.stringify(timeline.map(a => ({ t: Math.round(a.time / 60000), type: a.type, sw: a.switchCode })))}`);
 
     // 타이머 등록
@@ -174,10 +195,9 @@ export class IrrigationSchedulerService {
     timers.push(cleanupTimer);
   }
 
-  private buildTimeline(conditions: any): ScheduledAction[] {
+  private buildTimeline(conditions: any, mapping: Record<string, string>): ScheduledAction[] {
     const actions: ScheduledAction[] = [];
     const zones = (conditions.zones || []).filter((z: any) => z.enabled);
-    const mixer = conditions.mixer || { enabled: false };
     const fertilizer = conditions.fertilizer || { duration: 0, preStopWait: 0 };
 
     let offsetMs = 0;
@@ -187,7 +207,9 @@ export class IrrigationSchedulerService {
       const waitTime = zone.waitTime * 60000;
       const fertDuration = fertilizer.duration * 60000;
       const fertPreStop = fertilizer.preStopWait * 60000;
-      const switchCode = ZONE_SWITCH_MAP[zone.zone];
+      const fnKey = ZONE_FUNCTION_KEY[zone.zone];
+      if (!fnKey) continue;
+      const switchCode = mapping[fnKey];
       if (!switchCode) continue;
 
       // 구역 ON
@@ -199,35 +221,34 @@ export class IrrigationSchedulerService {
         label: `${zone.name} ON`,
       });
 
-      // 교반기 ON (관수 시작과 동시 - 항상 연동)
-      actions.push({
-        time: offsetMs,
-        type: 'mixer_on',
-        switchCode: 'switch_usb1',
-        value: true,
-        label: `교반기 ON (${zone.name})`,
-      });
+      // 교반기 ON (관수 시작과 동시 - mixer.enabled 시에만)
+      if (conditions.mixer?.enabled && mapping['mixer']) {
+        actions.push({
+          time: offsetMs,
+          type: 'mixer_on',
+          switchCode: mapping['mixer'],
+          value: true,
+          label: `교반기 ON (${zone.name})`,
+        });
+      }
 
-      // 액비모터 ON (관수시간 - 투여시간 - 종료전대기)
-      if (fertDuration > 0) {
+      // 액비모터 ON/OFF (관수시간 내에 시작 가능한 경우에만)
+      if (fertDuration > 0 && mapping['fertilizer_motor']) {
         const fertStartOffset = zoneDuration - fertDuration - fertPreStop;
-        if (fertStartOffset > 0) {
+        const fertEndOffset = zoneDuration - fertPreStop;
+        // fertStartOffset > 0 이어야 ON/OFF 모두 유효 (ON 없이 OFF만 발송 방지)
+        if (fertStartOffset > 0 && fertEndOffset > 0) {
           actions.push({
             time: offsetMs + fertStartOffset,
             type: 'fertilizer_on',
-            switchCode: 'switch_usb2',
+            switchCode: mapping['fertilizer_motor'],
             value: true,
             label: `액비모터 ON (${zone.name}, ${Math.round(fertStartOffset / 60000)}분 후)`,
           });
-        }
-
-        // 액비모터 OFF (관수시간 - 종료전대기)
-        const fertEndOffset = zoneDuration - fertPreStop;
-        if (fertEndOffset > 0) {
           actions.push({
             time: offsetMs + fertEndOffset,
             type: 'fertilizer_off',
-            switchCode: 'switch_usb2',
+            switchCode: mapping['fertilizer_motor'],
             value: false,
             label: `액비모터 OFF (${zone.name}, ${Math.round(fertEndOffset / 60000)}분 후)`,
           });
@@ -243,14 +264,16 @@ export class IrrigationSchedulerService {
         label: `${zone.name} OFF`,
       });
 
-      // 교반기 OFF (관수 종료와 동시 - 항상 연동)
-      actions.push({
-        time: offsetMs + zoneDuration,
-        type: 'mixer_off',
-        switchCode: 'switch_usb1',
-        value: false,
-        label: `교반기 OFF (${zone.name})`,
-      });
+      // 교반기 OFF (관수 종료와 동시 - mixer.enabled 시에만)
+      if (conditions.mixer?.enabled && mapping['mixer']) {
+        actions.push({
+          time: offsetMs + zoneDuration,
+          type: 'mixer_off',
+          switchCode: mapping['mixer'],
+          value: false,
+          label: `교반기 OFF (${zone.name})`,
+        });
+      }
 
       // 다음 구역까지 대기
       offsetMs += zoneDuration + waitTime;

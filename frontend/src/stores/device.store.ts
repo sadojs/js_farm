@@ -1,7 +1,8 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { deviceApi } from '../api/device.api'
-import type { Device } from '../types/device.types'
+import type { ChannelMapping, Device } from '../types/device.types'
+import { DEFAULT_CHANNEL_MAPPING } from '../types/device.types'
 
 export const useDeviceStore = defineStore('device', () => {
   const devices = ref<Device[]>([])
@@ -34,6 +35,17 @@ export const useDeviceStore = defineStore('device', () => {
   async function removeDevice(id: string) {
     await deviceApi.remove(id)
     devices.value = devices.value.filter(d => d.id !== id)
+  }
+
+  function getEffectiveMapping(device: Device): ChannelMapping {
+    return (device.channelMapping as ChannelMapping) ?? DEFAULT_CHANNEL_MAPPING
+  }
+
+  async function updateChannelMapping(deviceId: string, mapping: ChannelMapping) {
+    const { data } = await deviceApi.updateChannelMapping(deviceId, mapping)
+    const idx = devices.value.findIndex(d => d.id === deviceId)
+    if (idx !== -1) devices.value[idx].channelMapping = data.channelMapping ?? null
+    return data
   }
 
   async function controlDevice(deviceId: string, commands: { code: string; value: any }[]) {
@@ -154,5 +166,7 @@ export const useDeviceStore = defineStore('device', () => {
     fetchDeviceStatus,
     fetchAllActuatorStatuses,
     fetchAllSensorStatuses,
+    getEffectiveMapping,
+    updateChannelMapping,
   }
 })

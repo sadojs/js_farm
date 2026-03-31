@@ -10,12 +10,14 @@ import { Device } from '../devices/entities/device.entity';
 import { TuyaProject } from '../users/entities/tuya-project.entity';
 import { TuyaModule } from '../integrations/tuya/tuya.module';
 import { GatewayModule } from '../gateway/gateway.module';
+import { DevicesModule } from '../devices/devices.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([AutomationRule, AutomationLog, Device, TuyaProject]),
     TuyaModule,
     GatewayModule,
+    DevicesModule,
   ],
   controllers: [AutomationController],
   providers: [AutomationService, AutomationRunnerService, IrrigationSchedulerService],

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Body, Param, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { DevicesService } from './devices.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -45,6 +45,16 @@ export class DevicesController {
   @Get(':id/dependencies')
   getDependencies(@Param('id') id: string, @CurrentUser() user: any) {
     return this.devicesService.getDependencies(id, this.getEffectiveUserId(user));
+  }
+
+  @Patch(':id/channel-mapping')
+  updateChannelMapping(
+    @Param('id') id: string,
+    @CurrentUser() user: any,
+    @Body() body: { mapping: Record<string, string> },
+  ) {
+    const effectiveUserId = user.role === 'farm_user' && user.parentUserId ? user.parentUserId : user.id;
+    return this.devicesService.updateChannelMapping(id, effectiveUserId, user.role, body.mapping);
   }
 
   @Delete(':id/opener-pair')

@@ -95,24 +95,48 @@
           <button class="btn-icon-delete" @click="handleRemoveDevice(device.id)" aria-label="삭제">삭제</button>
         </div>
         <div class="irrigation-controls">
+          <!-- 원격제어 ON/OFF (조작 가능) -->
           <div class="irrigation-row">
-            <span class="irrigation-label">타이머 전원/B접점</span>
+            <span class="irrigation-label">원격제어 ON/OFF</span>
             <span :class="['status-dot', device.online ? 'online' : 'offline']"></span>
             <div class="irrigation-toggle-area" :class="{ disabled: !device.online }">
-              <label class="toggle-switch" @click.prevent="device.online && irrigationControlling === null && handleIrrigationControl(device, 'switch_1')">
-                <input type="checkbox" :checked="device.switchStates?.switch_1 === true" :disabled="!device.online || irrigationControlling !== null" />
+              <label class="toggle-switch" @click.prevent="device.online && irrigationControlling === null && handleIrrigationControl(device, deviceStore.getEffectiveMapping(device)['remote_control'])">
+                <input type="checkbox" :checked="device.switchStates?.[deviceStore.getEffectiveMapping(device)['remote_control']] === true" :disabled="!device.online || irrigationControlling !== null" />
                 <span class="toggle-slider"></span>
               </label>
             </div>
           </div>
+          <!-- 액비/교반기 B접점 (표시만, 조작 불가) -->
           <div class="irrigation-row">
-            <span class="irrigation-label">교반기/B접점</span>
+            <span class="irrigation-label">액비/교반기 B접점</span>
             <span :class="['status-dot', device.online ? 'online' : 'offline']"></span>
-            <div class="irrigation-toggle-area" :class="{ disabled: !device.online }">
-              <label class="toggle-switch" @click.prevent="device.online && irrigationControlling === null && handleIrrigationControl(device, 'switch_usb1')">
-                <input type="checkbox" :checked="device.switchStates?.switch_usb1 === true" :disabled="!device.online || irrigationControlling !== null" />
+            <div class="irrigation-toggle-area disabled">
+              <label class="toggle-switch" style="pointer-events: none; opacity: 0.55">
+                <input type="checkbox" :checked="device.switchStates?.[deviceStore.getEffectiveMapping(device)['fertilizer_b_contact']] === true" disabled />
                 <span class="toggle-slider"></span>
               </label>
+            </div>
+          </div>
+        </div>
+        <!-- 채널 매핑 설정 (admin / farm_admin 전용) -->
+        <div v-if="authStore.isAdmin || authStore.isFarmAdmin" class="channel-mapping-section">
+          <button class="btn-mapping-toggle" @click="showMappingPanels[device.id] ? closeMappingPanel(device.id) : openMappingPanel(device)">
+            채널 설정 {{ showMappingPanels[device.id] ? '▲' : '▼' }}
+          </button>
+          <div v-if="showMappingPanels[device.id] && editMappings[device.id]" class="channel-mapping-panel">
+            <p class="mapping-desc">각 기능에 연결될 릴레이 채널을 설정합니다.</p>
+            <div v-for="fnKey in MAPPING_FUNCTION_KEYS" :key="fnKey" class="mapping-row">
+              <span class="mapping-label">{{ FUNCTION_LABELS[fnKey] }}</span>
+              <select v-model="editMappings[device.id][fnKey]" class="mapping-select" :class="{ 'duplicate-warning': isMappingDuplicate(editMappings[device.id], fnKey) }">
+                <option v-for="sw in AVAILABLE_SWITCH_CODES" :key="sw" :value="sw">{{ sw }}</option>
+              </select>
+            </div>
+            <p v-if="hasMappingDuplicate(editMappings[device.id])" class="warning-text">같은 채널이 중복 배정되어 있습니다.</p>
+            <div class="mapping-actions">
+              <button class="btn-save" :disabled="hasMappingDuplicate(editMappings[device.id]) || mappingSaving[device.id]" @click="saveMappingForDevice(device)">
+                {{ mappingSaving[device.id] ? '저장 중...' : '저장' }}
+              </button>
+              <button class="btn-reset" @click="resetMappingForDevice(device)">기본값 복원</button>
             </div>
           </div>
         </div>
@@ -185,16 +209,16 @@
         </div>
         <div class="status-modal-body">
           <div
-            v-for="(label, code) in IRRIGATION_SWITCH_LABELS"
-            :key="code"
+            v-for="fnKey in MAPPING_FUNCTION_KEYS"
+            :key="fnKey"
             class="status-row"
           >
-            <span class="status-row-label">{{ label }}</span>
+            <span class="status-row-label">{{ FUNCTION_LABELS[fnKey] }}</span>
             <span
               class="status-row-value"
-              :class="irrigationStatusDevice.switchStates?.[code] ? 'on' : 'off'"
+              :class="irrigationStatusDevice.switchStates?.[deviceStore.getEffectiveMapping(irrigationStatusDevice)[fnKey]] ? 'on' : 'off'"
             >
-              {{ irrigationStatusDevice.switchStates?.[code] ? 'ON' : 'OFF' }}
+              {{ irrigationStatusDevice.switchStates?.[deviceStore.getEffectiveMapping(irrigationStatusDevice)[fnKey]] ? 'ON' : 'OFF' }}
             </span>
           </div>
         </div>
@@ -228,7 +252,8 @@ import { useConfirm } from '@/composables/useConfirm'
 import { useNotificationStore } from '@/stores/notification.store'
 import { deviceApi } from '@/api/device.api'
 import { translateTuyaError } from '@/utils/tuya-errors'
-import type { Device, DependencyRule } from '@/types/device.types'
+import type { ChannelMapping, Device, DependencyRule } from '@/types/device.types'
+import { DEFAULT_CHANNEL_MAPPING, FUNCTION_LABELS, AVAILABLE_SWITCH_CODES } from '@/types/device.types'
 import EmptyState from '@/components/common/EmptyState.vue'
 
 const deviceStore = useDeviceStore()
@@ -348,15 +373,50 @@ const irrigationControlling = ref<string | null>(null)
 const showIrrigationStatusModal = ref(false)
 const irrigationStatusDevice = ref<Device | null>(null)
 
-const IRRIGATION_SWITCH_LABELS: Record<string, string> = {
-  switch_1: '타이머 전원/B접점',
-  switch_2: '1구역 관수',
-  switch_3: '2구역 관수',
-  switch_4: '3구역 관수',
-  switch_5: '4구역 관수',
-  switch_6: '5구역 관수',
-  switch_usb1: '교반기 모터/B접점',
-  switch_usb2: '액비모터',
+const MAPPING_FUNCTION_KEYS = Object.keys(DEFAULT_CHANNEL_MAPPING) as (keyof ChannelMapping)[]
+
+function getIrrigationLabel(device: Device, switchCode: string): string {
+  const mapping = deviceStore.getEffectiveMapping(device)
+  const entry = Object.entries(mapping).find(([, sw]) => sw === switchCode)
+  if (entry) return FUNCTION_LABELS[entry[0] as keyof ChannelMapping] ?? switchCode
+  return switchCode
+}
+
+// 채널 매핑 패널 상태
+const showMappingPanels = ref<Record<string, boolean>>({})
+const editMappings = ref<Record<string, ChannelMapping>>({})
+const mappingSaving = ref<Record<string, boolean>>({})
+
+function openMappingPanel(device: Device) {
+  showMappingPanels.value[device.id] = true
+  editMappings.value[device.id] = { ...(deviceStore.getEffectiveMapping(device)) }
+}
+function closeMappingPanel(deviceId: string) {
+  showMappingPanels.value[deviceId] = false
+}
+function isMappingDuplicate(mapping: ChannelMapping, targetKey: keyof ChannelMapping): boolean {
+  const val = mapping[targetKey]
+  return MAPPING_FUNCTION_KEYS.some(k => k !== targetKey && mapping[k] === val)
+}
+function hasMappingDuplicate(mapping: ChannelMapping): boolean {
+  return MAPPING_FUNCTION_KEYS.some(k => isMappingDuplicate(mapping, k))
+}
+async function saveMappingForDevice(device: Device) {
+  const mapping = editMappings.value[device.id]
+  if (!mapping) return
+  mappingSaving.value[device.id] = true
+  try {
+    await deviceStore.updateChannelMapping(device.id, mapping)
+    notify.success('저장 완료', '채널 매핑이 저장되었습니다')
+    closeMappingPanel(device.id)
+  } catch {
+    notify.error('저장 실패', '채널 매핑 저장에 실패했습니다')
+  } finally {
+    mappingSaving.value[device.id] = false
+  }
+}
+function resetMappingForDevice(device: Device) {
+  editMappings.value[device.id] = { ...DEFAULT_CHANNEL_MAPPING }
 }
 
 const openIrrigationStatusModal = (device: Device) => {
@@ -369,7 +429,7 @@ async function handleIrrigationControl(device: Device, switchCode: string) {
   irrigationControlling.value = device.id
   const currentVal = device.switchStates?.[switchCode] ?? false
   const newVal = !currentVal
-  const label = IRRIGATION_SWITCH_LABELS[switchCode] || switchCode
+  const label = getIrrigationLabel(device, switchCode)
   const loadingId = notify.add('info', '적용 중...', `${label} ${newVal ? 'ON' : 'OFF'} 명령 전송 중`, 0)
   try {
     const result = await deviceStore.controlDevice(device.id, [{ code: switchCode, value: newVal }])
@@ -1066,6 +1126,85 @@ input:checked + .toggle-slider:before {
 .irrigation-toggle-area.disabled {
   opacity: 0.4;
   pointer-events: none;
+}
+
+/* 채널 매핑 패널 */
+.channel-mapping-section {
+  margin-top: 8px;
+  border-top: 1px solid var(--border-input);
+  padding-top: 8px;
+}
+.btn-mapping-toggle {
+  background: none;
+  border: none;
+  color: var(--text-link);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 0;
+}
+.channel-mapping-panel {
+  margin-top: 8px;
+}
+.mapping-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.mapping-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.mapping-label {
+  font-size: 12px;
+  color: var(--text-primary);
+  flex: 1;
+}
+.mapping-select {
+  padding: 3px 6px;
+  border: 1px solid var(--border-input);
+  border-radius: 4px;
+  font-size: 12px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  min-width: 110px;
+}
+.mapping-select.duplicate-warning {
+  border-color: #e67e22;
+}
+.warning-text {
+  font-size: 11px;
+  color: #e67e22;
+  margin: 4px 0;
+}
+.mapping-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.mapping-actions .btn-save {
+  padding: 5px 14px;
+  background: var(--color-primary, #2ecc71);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.mapping-actions .btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.mapping-actions .btn-reset {
+  padding: 5px 14px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-input);
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
 }
 
 /* 상태 버튼 */

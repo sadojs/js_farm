@@ -55,7 +55,6 @@ export interface IrrigationZoneConfig {
 export interface IrrigationConditions {
   type: 'irrigation'
   startTime: string
-  timerSwitch: boolean
   zones: IrrigationZoneConfig[]
   mixer: { enabled: boolean }
   fertilizer: { duration: number; preStopWait: number }

@@ -1,5 +1,5 @@
 import apiClient from './client'
-import type { Device, DeviceDependenciesResponse, RegisterDeviceRequest, TuyaDeviceInfo } from '../types/device.types'
+import type { ChannelMapping, Device, DeviceDependenciesResponse, RegisterDeviceRequest, TuyaDeviceInfo } from '../types/device.types'
 
 export const deviceApi = {
   getAll: () =>
@@ -31,4 +31,7 @@ export const deviceApi = {
 
   removeOpenerPair: (id: string) =>
     apiClient.delete<{ message: string; deletedIds: string[] }>(`/devices/${id}/opener-pair`),
+
+  updateChannelMapping: (id: string, mapping: ChannelMapping) =>
+    apiClient.patch<Device>(`/devices/${id}/channel-mapping`, { mapping }),
 }
