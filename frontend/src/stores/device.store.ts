@@ -2,7 +2,7 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { deviceApi } from '../api/device.api'
 import type { ChannelMapping, Device } from '../types/device.types'
-import { DEFAULT_CHANNEL_MAPPING } from '../types/device.types'
+import { detectChannelCount, getDefaultMappingByCount } from '../types/device.types'
 
 export const useDeviceStore = defineStore('device', () => {
   const devices = ref<Device[]>([])
@@ -38,7 +38,11 @@ export const useDeviceStore = defineStore('device', () => {
   }
 
   function getEffectiveMapping(device: Device): ChannelMapping {
-    return (device.channelMapping as ChannelMapping) ?? DEFAULT_CHANNEL_MAPPING
+    if (device.channelMapping) return device.channelMapping as ChannelMapping
+    const count = device.switchStates
+      ? detectChannelCount(Object.keys(device.switchStates))
+      : 8
+    return getDefaultMappingByCount(count)
   }
 
   async function updateChannelMapping(deviceId: string, mapping: ChannelMapping) {

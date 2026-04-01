@@ -125,10 +125,10 @@
           </button>
           <div v-if="showMappingPanels[device.id] && editMappings[device.id]" class="channel-mapping-panel">
             <p class="mapping-desc">각 기능에 연결될 릴레이 채널을 설정합니다.</p>
-            <div v-for="fnKey in MAPPING_FUNCTION_KEYS" :key="fnKey" class="mapping-row">
-              <span class="mapping-label">{{ FUNCTION_LABELS[fnKey] }}</span>
+            <div v-for="fnKey in getMappingKeys(device)" :key="fnKey" class="mapping-row">
+              <span class="mapping-label">{{ FUNCTION_LABELS[fnKey] || fnKey }}</span>
               <select v-model="editMappings[device.id][fnKey]" class="mapping-select" :class="{ 'duplicate-warning': isMappingDuplicate(editMappings[device.id], fnKey) }">
-                <option v-for="sw in AVAILABLE_SWITCH_CODES" :key="sw" :value="sw">{{ sw }}</option>
+                <option v-for="sw in getAvailableSwitchCodes(device)" :key="sw" :value="sw">{{ sw }}</option>
               </select>
             </div>
             <p v-if="hasMappingDuplicate(editMappings[device.id])" class="warning-text">같은 채널이 중복 배정되어 있습니다.</p>
@@ -209,16 +209,16 @@
         </div>
         <div class="status-modal-body">
           <div
-            v-for="fnKey in MAPPING_FUNCTION_KEYS"
+            v-for="fnKey in getMappingKeys(irrigationStatusDevice)"
             :key="fnKey"
             class="status-row"
           >
-            <span class="status-row-label">{{ FUNCTION_LABELS[fnKey] }}</span>
+            <span class="status-row-label">{{ FUNCTION_LABELS[fnKey] || fnKey }}</span>
             <span
               class="status-row-value"
-              :class="irrigationStatusDevice.switchStates?.[deviceStore.getEffectiveMapping(irrigationStatusDevice)[fnKey]] ? 'on' : 'off'"
+              :class="irrigationStatusDevice.switchStates?.[deviceStore.getEffectiveMapping(irrigationStatusDevice)[fnKey] ?? ''] ? 'on' : 'off'"
             >
-              {{ irrigationStatusDevice.switchStates?.[deviceStore.getEffectiveMapping(irrigationStatusDevice)[fnKey]] ? 'ON' : 'OFF' }}
+              {{ irrigationStatusDevice.switchStates?.[deviceStore.getEffectiveMapping(irrigationStatusDevice)[fnKey] ?? ''] ? 'ON' : 'OFF' }}
             </span>
           </div>
         </div>
@@ -253,7 +253,7 @@ import { useNotificationStore } from '@/stores/notification.store'
 import { deviceApi } from '@/api/device.api'
 import { translateTuyaError } from '@/utils/tuya-errors'
 import type { ChannelMapping, Device, DependencyRule } from '@/types/device.types'
-import { DEFAULT_CHANNEL_MAPPING, FUNCTION_LABELS, AVAILABLE_SWITCH_CODES } from '@/types/device.types'
+import { FUNCTION_LABELS, detectChannelCount, getDefaultMappingByCount, getAvailableSwitchCodesByCount } from '@/types/device.types'
 import EmptyState from '@/components/common/EmptyState.vue'
 
 const deviceStore = useDeviceStore()
@@ -373,7 +373,15 @@ const irrigationControlling = ref<string | null>(null)
 const showIrrigationStatusModal = ref(false)
 const irrigationStatusDevice = ref<Device | null>(null)
 
-const MAPPING_FUNCTION_KEYS = Object.keys(DEFAULT_CHANNEL_MAPPING) as (keyof ChannelMapping)[]
+function getMappingKeys(device: Device): string[] {
+  return Object.keys(deviceStore.getEffectiveMapping(device))
+}
+function getDeviceChannelCount(device: Device): 8 | 12 {
+  return device.switchStates ? detectChannelCount(Object.keys(device.switchStates)) : 8
+}
+function getAvailableSwitchCodes(device: Device): string[] {
+  return getAvailableSwitchCodesByCount(getDeviceChannelCount(device))
+}
 
 function getIrrigationLabel(device: Device, switchCode: string): string {
   const mapping = deviceStore.getEffectiveMapping(device)
@@ -394,12 +402,14 @@ function openMappingPanel(device: Device) {
 function closeMappingPanel(deviceId: string) {
   showMappingPanels.value[deviceId] = false
 }
-function isMappingDuplicate(mapping: ChannelMapping, targetKey: keyof ChannelMapping): boolean {
+function isMappingDuplicate(mapping: ChannelMapping, targetKey: string): boolean {
   const val = mapping[targetKey]
-  return MAPPING_FUNCTION_KEYS.some(k => k !== targetKey && mapping[k] === val)
+  const keys = Object.keys(mapping)
+  return keys.some(k => k !== targetKey && mapping[k] === val)
 }
 function hasMappingDuplicate(mapping: ChannelMapping): boolean {
-  return MAPPING_FUNCTION_KEYS.some(k => isMappingDuplicate(mapping, k))
+  const keys = Object.keys(mapping)
+  return keys.some(k => isMappingDuplicate(mapping, k))
 }
 async function saveMappingForDevice(device: Device) {
   const mapping = editMappings.value[device.id]
@@ -416,7 +426,7 @@ async function saveMappingForDevice(device: Device) {
   }
 }
 function resetMappingForDevice(device: Device) {
-  editMappings.value[device.id] = { ...DEFAULT_CHANNEL_MAPPING }
+  editMappings.value[device.id] = { ...getDefaultMappingByCount(getDeviceChannelCount(device)) }
 }
 
 const openIrrigationStatusModal = (device: Device) => {

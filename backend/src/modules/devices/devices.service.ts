@@ -1,5 +1,7 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { DEFAULT_CHANNEL_MAPPING, AVAILABLE_SWITCH_CODES } from './channel-mapping.constants';
+import { ConfigService } from '@nestjs/config';
+import { DEFAULT_CHANNEL_MAPPING, AVAILABLE_SWITCH_CODES, detectChannelCount, getDefaultMappingByCount, getAvailableSwitchCodesByCount } from './channel-mapping.constants';
+import { decrypt } from '../../common/utils/crypto.util';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -28,13 +30,22 @@ const DEVICE_DEPENDENCY_SQL = `
 export class DevicesService {
   private readonly logger = new Logger(DevicesService.name);
 
+  private readonly encryptionKey: string;
+
   constructor(
     @InjectRepository(Device) private devicesRepo: Repository<Device>,
     @InjectRepository(TuyaProject) private tuyaProjectRepo: Repository<TuyaProject>,
     @InjectRepository(AutomationRule) private rulesRepo: Repository<AutomationRule>,
     private tuyaService: TuyaService,
     private eventsGateway: EventsGateway,
-  ) {}
+    private configService: ConfigService,
+  ) {
+    this.encryptionKey = this.configService.get('ENCRYPTION_KEY', 'smart-farm-encryption-key-change-me');
+  }
+
+  private decryptSecret(encrypted: string): string {
+    return decrypt(encrypted, this.encryptionKey);
+  }
 
   async findAllByUser(userId: string) {
     return this.devicesRepo.find({
@@ -106,8 +117,10 @@ export class DevicesService {
     );
   }
 
-  getEffectiveMapping(device: Device): Record<string, string> {
-    return device.channelMapping ?? DEFAULT_CHANNEL_MAPPING;
+  getEffectiveMapping(device: Device, switchCodes?: string[]): Record<string, string> {
+    if (device.channelMapping) return device.channelMapping;
+    const count = switchCodes ? detectChannelCount(switchCodes) : 8;
+    return getDefaultMappingByCount(count);
   }
 
   async updateChannelMapping(
@@ -124,7 +137,8 @@ export class DevicesService {
     if (device.equipmentType !== 'irrigation') {
       throw new BadRequestException('관수 장비만 채널 매핑을 설정할 수 있습니다.');
     }
-    const validCodes = new Set(AVAILABLE_SWITCH_CODES);
+    const count = detectChannelCount(Object.values(mapping));
+    const validCodes = new Set(getAvailableSwitchCodesByCount(count));
     for (const [, sw] of Object.entries(mapping)) {
       if (!validCodes.has(sw)) {
         throw new BadRequestException(`유효하지 않은 switch 코드: ${sw}`);
@@ -143,7 +157,7 @@ export class DevicesService {
 
     const credentials = {
       accessId: tuyaProject.accessId,
-      accessSecret: tuyaProject.accessSecretEncrypted,
+      accessSecret: this.decryptSecret(tuyaProject.accessSecretEncrypted),
       endpoint: tuyaProject.endpoint,
     };
 
@@ -161,7 +175,7 @@ export class DevicesService {
         ];
         if (remoteCmd.value === false) {
           // 원격제어 OFF: 나머지 기능 전체 강제 OFF
-          for (const fn of ['zone_1', 'zone_2', 'zone_3', 'zone_4', 'mixer', 'fertilizer_motor']) {
+          for (const fn of ['zone_1', 'zone_2', 'zone_3', 'zone_4', 'zone_5', 'zone_6', 'zone_7', 'zone_8', 'mixer', 'fertilizer_motor']) {
             const sw = mapping[fn];
             if (sw) extraCommands.push({ code: sw, value: false });
           }
@@ -185,7 +199,7 @@ export class DevicesService {
 
     const credentials = {
       accessId: tuyaProject.accessId,
-      accessSecret: tuyaProject.accessSecretEncrypted,
+      accessSecret: this.decryptSecret(tuyaProject.accessSecretEncrypted),
       endpoint: tuyaProject.endpoint,
     };
 
@@ -328,7 +342,7 @@ export class DevicesService {
       try {
         const credentials = {
           accessId: project.accessId,
-          accessSecret: project.accessSecretEncrypted,
+          accessSecret: this.decryptSecret(project.accessSecretEncrypted),
           endpoint: project.endpoint,
         };
 

@@ -47,7 +47,7 @@
       <label class="section-label">관수 채널 설정</label>
 
       <!-- 구역 1~4 (zone > 4는 미지원으로 표시 제외) -->
-      <div v-for="zone in form.zones.filter(z => z.zone <= 4)" :key="zone.zone" class="setting-row zone-row">
+      <div v-for="zone in form.zones.filter(z => `zone_${z.zone}` in effectiveMapping)" :key="zone.zone" class="setting-row zone-row">
         <div class="zone-header-row">
           <input
             type="text"
@@ -190,7 +190,7 @@
 <script setup lang="ts">
 import { reactive, watch, ref, nextTick, computed } from 'vue'
 import type { ChannelMapping } from '../../types/device.types'
-import { DEFAULT_CHANNEL_MAPPING, FUNCTION_LABELS, AVAILABLE_SWITCH_CODES } from '../../types/device.types'
+import { DEFAULT_CHANNEL_MAPPING, FUNCTION_LABELS, getAvailableSwitchCodesByCount, detectChannelCount } from '../../types/device.types'
 
 export interface IrrigationZone {
   zone: number
@@ -222,6 +222,12 @@ const emit = defineEmits<{
 
 const effectiveMapping = computed(() => props.channelMapping ?? DEFAULT_CHANNEL_MAPPING)
 
+const AVAILABLE_SWITCH_CODES = computed(() => {
+  const values = Object.values(effectiveMapping.value).filter((v): v is string => !!v)
+  const count = detectChannelCount(values)
+  return getAvailableSwitchCodesByCount(count)
+})
+
 const mappingRecord = computed(() => effectiveMapping.value as unknown as Record<string, string>)
 const labelsRecord = FUNCTION_LABELS as unknown as Record<string, string>
 
@@ -249,7 +255,7 @@ function updateZoneSwitch(zoneNum: number, switchCode: string) {
   applySwitch(`zone_${zoneNum}`, switchCode)
 }
 
-function updateFnSwitch(fnKey: keyof ChannelMapping, switchCode: string) {
+function updateFnSwitch(fnKey: string, switchCode: string) {
   applySwitch(fnKey, switchCode)
 }
 

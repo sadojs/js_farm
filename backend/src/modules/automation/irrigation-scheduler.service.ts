@@ -10,6 +10,7 @@ import { TuyaService } from '../integrations/tuya/tuya.service';
 import { EventsGateway } from '../gateway/events.gateway';
 import { DEFAULT_CHANNEL_MAPPING } from '../devices/channel-mapping.constants';
 import { DevicesService } from '../devices/devices.service';
+import { decryptTuyaSecret } from '../../common/utils/crypto.util';
 
 interface ScheduledAction {
   time: number; // ms offset from start
@@ -33,6 +34,10 @@ const ZONE_FUNCTION_KEY: Record<number, string> = {
   2: 'zone_2',
   3: 'zone_3',
   4: 'zone_4',
+  5: 'zone_5',
+  6: 'zone_6',
+  7: 'zone_7',
+  8: 'zone_8',
 };
 
 @Injectable()
@@ -110,7 +115,7 @@ export class IrrigationSchedulerService {
 
     const tuyaCreds = {
       accessId: credentials.accessId,
-      accessSecret: credentials.accessSecretEncrypted,
+      accessSecret: decryptTuyaSecret(credentials.accessSecretEncrypted),
       endpoint: credentials.endpoint,
     };
 
