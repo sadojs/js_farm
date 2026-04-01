@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-03-31T07:21:22.414Z",
+  "lastUpdated": "2026-04-01T22:58:46.490Z",
   "activeFeatures": [
     "account-username-format",
     "frontend",
@@ -18,7 +18,9 @@
     "users",
     "auth",
     "admin",
-    "migrations"
+    "migrations",
+    "integrations",
+    "sensors"
   ],
   "primaryFeature": "account-username-format",
   "features": {
@@ -31,9 +33,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-26T01:20:42.994Z",
-        "lastUpdated": "2026-03-31T07:21:22.414Z"
+        "lastUpdated": "2026-03-31T23:33:29.990Z"
       },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/views/Alerts.vue"
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/views/Groups.vue"
     },
     "automation": {
       "phase": "do",
@@ -44,9 +46,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-26T01:21:19.559Z",
-        "lastUpdated": "2026-03-30T21:46:38.638Z"
+        "lastUpdated": "2026-04-01T22:58:08.905Z"
       },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/frontend/src/components/automation/RuleWizardModal.vue"
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/backend/src/modules/automation/automation-runner.service.ts"
     },
     "remove-harvest": {
       "phase": "plan",
@@ -71,9 +73,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-27T11:29:32.554Z",
-        "lastUpdated": "2026-03-27T11:50:07.518Z"
+        "lastUpdated": "2026-04-01T22:56:45.783Z"
       },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/backend/src/app.module.ts"
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/backend/src/main.ts"
     },
     "router": {
       "phase": "do",
@@ -165,9 +167,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-30T12:31:45.388Z",
-        "lastUpdated": "2026-03-30T21:36:47.800Z"
+        "lastUpdated": "2026-04-01T22:56:19.974Z"
       },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/backend/src/modules/devices/devices.controller.ts"
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/backend/src/modules/devices/devices.service.ts"
     },
     "stores": {
       "phase": "do",
@@ -178,9 +180,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-30T12:36:16.349Z",
-        "lastUpdated": "2026-03-30T22:45:06.221Z"
+        "lastUpdated": "2026-03-31T23:29:29.854Z"
       },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/stores/auth.store.ts"
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/stores/device.store.ts"
     },
     "users": {
       "phase": "do",
@@ -191,7 +193,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-30T22:44:03.962Z",
-        "lastUpdated": "2026-03-30T22:44:46.043Z"
+        "lastUpdated": "2026-04-01T22:58:46.490Z"
       },
       "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/backend/src/modules/users/users.service.ts"
     },
@@ -233,6 +235,32 @@
         "lastUpdated": "2026-03-30T23:12:36.623Z"
       },
       "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/backend/database/migrations/run-all.sh"
+    },
+    "integrations": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-01T22:56:59.687Z",
+        "lastUpdated": "2026-04-01T22:57:05.594Z"
+      },
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/backend/src/modules/integrations/tuya/tuya.controller.ts"
+    },
+    "sensors": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-01T22:57:39.427Z",
+        "lastUpdated": "2026-04-01T22:57:45.235Z"
+      },
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/backend/src/modules/sensors/sensor-collector.service.ts"
     }
   },
   "pipeline": {
@@ -243,7 +271,7 @@
   "session": {
     "startedAt": "2026-03-25T08:26:08.845Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-03-31T07:21:22.414Z"
+    "lastActivity": "2026-04-01T22:58:46.490Z"
   },
   "history": [
     {
@@ -1539,6 +1567,312 @@
     {
       "timestamp": "2026-03-31T07:21:22.414Z",
       "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:27:48.550Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:28:00.366Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:28:12.146Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:28:29.561Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:28:37.294Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:29:11.523Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:29:22.858Z",
+      "feature": "stores",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:29:29.854Z",
+      "feature": "stores",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:29:37.856Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:29:59.886Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:30:08.231Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:30:38.739Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:30:47.193Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:30:54.460Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:31:01.681Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:31:15.030Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:31:26.990Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:31:39.809Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:32:05.148Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:32:17.827Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:32:30.394Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:33:08.402Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:33:22.348Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-31T23:33:29.990Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T04:41:25.797Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:53:55.631Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:54:03.657Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:54:09.259Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:54:14.920Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:54:24.132Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:54:50.178Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:55:09.757Z",
+      "feature": "users",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:55:16.747Z",
+      "feature": "users",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:55:22.184Z",
+      "feature": "users",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:55:27.431Z",
+      "feature": "users",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:55:44.613Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:56:07.743Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:56:13.591Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:56:19.974Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:56:33.873Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:56:39.766Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:56:45.783Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:56:59.687Z",
+      "feature": "integrations",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:57:05.594Z",
+      "feature": "integrations",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:57:20.102Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:57:25.760Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:57:39.427Z",
+      "feature": "sensors",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:57:45.235Z",
+      "feature": "sensors",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:58:03.443Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:58:08.905Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T22:58:46.490Z",
+      "feature": "users",
       "phase": "do",
       "action": "updated"
     }
