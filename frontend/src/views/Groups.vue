@@ -124,27 +124,7 @@
                   </label>
                 </div>
                 <!-- 채널 매핑 설정 (admin / farm_admin 전용) -->
-                <div v-if="authStore.isAdmin || authStore.isFarmAdmin" class="channel-mapping-section">
-                  <button class="btn-mapping-toggle" @click="showMappingPanels[device.id] ? closeMappingPanel(device.id) : openMappingPanel(device)">
-                    채널 설정 {{ showMappingPanels[device.id] ? '▲' : '▼' }}
-                  </button>
-                  <div v-if="showMappingPanels[device.id] && editMappings[device.id]" class="channel-mapping-panel">
-                    <p class="mapping-desc">각 기능에 연결될 릴레이 채널을 설정합니다.</p>
-                    <div v-for="fnKey in getMappingKeys(device)" :key="fnKey" class="mapping-row">
-                      <span class="mapping-label">{{ FUNCTION_LABELS[fnKey] || fnKey }}</span>
-                      <select v-model="editMappings[device.id][fnKey]" class="mapping-select" :class="{ 'duplicate-warning': isMappingDuplicate(editMappings[device.id], fnKey) }">
-                        <option v-for="sw in getAvailableSwitchCodes(device)" :key="sw" :value="sw">{{ sw }}</option>
-                      </select>
-                    </div>
-                    <p v-if="hasMappingDuplicate(editMappings[device.id])" class="warning-text">같은 채널이 중복 배정되어 있습니다.</p>
-                    <div class="mapping-actions">
-                      <button class="btn-save" :disabled="hasMappingDuplicate(editMappings[device.id]) || mappingSaving[device.id]" @click="saveMappingForDevice(device)">
-                        {{ mappingSaving[device.id] ? '저장 중...' : '저장' }}
-                      </button>
-                      <button class="btn-reset" @click="resetMappingForDevice(device)">기본값 복원</button>
-                    </div>
-                  </div>
-                </div>
+                <IrrigationChannelMappingPanel v-if="authStore.isAdmin || authStore.isFarmAdmin" :device="device" />
               </div>
               <!-- 일반 장비 카드 -->
               <div v-for="device in getGroupActuators(group)" :key="device.id" class="sub-card actuator">
@@ -234,29 +214,11 @@
     </div>
 
     <!-- 관수 상태 모달 -->
-    <div v-if="showIrrigationStatusModal && irrigationStatusDevice" class="modal-overlay" @click.self="showIrrigationStatusModal = false">
-      <div class="status-modal">
-        <div class="status-modal-header">
-          <h3>{{ irrigationStatusDevice.name }} - 스위치 상태</h3>
-          <button class="close-btn" @click="showIrrigationStatusModal = false">✕</button>
-        </div>
-        <div class="status-modal-body">
-          <div
-            v-for="fnKey in getMappingKeys(irrigationStatusDevice)"
-            :key="fnKey"
-            class="status-row"
-          >
-            <span class="status-row-label">{{ FUNCTION_LABELS[fnKey] || fnKey }}</span>
-            <span
-              class="status-row-value"
-              :class="irrigationStatusDevice.switchStates?.[deviceStore.getEffectiveMapping(irrigationStatusDevice)[fnKey] ?? ''] ? 'on' : 'off'"
-            >
-              {{ irrigationStatusDevice.switchStates?.[deviceStore.getEffectiveMapping(irrigationStatusDevice)[fnKey] ?? ''] ? 'ON' : 'OFF' }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <IrrigationStatusModal
+      v-if="showIrrigationStatusModal"
+      :device="irrigationStatusDevice"
+      @close="showIrrigationStatusModal = false"
+    />
 
     <!-- 자동화 편집 모달 -->
     <AutomationEditModal
@@ -501,8 +463,10 @@ import { envConfigApi } from '../api/env-config.api'
 import type { EnvRole, SourcesResponse, SaveMappingItem } from '../api/env-config.api'
 import { deviceApi } from '../api/device.api'
 import type { HouseGroup } from '../types/group.types'
-import type { ChannelMapping, Device } from '../types/device.types'
-import { FUNCTION_LABELS, detectChannelCount, getDefaultMappingByCount, getAvailableSwitchCodesByCount } from '../types/device.types'
+import type { Device } from '../types/device.types'
+import { FUNCTION_LABELS } from '../types/device.types'
+import IrrigationChannelMappingPanel from '@/components/devices/IrrigationChannelMappingPanel.vue'
+import IrrigationStatusModal from '@/components/devices/IrrigationStatusModal.vue'
 import type { AutomationRule } from '../types/automation.types'
 import type { DependencyRule } from '../types/device.types'
 import { formatConditionGroup } from '../utils/automation-helpers'
@@ -642,60 +606,11 @@ const irrigationControlling = ref<string | null>(null)
 const showIrrigationStatusModal = ref(false)
 const irrigationStatusDevice = ref<Device | null>(null)
 
-function getMappingKeys(device: Device): string[] {
-  return Object.keys(deviceStore.getEffectiveMapping(device))
-}
-function getDeviceChannelCount(device: Device): 8 | 12 {
-  return device.switchStates ? detectChannelCount(Object.keys(device.switchStates)) : 8
-}
-function getAvailableSwitchCodes(device: Device): string[] {
-  return getAvailableSwitchCodesByCount(getDeviceChannelCount(device))
-}
-
 function getIrrigationLabel(device: Device, switchCode: string): string {
   const mapping = deviceStore.getEffectiveMapping(device)
   const entry = Object.entries(mapping).find(([, sw]) => sw === switchCode)
   if (entry) return FUNCTION_LABELS[entry[0]] ?? switchCode
   return switchCode
-}
-
-// 채널 매핑 패널 상태
-const showMappingPanels = ref<Record<string, boolean>>({})
-const editMappings = ref<Record<string, ChannelMapping>>({})
-const mappingSaving = ref<Record<string, boolean>>({})
-
-function openMappingPanel(device: Device) {
-  showMappingPanels.value[device.id] = true
-  editMappings.value[device.id] = { ...(deviceStore.getEffectiveMapping(device)) }
-}
-function closeMappingPanel(deviceId: string) {
-  showMappingPanels.value[deviceId] = false
-}
-function isMappingDuplicate(mapping: ChannelMapping, targetKey: string): boolean {
-  const val = mapping[targetKey]
-  const keys = Object.keys(mapping)
-  return keys.some(k => k !== targetKey && mapping[k] === val)
-}
-function hasMappingDuplicate(mapping: ChannelMapping): boolean {
-  const keys = Object.keys(mapping)
-  return keys.some(k => isMappingDuplicate(mapping, k))
-}
-async function saveMappingForDevice(device: Device) {
-  const mapping = editMappings.value[device.id]
-  if (!mapping) return
-  mappingSaving.value[device.id] = true
-  try {
-    await deviceStore.updateChannelMapping(device.id, mapping)
-    notify.success('저장 완료', '채널 매핑이 저장되었습니다')
-    closeMappingPanel(device.id)
-  } catch {
-    notify.error('저장 실패', '채널 매핑 저장에 실패했습니다')
-  } finally {
-    mappingSaving.value[device.id] = false
-  }
-}
-function resetMappingForDevice(device: Device) {
-  editMappings.value[device.id] = { ...getDefaultMappingByCount(getDeviceChannelCount(device)) }
 }
 
 const openIrrigationStatusModal = (device: Device) => {
