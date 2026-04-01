@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-01T23:29:46.364Z",
+  "lastUpdated": "2026-04-01T23:51:32.571Z",
   "activeFeatures": [
     "account-username-format",
     "frontend",
@@ -34,9 +34,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-26T01:20:42.994Z",
-        "lastUpdated": "2026-04-01T23:29:46.364Z"
+        "lastUpdated": "2026-04-01T23:51:32.571Z"
       },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/frontend/src/views/Groups.vue"
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/frontend/src/views/Dashboard.vue"
     },
     "automation": {
       "phase": "do",
@@ -126,9 +126,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-27T11:55:39.392Z",
-        "lastUpdated": "2026-03-27T12:30:21.281Z"
+        "lastUpdated": "2026-04-01T23:51:14.296Z"
       },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/components/dashboard/SummaryCards.vue"
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/frontend/src/components/dashboard/IrrigationHistoryWidget.vue"
     },
     "composables": {
       "phase": "do",
@@ -139,9 +139,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-27T12:06:29.624Z",
-        "lastUpdated": "2026-03-30T22:45:15.174Z"
+        "lastUpdated": "2026-04-01T23:50:43.821Z"
       },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/composables/useAuth.ts"
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/frontend/src/composables/useDashboardLayout.ts"
     },
     "irrigation-relay-mapping": {
       "phase": "check",
@@ -285,7 +285,7 @@
   "session": {
     "startedAt": "2026-03-25T08:26:08.845Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-01T23:29:46.364Z"
+    "lastActivity": "2026-04-01T23:51:32.571Z"
   },
   "history": [
     {
@@ -2132,6 +2132,60 @@
     },
     {
       "timestamp": "2026-04-01T23:29:46.364Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T23:44:45.430Z",
+      "feature": "dashboard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T23:44:56.798Z",
+      "feature": "composables",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T23:45:05.497Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T23:45:11.730Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T23:50:30.760Z",
+      "feature": "composables",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T23:50:43.821Z",
+      "feature": "composables",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T23:51:14.296Z",
+      "feature": "dashboard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T23:51:23.647Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-01T23:51:32.571Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
