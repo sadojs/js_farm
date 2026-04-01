@@ -6,6 +6,7 @@ import { TuyaService } from './tuya.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TuyaProject } from '../../users/entities/tuya-project.entity';
+import { decryptTuyaSecret } from '../../../common/utils/crypto.util';
 
 class TestCredentialsDto {
   @IsString()
@@ -51,7 +52,7 @@ export class TuyaController {
 
     const credentials = {
       accessId: tuya.accessId,
-      accessSecret: tuya.accessSecretEncrypted,
+      accessSecret: decryptTuyaSecret(tuya.accessSecretEncrypted),
       endpoint: tuya.endpoint,
     };
 

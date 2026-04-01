@@ -1,17 +1,24 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { encrypt } from '../../common/utils/crypto.util';
 import { User } from './entities/user.entity';
 import { TuyaProject } from './entities/tuya-project.entity';
 import { CreateUserDto, UpdateUserDto, UpdateTuyaProjectDto } from './dto/user.dto';
 
 @Injectable()
 export class UsersService {
+  private readonly encryptionKey: string;
+
   constructor(
     @InjectRepository(User) private usersRepo: Repository<User>,
     @InjectRepository(TuyaProject) private tuyaRepo: Repository<TuyaProject>,
-  ) {}
+    private configService: ConfigService,
+  ) {
+    this.encryptionKey = this.configService.get('ENCRYPTION_KEY', 'smart-farm-encryption-key-change-me');
+  }
 
   async findAll() {
     const users = await this.usersRepo.find({ order: { createdAt: 'DESC' } });
@@ -121,7 +128,7 @@ export class UsersService {
     if (tuya) {
       tuya.name = dto.name;
       tuya.accessId = dto.accessId;
-      if (dto.accessSecret) tuya.accessSecretEncrypted = dto.accessSecret; // TODO: AES-256 암호화
+      if (dto.accessSecret) tuya.accessSecretEncrypted = encrypt(dto.accessSecret, this.encryptionKey);
       tuya.endpoint = dto.endpoint;
       if (dto.projectId !== undefined) tuya.projectId = dto.projectId;
       tuya.enabled = dto.enabled ?? true;
@@ -130,7 +137,7 @@ export class UsersService {
         userId,
         name: dto.name,
         accessId: dto.accessId,
-        accessSecretEncrypted: dto.accessSecret, // TODO: AES-256 암호화
+        accessSecretEncrypted: encrypt(dto.accessSecret || '', this.encryptionKey),
         endpoint: dto.endpoint,
         projectId: dto.projectId,
         enabled: dto.enabled ?? true,

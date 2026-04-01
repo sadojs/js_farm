@@ -8,6 +8,7 @@ import { Device } from '../devices/entities/device.entity';
 import { TuyaProject } from '../users/entities/tuya-project.entity';
 import { TuyaService } from '../integrations/tuya/tuya.service';
 import { EventsGateway } from '../gateway/events.gateway';
+import { decryptTuyaSecret } from '../../common/utils/crypto.util';
 
 type LogicOp = 'AND' | 'OR';
 
@@ -478,7 +479,7 @@ export class AutomationRunnerService {
           const res = await this.tuyaService.sendDeviceCommand(
             {
               accessId: credentials.accessId,
-              accessSecret: credentials.accessSecretEncrypted,
+              accessSecret: decryptTuyaSecret(credentials.accessSecretEncrypted),
               endpoint: credentials.endpoint,
             },
             device.tuyaDeviceId,

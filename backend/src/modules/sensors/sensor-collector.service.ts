@@ -6,6 +6,7 @@ import { Device } from '../devices/entities/device.entity';
 import { TuyaProject } from '../users/entities/tuya-project.entity';
 import { TuyaService } from '../integrations/tuya/tuya.service';
 import { SensorsService } from './sensors.service';
+import { decryptTuyaSecret } from '../../common/utils/crypto.util';
 import { EventsGateway } from '../gateway/events.gateway';
 
 // Tuya 상태 코드 → 센서 타입 매핑
@@ -53,7 +54,7 @@ export class SensorCollectorService {
       try {
         const credentials = {
           accessId: project.accessId,
-          accessSecret: project.accessSecretEncrypted,
+          accessSecret: decryptTuyaSecret(project.accessSecretEncrypted),
           endpoint: project.endpoint,
         };
 

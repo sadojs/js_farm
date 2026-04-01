@@ -1,11 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { setGlobalEncryptionKey } from './common/utils/crypto.util';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('api');
+
+  app.use(helmet());
+
+  setGlobalEncryptionKey(process.env.ENCRYPTION_KEY || 'smart-farm-encryption-key-change-me');
 
   app.enableCors({
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
