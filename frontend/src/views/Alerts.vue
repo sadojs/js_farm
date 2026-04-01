@@ -335,8 +335,8 @@ function formatDate(dateStr: string): string {
 async function loadAlerts() {
   loading.value = true
   try {
-    const res = await sensorAlertsApi.getAlerts({ resolved: 'false' })
-    alerts.value = res.data
+    const res = await sensorAlertsApi.getAlerts({ resolved: 'false', limit: 200 })
+    alerts.value = res.data.data
   } catch {
     notificationStore.error('오류', '알림 목록을 불러오지 못했습니다.')
   } finally {

@@ -41,11 +41,15 @@ export class SensorAlertsController {
     @Query('severity') severity?: string,
     @Query('resolved') resolved?: string,
     @Query('deviceId') deviceId?: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
   ) {
     return this.alertsService.findAll(this.getEffectiveUserId(user), {
       severity,
       resolved: resolved === 'true' ? true : resolved === 'false' ? false : undefined,
       deviceId,
+      limit: limit ? Math.min(parseInt(limit, 10), 200) : 100,
+      offset: offset ? parseInt(offset, 10) : 0,
     });
   }
 

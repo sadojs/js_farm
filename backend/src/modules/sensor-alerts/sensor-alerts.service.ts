@@ -75,11 +75,10 @@ export class SensorAlertsService {
 
   // ── 알림 CRUD ──
 
-  async findAll(userId: string, filters: { severity?: string; resolved?: boolean; deviceId?: string }) {
+  async findAll(userId: string, filters: { severity?: string; resolved?: boolean; deviceId?: string; limit?: number; offset?: number }) {
     const qb = this.alertRepo.createQueryBuilder('a')
       .where('a.user_id = :userId', { userId })
       .andWhere('(a.snoozed_until IS NULL OR a.snoozed_until < NOW())')
-      // 대기 목록에 있는 센서의 알림 제외
       .andWhere(`NOT EXISTS (
         SELECT 1 FROM sensor_standby ss
         WHERE ss.user_id = a.user_id
@@ -92,7 +91,12 @@ export class SensorAlertsService {
     if (filters.resolved !== undefined) qb.andWhere('a.resolved = :resolved', { resolved: filters.resolved });
     if (filters.deviceId) qb.andWhere('a.device_id = :deviceId', { deviceId: filters.deviceId });
 
-    return qb.getMany();
+    const limit = filters.limit ?? 100;
+    const offset = filters.offset ?? 0;
+    qb.take(limit).skip(offset);
+
+    const [data, total] = await qb.getManyAndCount();
+    return { data, total, limit, offset };
   }
 
   async findOneWithStats(userId: string, id: string) {
@@ -154,11 +158,67 @@ export class SensorAlertsService {
       await this.checkDevice(device, standbySet);
     }
 
+    // 액추에이터 오프라인 감지
+    await this.checkActuatorOffline();
+
     // 조건이 정상으로 복귀한 알림 자동 해제
     await this.autoResolveAlerts(standbySet);
 
     // 알림/해제 반복(flapping) 감지
     await this.checkFlapping(standbySet);
+  }
+
+  private async checkActuatorOffline() {
+    const actuators = await this.deviceRepo.find({
+      where: { deviceType: 'actuator' },
+      select: ['id', 'userId', 'name', 'online', 'lastSeen', 'equipmentType'],
+    });
+
+    for (const device of actuators) {
+      if (device.online) {
+        // 온라인 복귀 시 기존 offline 알림 자동 해제
+        await this.alertRepo.update(
+          { deviceId: device.id, alertType: 'no_data' as any, resolved: false },
+          { resolved: true, resolvedAt: new Date() },
+        );
+        continue;
+      }
+
+      // 오프라인 상태: lastSeen 확인
+      if (!device.lastSeen) continue;
+      const offlineMinutes = (Date.now() - new Date(device.lastSeen).getTime()) / 60000;
+      if (offlineMinutes < 60) continue; // 60분 미만은 무시
+
+      const severity = offlineMinutes >= 360 ? 'critical' : 'warning';
+
+      // 중복 알림 방지
+      const existing = await this.alertRepo.findOne({
+        where: { deviceId: device.id, alertType: 'no_data' as any, resolved: false },
+      });
+
+      if (existing) {
+        // 심각도 업그레이드만 처리
+        if (existing.severity !== severity && severity === 'critical') {
+          existing.severity = severity;
+          existing.message = `${device.name} 장비가 ${Math.round(offlineMinutes)}분간 오프라인 상태입니다.`;
+          await this.alertRepo.save(existing);
+        }
+        continue;
+      }
+
+      const alert = this.alertRepo.create({
+        userId: device.userId,
+        deviceId: device.id,
+        deviceName: device.name,
+        sensorType: device.equipmentType || 'actuator',
+        alertType: 'no_data',
+        severity,
+        message: `${device.name} 장비가 ${Math.round(offlineMinutes)}분간 오프라인 상태입니다.`,
+        threshold: '60분',
+      });
+      alert.value = undefined as any; // nullable column
+      await this.alertRepo.save(alert);
+    }
   }
 
   private async checkDevice(
