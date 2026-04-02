@@ -290,7 +290,7 @@ async function interlockControl(group: OpenerGroup, action: 'open' | 'close') {
       }
       return
     }
-    // 반대쪽이 ON이면: 먼저 OFF → 1.5초 대기
+    // 반대쪽이 ON이면: 먼저 OFF → 1초 대기 (릴레이 접점 아크 소멸 + API 왕복)
     if (oppositeDevice.switchState) {
       const offResult = await deviceStore.controlDevice(oppositeDevice.id, [{ code: 'switch_1', value: false }])
       if (!offResult.success) {
@@ -299,7 +299,7 @@ async function interlockControl(group: OpenerGroup, action: 'open' | 'close') {
         return
       }
       oppositeDevice.switchState = false
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      await new Promise(resolve => setTimeout(resolve, 1000))
     }
     // 타겟 ON
     const result = await deviceStore.controlDevice(targetDevice.id, [{ code: 'switch_1', value: true }])
