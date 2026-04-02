@@ -45,6 +45,22 @@ export const DEFAULT_CHANNEL_MAPPING_12CH: ChannelMapping = {
 // 하위 호환용 별칭
 export const DEFAULT_CHANNEL_MAPPING = DEFAULT_CHANNEL_MAPPING_8CH
 
+/** 상태 모달에서 항상 이 순서로 표시 */
+export const FUNCTION_DISPLAY_ORDER: string[] = [
+  'remote_control',
+  'fertilizer_b_contact',
+  'zone_1',
+  'zone_2',
+  'zone_3',
+  'zone_4',
+  'zone_5',
+  'zone_6',
+  'zone_7',
+  'zone_8',
+  'mixer',
+  'fertilizer_motor',
+]
+
 export const FUNCTION_LABELS: Record<string, string> = {
   remote_control:       '원격제어 ON/OFF',
   fertilizer_b_contact: '액비/교반기 B접점',

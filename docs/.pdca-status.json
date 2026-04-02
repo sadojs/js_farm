@@ -1,7 +1,8 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-01T23:51:32.571Z",
+  "lastUpdated": "2026-04-02T10:29:38.640Z",
   "activeFeatures": [
+    "typography-unification",
     "account-username-format",
     "frontend",
     "automation",
@@ -23,8 +24,28 @@
     "sensors",
     "sensor-alerts"
   ],
-  "primaryFeature": "account-username-format",
+  "primaryFeature": "typography-unification",
   "features": {
+    "typography-unification": {
+      "phase": "plan",
+      "phaseNumber": 1,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [
+        "FR-01",
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-05"
+      ],
+      "documents": {
+        "plan": "docs/01-plan/features/typography-unification.plan.md"
+      },
+      "timestamps": {
+        "started": "2026-04-02T10:00:00.000Z",
+        "lastUpdated": "2026-04-02T10:00:00.000Z"
+      }
+    },
     "frontend": {
       "phase": "do",
       "phaseNumber": 3,
@@ -34,9 +55,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-26T01:20:42.994Z",
-        "lastUpdated": "2026-04-01T23:51:32.571Z"
+        "lastUpdated": "2026-04-02T10:29:38.639Z"
       },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/frontend/src/views/Dashboard.vue"
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/frontend/src/views/Groups.vue"
     },
     "automation": {
       "phase": "do",
@@ -168,9 +189,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-30T12:31:45.388Z",
-        "lastUpdated": "2026-04-01T23:25:44.837Z"
+        "lastUpdated": "2026-04-02T07:31:08.579Z"
       },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/frontend/src/components/devices/IrrigationStatusModal.vue"
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/components/devices/IrrigationChannelMappingPanel.vue"
     },
     "stores": {
       "phase": "do",
@@ -285,7 +306,7 @@
   "session": {
     "startedAt": "2026-03-25T08:26:08.845Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-01T23:51:32.571Z"
+    "lastActivity": "2026-04-02T10:29:38.640Z"
   },
   "history": [
     {
@@ -2186,6 +2207,78 @@
     },
     {
       "timestamp": "2026-04-01T23:51:32.571Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-02T07:30:44.493Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-02T07:30:53.602Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-02T07:31:03.203Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-02T07:31:08.579Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-02T10:21:26.214Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-02T10:21:36.516Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-02T10:21:43.743Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-02T10:26:19.774Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-02T10:26:24.625Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-02T10:28:40.169Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-02T10:29:23.610Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-02T10:29:38.640Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"

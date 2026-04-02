@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Device } from '../../types/device.types'
-import { FUNCTION_LABELS } from '../../types/device.types'
+import { FUNCTION_LABELS, FUNCTION_DISPLAY_ORDER } from '../../types/device.types'
 import { useDeviceStore } from '../../stores/device.store'
 
 const props = defineProps<{ device: Device | null }>()
@@ -38,7 +38,9 @@ const deviceStore = useDeviceStore()
 const mapping = computed<Record<string, string | undefined>>(() =>
   props.device ? deviceStore.getEffectiveMapping(props.device) : {}
 )
-const mappingKeys = computed(() => Object.keys(mapping.value))
+const mappingKeys = computed(() =>
+  FUNCTION_DISPLAY_ORDER.filter(key => key in mapping.value)
+)
 </script>
 
 <style scoped>

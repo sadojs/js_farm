@@ -25,7 +25,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import type { ChannelMapping, Device } from '../../types/device.types'
-import { FUNCTION_LABELS, detectChannelCount, getDefaultMappingByCount, getAvailableSwitchCodesByCount } from '../../types/device.types'
+import { FUNCTION_LABELS, FUNCTION_DISPLAY_ORDER, detectChannelCount, getDefaultMappingByCount, getAvailableSwitchCodesByCount } from '../../types/device.types'
 import { useDeviceStore } from '../../stores/device.store'
 import { useNotificationStore } from '../../stores/notification.store'
 
@@ -40,7 +40,10 @@ const saving = ref(false)
 const channelCount = computed<8 | 12>(() =>
   props.device.switchStates ? detectChannelCount(Object.keys(props.device.switchStates)) : 8
 )
-const mappingKeys = computed(() => Object.keys(deviceStore.getEffectiveMapping(props.device)))
+const mappingKeys = computed(() => {
+  const effective = deviceStore.getEffectiveMapping(props.device)
+  return FUNCTION_DISPLAY_ORDER.filter(key => key in effective)
+})
 const availableSwitchCodes = computed(() => getAvailableSwitchCodesByCount(channelCount.value))
 
 watch(isOpen, (open) => {
