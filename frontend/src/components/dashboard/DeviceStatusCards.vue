@@ -28,7 +28,15 @@
                 <span class="item-location">{{ getDeviceLocation(device) }}</span>
               </div>
             </div>
-            <span :class="['item-status', device.switchState ? 'running' : 'stopped']">
+            <div v-if="device.equipmentType === 'irrigation'" class="item-status-group">
+              <span :class="['item-status', getIrrigationScheduleStatus(device).scheduled ? 'scheduled' : 'stopped']">
+                {{ getIrrigationScheduleStatus(device).scheduled ? `스케줄 ON (${getIrrigationScheduleStatus(device).count})` : '스케줄 OFF' }}
+              </span>
+              <span :class="['item-status', getIrrigationScheduleStatus(device).running ? 'running' : 'stopped']">
+                {{ getIrrigationScheduleStatus(device).running ? '가동중' : '대기' }}
+              </span>
+            </div>
+            <span v-else :class="['item-status', device.switchState ? 'running' : 'stopped']">
               {{ device.online ? (device.switchState ? '가동중' : '대기') : '오프라인' }}
             </span>
           </div>
@@ -85,10 +93,21 @@
 import { computed, onMounted } from 'vue'
 import { useDeviceStore } from '../../stores/device.store'
 import { useGroupStore } from '../../stores/group.store'
+import { useAutomationStore } from '../../stores/automation.store'
 import type { Device } from '../../types/device.types'
 
 const deviceStore = useDeviceStore()
 const groupStore = useGroupStore()
+const automationStore = useAutomationStore()
+
+function getIrrigationScheduleStatus(device: Device) {
+  const status = automationStore.getDeviceIrrigationStatus(device.id)
+  return {
+    scheduled: (status?.enabledRuleCount ?? 0) > 0,
+    count: status?.enabledRuleCount ?? 0,
+    running: status?.isRunning ?? false,
+  }
+}
 
 const DISPLAY_FIELDS = ['temperature', 'humidity', 'co2', 'rainfall', 'uv', 'dew_point']
 
@@ -197,14 +216,14 @@ onMounted(async () => {
 
 .detail-card-header h3 {
   flex: 1;
-  font-size: calc(18px * var(--content-scale, 1));
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
 }
 
 .detail-count {
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 600;
   color: var(--accent);
   background: var(--accent-bg);
@@ -221,7 +240,7 @@ onMounted(async () => {
   padding: 32px 20px;
   text-align: center;
   color: var(--text-muted);
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
 }
 
 .empty-inline-link {
@@ -230,7 +249,7 @@ onMounted(async () => {
   color: var(--accent);
   font-weight: 600;
   text-decoration: none;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
 }
 .empty-inline-link:hover { text-decoration: underline; }
 
@@ -270,7 +289,7 @@ onMounted(async () => {
 }
 
 .item-name {
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 600;
   color: var(--text-primary);
   overflow: hidden;
@@ -279,7 +298,7 @@ onMounted(async () => {
 }
 
 .item-location {
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -289,12 +308,14 @@ onMounted(async () => {
 .item-status {
   padding: 4px 12px;
   border-radius: 6px;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 600;
   flex-shrink: 0;
 }
 .item-status.running { background: var(--accent-bg); color: var(--accent); }
+.item-status.scheduled { background: #e3f2fd; color: #1565c0; }
 .item-status.stopped { background: var(--bg-hover); color: var(--text-muted); }
+.item-status-group { display: flex; gap: 4px; flex-shrink: 0; }
 
 .sensor-detail-item {
   flex-direction: column;
@@ -318,7 +339,7 @@ onMounted(async () => {
   padding: 4px 10px;
   background: var(--sensor-bg);
   border-radius: 6px;
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   color: var(--sensor-accent);
   white-space: nowrap;
 }

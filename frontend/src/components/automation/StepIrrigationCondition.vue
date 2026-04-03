@@ -121,8 +121,13 @@
             <option v-for="sw in AVAILABLE_SWITCH_CODES" :key="sw" :value="sw">{{ sw }}</option>
           </select>
           <span v-else class="switch-hint">{{ effectiveMapping['fertilizer_motor'] }}</span>
+          <button
+            class="toggle-btn"
+            :class="{ active: form.fertilizer.enabled }"
+            @click="form.fertilizer.enabled = !form.fertilizer.enabled"
+          >{{ form.fertilizer.enabled ? 'ON' : 'OFF' }}</button>
         </div>
-        <div class="setting-fields">
+        <div v-if="form.fertilizer.enabled" class="setting-fields">
           <div class="field-group">
             <label class="field-label">투여시간</label>
             <div class="input-with-unit">
@@ -205,7 +210,7 @@ export interface IrrigationFormData {
   startTime: string
   zones: IrrigationZone[]
   mixer: { enabled: boolean }
-  fertilizer: { duration: number; preStopWait: number }
+  fertilizer: { enabled: boolean; duration: number; preStopWait: number }
   schedule: { days: number[]; repeat: boolean }
 }
 
@@ -266,7 +271,12 @@ const DAYS = [
   { value: 0, label: '일' },
 ]
 
-const form = reactive<IrrigationFormData>(JSON.parse(JSON.stringify(props.modelValue)))
+const raw = JSON.parse(JSON.stringify(props.modelValue))
+// 기존 룰 호환: fertilizer.enabled 기본값 (duration > 0이면 enabled)
+if (raw.fertilizer && raw.fertilizer.enabled === undefined) {
+  raw.fertilizer.enabled = raw.fertilizer.duration > 0
+}
+const form = reactive<IrrigationFormData>(raw)
 
 /* ── Time Picker ── */
 const showTimePicker = ref(false)
@@ -298,11 +308,17 @@ function confirmTime() {
 }
 
 /* ── Watchers ── */
+let ignoreFormWatch = false
 watch(() => props.modelValue, (val) => {
-  Object.assign(form, JSON.parse(JSON.stringify(val)))
+  const next = JSON.parse(JSON.stringify(val))
+  if (JSON.stringify(next) === JSON.stringify(form)) return
+  ignoreFormWatch = true
+  Object.assign(form, next)
+  nextTick(() => { ignoreFormWatch = false })
 }, { deep: true })
 
 watch(form, () => {
+  if (ignoreFormWatch) return
   emit('update:modelValue', JSON.parse(JSON.stringify(form)))
 }, { deep: true })
 
@@ -320,8 +336,8 @@ function toggleDay(day: number) {
   gap: 20px;
 }
 
-.step-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0; }
-.step-desc { font-size: 14px; color: var(--text-muted); margin: 0; }
+.step-title { font-size: var(--font-size-subtitle); font-weight: 700; color: var(--text-primary); margin: 0; }
+.step-desc { font-size: var(--font-size-label); color: var(--text-muted); margin: 0; }
 
 .section {
   display: flex;
@@ -330,7 +346,7 @@ function toggleDay(day: number) {
 }
 
 .section-label {
-  font-size: 15px;
+  font-size: var(--font-size-label);
   font-weight: 700;
   color: var(--text-primary);
   padding-bottom: 4px;
@@ -347,7 +363,7 @@ function toggleDay(day: number) {
   background: var(--bg-secondary);
   border: 1px solid var(--border-input);
   border-radius: 12px;
-  font-size: calc(20px * var(--content-scale, 1));
+  font-size: var(--font-size-subtitle);
   font-weight: 700;
   color: var(--text-primary);
   cursor: pointer;
@@ -378,7 +394,7 @@ function toggleDay(day: number) {
 }
 
 .setting-name.fixed {
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 600;
   color: var(--text-secondary);
   white-space: nowrap;
@@ -407,7 +423,7 @@ function toggleDay(day: number) {
 }
 
 .switch-hint {
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   color: var(--text-muted);
   background: var(--bg-input);
   border: 1px solid var(--border-light);
@@ -419,7 +435,7 @@ function toggleDay(day: number) {
 }
 
 .switch-select {
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   padding: 5px 8px;
   border: 1px solid var(--border-input);
   border-radius: 8px;
@@ -432,7 +448,7 @@ function toggleDay(day: number) {
 
 /* 채널 매핑 섹션 */
 .mapping-desc {
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   color: var(--text-muted);
   margin: 0 0 8px 0;
 }
@@ -448,14 +464,14 @@ function toggleDay(day: number) {
 }
 
 .mapping-label {
-  font-size: 14px;
+  font-size: var(--font-size-label);
   font-weight: 500;
   color: var(--text-secondary);
   white-space: nowrap;
 }
 
 .switch-select-full {
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   padding: 6px 10px;
   border: 1px solid var(--border-input);
   border-radius: 8px;
@@ -470,7 +486,7 @@ function toggleDay(day: number) {
   padding: 6px 10px;
   border: 1px solid var(--border-input);
   border-radius: 6px;
-  font-size: 14px;
+  font-size: var(--font-size-label);
   font-weight: 600;
   color: var(--text-primary);
   background: var(--bg-input);
@@ -492,7 +508,7 @@ function toggleDay(day: number) {
 }
 
 .field-label {
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   color: var(--text-muted);
   white-space: nowrap;
 }
@@ -508,14 +524,14 @@ function toggleDay(day: number) {
   padding: 6px 8px;
   border: 1px solid var(--border-input);
   border-radius: 6px;
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   text-align: center;
   color: var(--text-primary);
   background: var(--bg-input);
 }
 
 .unit {
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   color: var(--text-muted);
 }
 
@@ -524,7 +540,7 @@ function toggleDay(day: number) {
   border: 2px solid var(--border-input);
   border-radius: 6px;
   background: var(--bg-card);
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
@@ -550,7 +566,7 @@ function toggleDay(day: number) {
   border: 1px solid var(--border-input);
   border-radius: 8px;
   background: var(--bg-card);
-  font-size: 14px;
+  font-size: var(--font-size-label);
   font-weight: 500;
   cursor: pointer;
   color: var(--text-primary);
@@ -567,7 +583,7 @@ function toggleDay(day: number) {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: var(--font-size-label);
   color: var(--text-secondary);
   cursor: pointer;
 }
@@ -608,7 +624,7 @@ function toggleDay(day: number) {
 }
 
 .tp-title {
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-weight: 600;
   color: var(--text-primary, #333);
 }
@@ -617,7 +633,7 @@ function toggleDay(day: number) {
 .tp-confirm {
   background: none;
   border: none;
-  font-size: 15px;
+  font-size: var(--font-size-label);
   cursor: pointer;
   padding: 4px 8px;
 }
@@ -681,14 +697,14 @@ function toggleDay(day: number) {
   align-items: center;
   justify-content: center;
   scroll-snap-align: center;
-  font-size: 22px;
+  font-size: var(--font-size-title);
   font-weight: 600;
   color: var(--text-primary, #333);
   user-select: none;
 }
 
 .tp-colon {
-  font-size: 24px;
+  font-size: var(--font-size-title);
   font-weight: 700;
   color: var(--text-primary, #333);
   padding: 0 4px;

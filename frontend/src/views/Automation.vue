@@ -235,7 +235,9 @@ async function handleToggle(id: string) {
   const rule = rules.value.find(r => r.id === id)
   const newState = rule ? !rule.enabled : true
   try {
-    await automationStore.toggleRule(id)
+    // FR-03: 관수 룰 활성화 시 autoEnableRemote 전달
+    const isIrrigationEnable = newState && (rule?.conditions as any)?.type === 'irrigation'
+    await automationStore.toggleRule(id, isIrrigationEnable ? { autoEnableRemote: true } : undefined)
     notify.success('적용 완료', `${rule?.name || '룰'}이(가) ${newState ? '활성화' : '비활성화'}되었습니다`)
   } catch {
     notify.error('적용 실패', '룰 상태 변경에 실패했습니다')
@@ -285,12 +287,12 @@ onMounted(async () => {
   flex-wrap: wrap;
   gap: 12px;
 }
-.page-header h2 { font-size: calc(32px * var(--content-scale, 1)); font-weight: 700; color: var(--text-primary); }
-.page-description { color: var(--text-secondary); font-size: calc(16px * var(--content-scale, 1)); margin-top: 4px; }
+.page-header h2 { font-size: var(--font-size-display); font-weight: 700; color: var(--text-primary); }
+.page-description { color: var(--text-secondary); font-size: var(--font-size-body); margin-top: 4px; }
 
 .btn-primary {
   padding: 14px 28px; background: var(--accent); color: white; border: none;
-  border-radius: 8px; font-weight: 600; font-size: calc(16px * var(--content-scale, 1)); cursor: pointer;
+  border-radius: 8px; font-weight: 600; font-size: var(--font-size-body); cursor: pointer;
   transition: background 0.2s;
 }
 .btn-primary:hover { background: var(--accent-hover); }
@@ -310,7 +312,7 @@ onMounted(async () => {
   border: none;
   border-radius: 8px;
   background: none;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 500;
   color: var(--text-link);
   cursor: pointer;
@@ -324,7 +326,7 @@ onMounted(async () => {
 }
 
 .loading-state, .empty-state {
-  text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: calc(16px * var(--content-scale, 1));
+  text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: var(--font-size-body);
 }
 .empty-state .btn-primary { margin-top: 16px; }
 
@@ -356,7 +358,7 @@ onMounted(async () => {
 }
 
 .rule-name {
-  font-size: calc(20px * var(--content-scale, 1));
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -370,7 +372,7 @@ onMounted(async () => {
 .active-badge {
   padding: 4px 12px;
   border-radius: 6px;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 600;
 }
 .active-badge.enabled { background: var(--accent-bg); color: var(--accent); }
@@ -386,7 +388,7 @@ onMounted(async () => {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   transition: background 0.2s;
 }
 .btn-icon-sm:hover { background: var(--danger-bg); }
@@ -399,7 +401,7 @@ onMounted(async () => {
 }
 
 .target-text {
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   color: var(--accent);
   font-weight: 500;
 }
@@ -408,7 +410,7 @@ onMounted(async () => {
   padding: 3px 10px;
   background: var(--bg-badge);
   border-radius: 6px;
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 600;
   color: var(--text-secondary);
 }
@@ -436,7 +438,7 @@ onMounted(async () => {
 
 .section-title {
   display: block;
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 600;
   color: var(--text-secondary);
   margin-bottom: 6px;
@@ -444,7 +446,7 @@ onMounted(async () => {
 }
 
 .section-content {
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   color: var(--text-primary);
   line-height: 1.5;
 }
@@ -467,7 +469,7 @@ onMounted(async () => {
   align-items: center;
   gap: 6px;
   margin-bottom: 12px;
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
 }
 .device-label { color: var(--text-muted); font-weight: 500; }
 .device-names { color: var(--text-secondary); }
@@ -481,7 +483,7 @@ onMounted(async () => {
 }
 
 .priority-badge {
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   color: var(--text-muted);
 }
 
@@ -525,7 +527,7 @@ input:checked + .toggle-slider:before { transform: translateX(22px); }
   padding: 10px 20px;
   border: none;
   background: none;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 500;
   color: var(--text-secondary, var(--color-text-secondary));
   cursor: pointer;

@@ -11,12 +11,35 @@ export const automationApi = {
   updateRule: (id: string, data: Partial<CreateRuleRequest>) =>
     apiClient.put<AutomationRule>(`/automation/rules/${id}`, data),
 
-  toggleRule: (id: string) =>
-    apiClient.patch(`/automation/rules/${id}/toggle`),
+  toggleRule: (id: string, params?: string) =>
+    apiClient.patch(`/automation/rules/${id}/toggle${params || ''}`),
 
   removeRule: (id: string) =>
     apiClient.delete(`/automation/rules/${id}`),
 
   getLogs: (params?: { ruleId?: string; page?: number; limit?: number }) =>
     apiClient.get<AutomationLog[]>('/automation/logs', { params }),
+
+  getIrrigationStatus: () =>
+    apiClient.get<IrrigationDeviceStatus[]>('/automation/irrigation/status'),
+
+  bulkDisableByDevice: (deviceId: string) =>
+    apiClient.post<{ disabledCount: number; stoppedIrrigation: boolean }>(
+      '/automation/rules/bulk-disable', { deviceId }
+    ),
+}
+
+export interface IrrigationDeviceStatus {
+  deviceId: string
+  deviceName: string
+  tuyaDeviceId: string
+  enabledRuleCount: number
+  totalRuleCount: number
+  isRunning: boolean
+  runningRule?: {
+    ruleId: string
+    ruleName: string
+    startedAt: number
+    estimatedEndAt: number
+  }
 }

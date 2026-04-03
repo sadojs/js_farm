@@ -511,6 +511,7 @@ onMounted(async () => {
     groupStore.fetchGroups(),
     deviceStore.fetchDevices(),
     automationStore.fetchRules(),
+    automationStore.fetchIrrigationStatus(),
   ])
   await Promise.all([
     deviceStore.fetchAllSensorStatuses(),
@@ -596,7 +597,7 @@ const getGroupIrrigationDevices = (group: HouseGroup): Device[] => {
     .filter(d => d.equipmentType === 'irrigation')
     .map(d => {
       const storeDevice = deviceStore.devices.find(sd => sd.id === d.id)
-      return storeDevice ? { ...d, switchStates: storeDevice.switchStates, online: storeDevice.online } : d
+      return storeDevice ? { ...d, ...storeDevice } : d
     })
 }
 
@@ -620,9 +621,28 @@ const openIrrigationStatusModal = (device: Device) => {
 
 const handleIrrigationControl = async (device: Device, switchCode: string) => {
   if (irrigationControlling.value) return
-  irrigationControlling.value = device.id
+
+  const mapping = deviceStore.getEffectiveMapping(device)
+  const isRemoteControl = mapping['remote_control'] === switchCode
   const currentVal = device.switchStates?.[switchCode] ?? false
   const newVal = !currentVal
+
+  // FR-04: 원격제어 OFF 시 확인 다이얼로그
+  if (isRemoteControl && !newVal) {
+    const deviceStatus = automationStore.getDeviceIrrigationStatus(device.id)
+    const enabledCount = deviceStatus?.enabledRuleCount || 0
+    if (enabledCount > 0) {
+      const ok = await confirm({
+        title: '원격제어 끄기',
+        message: `원격제어를 끄면 이 장비의 자동화 룰 ${enabledCount}개도 비활성화됩니다.${deviceStatus?.isRunning ? '\n현재 가동 중인 관수도 중단됩니다.' : ''}`,
+        confirmText: '끄기',
+        variant: 'danger',
+      })
+      if (!ok) return
+    }
+  }
+
+  irrigationControlling.value = device.id
   const label = getIrrigationLabel(device, switchCode)
   const loadingId = notify.add('info', '적용 중...', `${label} ${newVal ? 'ON' : 'OFF'} 명령 전송 중`, 0)
   try {
@@ -636,6 +656,13 @@ const handleIrrigationControl = async (device: Device, switchCode: string) => {
     if (storeDevice) {
       if (!storeDevice.switchStates) storeDevice.switchStates = {}
       storeDevice.switchStates[switchCode] = newVal
+      // 원격제어 OFF → 모든 관수 스위치 로컬 상태도 OFF 반영
+      if (isRemoteControl && !newVal) {
+        const m = deviceStore.getEffectiveMapping(storeDevice)
+        for (const fn of Object.keys(m)) {
+          if (m[fn]) storeDevice.switchStates[m[fn]] = false
+        }
+      }
     }
     const verification = await deviceStore.verifyDeviceStatus(device.id, switchCode, newVal)
     notify.remove(loadingId)
@@ -647,6 +674,18 @@ const handleIrrigationControl = async (device: Device, switchCode: string) => {
       storeDevice.switchStates[switchCode] = verification.actualValue
     } else {
       notify.warning('상태 확인 실패', '장비 상태를 확인할 수 없습니다')
+    }
+
+    // FR-04: 원격제어 OFF 후 룰 일괄 비활성화
+    if (isRemoteControl && !newVal) {
+      const bulkResult = await automationStore.bulkDisableByDevice(device.id)
+      if (bulkResult.disabledCount > 0) {
+        notify.info('자동화 비활성화', `자동화 룰 ${bulkResult.disabledCount}개가 비활성화되었습니다`)
+      }
+    }
+    // 관수 상태 갱신
+    if (isRemoteControl) {
+      await automationStore.fetchIrrigationStatus()
     }
   } catch (err: any) {
     console.error('관수 장비 제어 실패:', err)
@@ -803,7 +842,18 @@ const getRuleSummary = (rule: AutomationRule): string => {
 
 const toggleRule = async (ruleId: string) => {
   try {
-    await automationStore.toggleRule(ruleId)
+    const rule = automationStore.rules.find(r => r.id === ruleId)
+    const newState = rule ? !rule.enabled : true
+    // FR-03: 관수 룰 활성화 시 원격제어 자동 ON
+    const isIrrigationEnable = newState && (rule?.conditions as any)?.type === 'irrigation'
+    await automationStore.toggleRule(ruleId, isIrrigationEnable ? { autoEnableRemote: true } : undefined)
+    // 룰 토글 후 장비 상태 + 관수 상태 갱신
+    if ((rule?.conditions as any)?.type === 'irrigation') {
+      await Promise.all([
+        automationStore.fetchIrrigationStatus(),
+        deviceStore.fetchAllActuatorStatuses(),
+      ])
+    }
   } catch (err) {
     console.error('룰 토글 실패:', err)
   }
@@ -1097,7 +1147,34 @@ const anyModalOpen = computed(() => showAddDeviceModal.value || showEnvConfigMod
 watch(anyModalOpen, (open) => {
   document.body.style.overflow = open ? 'hidden' : ''
 })
-onBeforeUnmount(() => { document.body.style.overflow = '' })
+// 관수 가동 중 상태 폴링 (15초 간격)
+let statusPollTimer: ReturnType<typeof setInterval> | null = null
+function startStatusPolling() {
+  if (statusPollTimer) return
+  statusPollTimer = setInterval(async () => {
+    await Promise.all([
+      automationStore.fetchIrrigationStatus(),
+      deviceStore.fetchAllActuatorStatuses(),
+    ])
+  }, 15000)
+}
+function stopStatusPolling() {
+  if (statusPollTimer) {
+    clearInterval(statusPollTimer)
+    statusPollTimer = null
+  }
+}
+// irrigationStatus에 가동중 장비가 있으면 폴링 시작
+watch(() => automationStore.irrigationStatus, (statuses) => {
+  const hasRunning = statuses.some(s => s.isRunning || s.enabledRuleCount > 0)
+  if (hasRunning) startStatusPolling()
+  else stopStatusPolling()
+}, { immediate: true })
+
+onBeforeUnmount(() => {
+  document.body.style.overflow = ''
+  stopStatusPolling()
+})
 </script>
 
 <style scoped>
@@ -1116,8 +1193,8 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
   gap: 12px;
 }
 
-.page-header h2 { font-size: calc(28px * var(--content-scale, 1)); font-weight: 700; color: var(--text-primary); }
-.page-description { color: var(--text-secondary); font-size: calc(14px * var(--content-scale, 1)); margin-top: 4px; }
+.page-header h2 { font-size: var(--font-size-display); font-weight: 700; color: var(--text-primary); }
+.page-description { color: var(--text-secondary); font-size: var(--font-size-label); margin-top: 4px; }
 
 .header-actions {
   display: flex;
@@ -1126,7 +1203,7 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
 
 .btn-primary {
   padding: 14px 28px; background: var(--accent); color: white; border: none;
-  border-radius: 8px; font-weight: 600; font-size: calc(16px * var(--content-scale, 1)); cursor: pointer;
+  border-radius: 8px; font-weight: 600; font-size: var(--font-size-body); cursor: pointer;
   transition: background 0.2s;
 }
 .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
@@ -1135,14 +1212,14 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
 .btn-outline {
   padding: 12px 24px; background: var(--bg-secondary); color: var(--text-primary);
   border: 1px solid var(--border-color); border-radius: 8px; font-weight: 500;
-  font-size: calc(15px * var(--content-scale, 1)); cursor: pointer;
+  font-size: var(--font-size-label); cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
 }
 .btn-outline:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-bg); }
 .btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .loading-state, .empty-state {
-  text-align: center; padding: 60px 20px; color: var(--text-secondary); font-size: calc(16px * var(--content-scale, 1));
+  text-align: center; padding: 60px 20px; color: var(--text-secondary); font-size: var(--font-size-body);
 }
 .empty-state .btn-primary { margin-top: 16px; }
 
@@ -1175,13 +1252,13 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
 }
 
 .group-title h3 {
-  font-size: calc(18px * var(--content-scale, 1));
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .group-desc {
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   color: var(--text-muted);
   margin-top: 4px;
 }
@@ -1197,7 +1274,7 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
   padding: 4px 12px;
   background: var(--bg-badge);
   border-radius: 20px;
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 500;
   color: var(--text-secondary);
   white-space: nowrap;
@@ -1213,7 +1290,7 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   color: var(--text-link);
   transition: background 0.2s;
 }
@@ -1229,7 +1306,7 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
 }
 
 .section-label {
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 600;
   padding: 6px 12px;
   border-radius: 6px;
@@ -1270,7 +1347,7 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
 
 .sub-card-name {
   flex: 1;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 600;
   color: var(--text-primary);
   overflow: hidden;
@@ -1279,7 +1356,7 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
 }
 
 .type-tag {
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 6px;
@@ -1303,7 +1380,7 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
 
 .sensor-grid-value {
   display: block;
-  font-size: calc(18px * var(--content-scale, 1));
+  font-size: var(--font-size-subtitle);
   font-weight: 700;
   color: var(--sensor-accent);
   font-variant-numeric: tabular-nums;
@@ -1311,7 +1388,7 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
 }
 
 .sensor-grid-unit {
-  font-size: calc(11px * var(--content-scale, 1));
+  font-size: var(--font-size-tiny);
   font-weight: 500;
   color: var(--text-muted);
   margin-left: 1px;
@@ -1319,13 +1396,13 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
 
 .sensor-grid-label {
   display: block;
-  font-size: calc(11px * var(--content-scale, 1));
+  font-size: var(--font-size-tiny);
   color: var(--text-muted);
   margin-top: 2px;
 }
 
 .sub-card-value.muted {
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 400;
   color: var(--text-muted);
 }
@@ -1356,7 +1433,7 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
   background: none;
   border: none;
   color: var(--text-link);
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   cursor: pointer;
   padding: 2px 0;
 }
@@ -1364,7 +1441,7 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
   margin-top: 8px;
 }
 .mapping-desc {
-  font-size: 11px;
+  font-size: var(--font-size-tiny);
   color: var(--text-secondary);
   margin-bottom: 8px;
 }
@@ -1376,7 +1453,7 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
   margin-bottom: 6px;
 }
 .mapping-label {
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   color: var(--text-primary);
   flex: 1;
 }
@@ -1384,7 +1461,7 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
   padding: 3px 6px;
   border: 1px solid var(--border-input);
   border-radius: 4px;
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   background: var(--bg-secondary);
   color: var(--text-primary);
   min-width: 110px;
@@ -1393,7 +1470,7 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
   border-color: #e67e22;
 }
 .warning-text {
-  font-size: 11px;
+  font-size: var(--font-size-tiny);
   color: #e67e22;
   margin: 4px 0;
 }
@@ -1408,7 +1485,7 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
   color: #fff;
   border: none;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   cursor: pointer;
 }
 .mapping-actions .btn-save:disabled {
@@ -1421,12 +1498,12 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
   color: var(--text-secondary);
   border: 1px solid var(--border-input);
   border-radius: 6px;
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   cursor: pointer;
 }
 
 .control-label {
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 600;
   color: var(--accent);
 }
@@ -1481,6 +1558,26 @@ input:checked + .toggle-slider:before { transform: translateX(22px); }
 input:checked + .toggle-slider-sm { background: var(--toggle-on); }
 input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
 
+/* 관수 원격제어 (자동화 섹션 내) */
+.irrigation-remote-section {
+  background: var(--bg-hover);
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+.irrigation-remote-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-light);
+}
+.irrigation-remote-row:last-child { border-bottom: none; }
+.irrigation-remote-label {
+  font-size: var(--font-size-caption);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
 /* 자동화 룰 */
 .rules-list {
   background: var(--bg-hover);
@@ -1493,14 +1590,14 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   border-bottom: 1px solid var(--border-light);
 }
 .rule-row:last-child { border-bottom: none; }
 .rule-row.clickable { cursor: pointer; transition: background 0.15s; }
 .rule-row.clickable:hover { background: var(--bg-secondary); }
 .rule-name { font-weight: 600; color: var(--text-primary); white-space: nowrap; }
-.rule-summary { flex: 1; color: var(--text-muted); font-size: calc(13px * var(--content-scale, 1)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rule-summary { flex: 1; color: var(--text-muted); font-size: var(--font-size-caption); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .no-devices {
   padding: 24px;
@@ -1508,14 +1605,14 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
   background: var(--bg-hover);
   border-radius: 10px;
 }
-.no-devices p { color: var(--text-muted); font-size: calc(13px * var(--content-scale, 1)); margin: 0 0 8px; }
+.no-devices p { color: var(--text-muted); font-size: var(--font-size-caption); margin: 0 0 8px; }
 
 .btn-sm {
   padding: 8px 16px;
   background: var(--bg-badge);
   border: none;
   border-radius: 8px;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   cursor: pointer;
   color: var(--text-secondary);
   transition: background 0.2s;
@@ -1539,7 +1636,7 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
   display: flex; justify-content: space-between; align-items: center;
   padding: 20px 24px; border-bottom: 1px solid var(--border-color);
 }
-.add-modal-header h3 { font-size: calc(18px * var(--content-scale, 1)); font-weight: 600; margin: 0; }
+.add-modal-header h3 { font-size: var(--font-size-subtitle); font-weight: 600; margin: 0; }
 .add-modal-body {
   flex: 1; overflow-y: auto; padding: 16px 24px; max-height: 400px;
 }
@@ -1548,7 +1645,7 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
   padding: 16px 24px; border-top: 1px solid var(--border-color);
 }
 .close-btn {
-  background: none; border: none; font-size: 20px; color: var(--text-muted);
+  background: none; border: none; font-size: var(--font-size-subtitle); color: var(--text-muted);
   cursor: pointer; width: 32px; height: 32px;
   display: flex; align-items: center; justify-content: center;
 }
@@ -1559,7 +1656,7 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
 
 .device-row {
   display: flex; align-items: center; gap: 8px;
-  padding: 10px 12px; font-size: calc(14px * var(--content-scale, 1));
+  padding: 10px 12px; font-size: var(--font-size-label);
   border-bottom: 1px solid var(--border-light);
 }
 .device-row:last-child { border-bottom: none; }
@@ -1568,11 +1665,11 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
 .device-row.selected { background: var(--accent-bg); }
 .device-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
 .device-row input.no-interact { pointer-events: none; }
-.device-row-icon { font-size: calc(18px * var(--content-scale, 1)); flex-shrink: 0; }
+.device-row-icon { font-size: var(--font-size-subtitle); flex-shrink: 0; }
 .device-row-name { flex: 1; }
 
 .status-indicator {
-  font-size: calc(13px * var(--content-scale, 1)); font-weight: 500; flex-shrink: 0;
+  font-size: var(--font-size-caption); font-weight: 500; flex-shrink: 0;
   padding: 2px 8px; border-radius: 8px;
 }
 .status-indicator.online { background: var(--accent-bg); color: var(--accent); }
@@ -1587,7 +1684,7 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
   color: var(--text-link);
   border: 1px solid var(--border-input);
   border-radius: 4px;
-  font-size: calc(12px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 600;
   cursor: pointer;
   flex-shrink: 0;
@@ -1608,13 +1705,13 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
 
 .remove-modal-desc {
   padding: 10px 24px 0;
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   color: var(--text-secondary);
   line-height: 1.5;
 }
 
 .remove-section-label {
-  font-size: calc(12px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 600;
   padding: 4px 12px;
   border-radius: 4px;
@@ -1625,13 +1722,13 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
 .remove-section-label.actuator { background: var(--accent-bg); color: var(--accent); }
 
 .dep-loading {
-  font-size: calc(12px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   color: var(--text-muted);
   flex-shrink: 0;
 }
 
 .dep-warning {
-  font-size: calc(11px * var(--content-scale, 1));
+  font-size: var(--font-size-tiny);
   color: var(--danger);
   flex: 1;
   overflow: hidden;
@@ -1641,7 +1738,7 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
 }
 
 .pair-hint {
-  font-size: calc(11px * var(--content-scale, 1));
+  font-size: var(--font-size-tiny);
   color: var(--text-muted);
   font-weight: 400;
 }
@@ -1652,7 +1749,7 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
   background: rgba(239, 68, 68, 0.08);
   border: 1px solid rgba(239, 68, 68, 0.25);
   border-radius: 8px;
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   color: var(--danger);
   line-height: 1.4;
 }
@@ -1660,7 +1757,7 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
 .btn-danger {
   padding: 10px 20px; background: var(--danger); color: white;
   border: none; border-radius: 8px; font-weight: 600;
-  font-size: calc(14px * var(--content-scale, 1)); cursor: pointer;
+  font-size: var(--font-size-label); cursor: pointer;
   transition: background 0.2s;
 }
 .btn-danger:hover:not(:disabled) { background: #dc2626; }
@@ -1684,7 +1781,7 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
 }
 
 .status-modal-header h3 {
-  font-size: calc(18px * var(--content-scale, 1));
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
   margin: 0;
 }
@@ -1705,13 +1802,13 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
 }
 
 .status-row-label {
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 500;
   color: var(--text-primary);
 }
 
 .status-row-value {
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 600;
   padding: 4px 12px;
   border-radius: 6px;
@@ -1736,7 +1833,7 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
   display: flex; justify-content: space-between; align-items: center;
   padding: 20px 24px; border-bottom: 1px solid var(--border-color);
 }
-.env-modal-header h3 { font-size: calc(18px * var(--content-scale, 1)); font-weight: 600; margin: 0; }
+.env-modal-header h3 { font-size: var(--font-size-subtitle); font-weight: 600; margin: 0; }
 .env-modal-body {
   flex: 1; overflow-y: auto; padding: 16px 24px;
 }
@@ -1745,7 +1842,7 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
   padding: 16px 24px; border-top: 1px solid var(--border-color);
 }
 .env-section-label {
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 600; color: var(--text-secondary);
   padding: 8px 0 4px; border-bottom: 1px solid var(--border-light);
   margin-bottom: 8px;
@@ -1754,7 +1851,7 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
   margin-bottom: 12px;
 }
 .env-role-label {
-  display: block; font-size: calc(14px * var(--content-scale, 1));
+  display: block; font-size: var(--font-size-label);
   font-weight: 500; color: var(--text-primary); margin-bottom: 4px;
 }
 .env-unit { color: var(--text-muted); font-weight: 400; }
@@ -1762,7 +1859,7 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
   width: 100%; padding: 10px 12px;
   background: var(--bg-secondary); color: var(--text-primary);
   border: 1px solid var(--border-input); border-radius: 8px;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   cursor: pointer;
 }
 .env-source-select:focus {

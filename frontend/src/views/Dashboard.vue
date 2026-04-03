@@ -140,7 +140,7 @@ async function refreshWeather() {
     }
 
     source.value = data.source
-    weather.value = data.weather
+    weather.value = data.weather ?? { temperature: null, humidity: null, precipitation: null, windSpeed: null, condition: 'clear' }
     lastUpdate.value = formatDateTime(data.fetchedAt)
 
   } catch (err: any) {
@@ -172,14 +172,14 @@ onMounted(() => {
 }
 
 .page-header h2 {
-  font-size: calc(28px * var(--content-scale, 1));
+  font-size: var(--font-size-display);
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .page-description {
   color: var(--text-secondary);
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   margin-top: 4px;
 }
 
@@ -190,7 +190,7 @@ onMounted(() => {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   font-weight: 500;
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
 }
@@ -204,7 +204,7 @@ onMounted(() => {
   border: 1px solid #ef9a9a;
   border-radius: 12px;
   padding: 14px 18px;
-  font-size: 15px;
+  font-size: var(--font-size-label);
 }
 
 /* 날씨 카드 - 파란 그라데이션 */
@@ -231,17 +231,17 @@ onMounted(() => {
 }
 
 .weather-icon-big {
-  font-size: 28px;
+  font-size: var(--font-size-display);
 }
 
 .weather-title {
-  font-size: 15px;
+  font-size: var(--font-size-label);
   font-weight: 700;
   margin-bottom: 2px;
 }
 
 .weather-location {
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   opacity: 0.85;
 }
 
@@ -257,21 +257,21 @@ onMounted(() => {
 }
 
 .weather-temp-big {
-  font-size: 36px;
+  font-size: var(--font-size-display);
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
 .weather-temp-unit {
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-weight: 500;
   opacity: 0.85;
   margin-top: 2px;
 }
 
 .weather-condition {
-  font-size: 14px;
+  font-size: var(--font-size-label);
   opacity: 0.85;
   text-align: right;
   margin-top: 2px;
@@ -293,13 +293,13 @@ onMounted(() => {
 }
 
 .detail-label {
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   opacity: 0.85;
   font-weight: 500;
 }
 
 .detail-value {
-  font-size: 18px;
+  font-size: var(--font-size-subtitle);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -312,7 +312,7 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 .dashboard-edit-panel h4 {
-  font-size: 15px;
+  font-size: var(--font-size-label);
   font-weight: 600;
   margin-bottom: 12px;
   color: var(--text-primary);
@@ -335,7 +335,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: var(--font-size-label);
   cursor: pointer;
 }
 .widget-checkbox input {
@@ -355,7 +355,7 @@ onMounted(() => {
   background: var(--bg-card, #fff);
   color: var(--text-primary, #111);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--font-size-label);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -369,7 +369,7 @@ onMounted(() => {
   border: 1px solid var(--border-color, var(--color-border));
   border-radius: 8px;
   background: transparent;
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   cursor: pointer;
   color: var(--text-secondary);
 }
@@ -387,7 +387,7 @@ onMounted(() => {
   color: var(--text-secondary);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   cursor: pointer;
   white-space: nowrap;
 }
@@ -407,11 +407,11 @@ onMounted(() => {
   }
 
   .weather-temp-big {
-    font-size: 32px;
+    font-size: var(--font-size-display);
   }
 
   .detail-value {
-    font-size: 16px;
+    font-size: var(--font-size-body);
   }
 }
 </style>

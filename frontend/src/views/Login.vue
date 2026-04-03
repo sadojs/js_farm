@@ -17,7 +17,7 @@
             name="username"
             autocomplete="username"
             placeholder="아이디를 입력하세요"
-            pattern="[a-z][a-z0-9_-]{2,49}"
+            pattern="[a-z][a-z0-9_\-]{2,49}"
             class="form-input"
             required
           />

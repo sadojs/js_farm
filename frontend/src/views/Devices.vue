@@ -212,6 +212,7 @@ import { useDeviceStore } from '@/stores/device.store'
 import { useAuthStore } from '@/stores/auth.store'
 import { useConfirm } from '@/composables/useConfirm'
 import { useNotificationStore } from '@/stores/notification.store'
+import { useAutomationStore } from '@/stores/automation.store'
 import { deviceApi } from '@/api/device.api'
 import { translateTuyaError } from '@/utils/tuya-errors'
 import type { ChannelMapping, Device, DependencyRule } from '@/types/device.types'
@@ -223,6 +224,7 @@ import EmptyState from '@/components/common/EmptyState.vue'
 const deviceStore = useDeviceStore()
 const authStore = useAuthStore()
 const notify = useNotificationStore()
+const automationStore = useAutomationStore()
 const { confirm } = useConfirm()
 const showRegistrationModal = ref(false)
 const syncing = ref(false)
@@ -351,9 +353,28 @@ const openIrrigationStatusModal = (device: Device) => {
 
 async function handleIrrigationControl(device: Device, switchCode: string) {
   if (irrigationControlling.value) return
-  irrigationControlling.value = device.id
+
+  const mapping = deviceStore.getEffectiveMapping(device)
+  const isRemoteControl = mapping['remote_control'] === switchCode
   const currentVal = device.switchStates?.[switchCode] ?? false
   const newVal = !currentVal
+
+  // FR-04: 원격제어 OFF 시 확인 다이얼로그
+  if (isRemoteControl && !newVal) {
+    const deviceStatus = automationStore.getDeviceIrrigationStatus(device.id)
+    const enabledCount = deviceStatus?.enabledRuleCount || 0
+    if (enabledCount > 0) {
+      const ok = await confirm({
+        title: '원격제어 끄기',
+        message: `원격제어를 끄면 이 장비의 자동화 룰 ${enabledCount}개도 비활성화됩니다.${deviceStatus?.isRunning ? '\n현재 가동 중인 관수도 중단됩니다.' : ''}`,
+        confirmText: '끄기',
+        variant: 'danger',
+      })
+      if (!ok) return
+    }
+  }
+
+  irrigationControlling.value = device.id
   const label = getIrrigationLabel(device, switchCode)
   const loadingId = notify.add('info', '적용 중...', `${label} ${newVal ? 'ON' : 'OFF'} 명령 전송 중`, 0)
   try {
@@ -365,6 +386,13 @@ async function handleIrrigationControl(device: Device, switchCode: string) {
     }
     if (!device.switchStates) device.switchStates = {}
     device.switchStates[switchCode] = newVal
+    // 원격제어 OFF → 모든 관수 스위치 로컬 상태도 OFF 반영
+    if (isRemoteControl && !newVal) {
+      const m = deviceStore.getEffectiveMapping(device)
+      for (const fn of Object.keys(m)) {
+        if (m[fn]) device.switchStates[m[fn]] = false
+      }
+    }
     const verification = await deviceStore.verifyDeviceStatus(device.id, switchCode, newVal)
     notify.remove(loadingId)
     if (verification.verified) {
@@ -374,6 +402,14 @@ async function handleIrrigationControl(device: Device, switchCode: string) {
       device.switchStates[switchCode] = verification.actualValue
     } else {
       notify.warning('상태 확인 실패', '장비 상태를 확인할 수 없습니다')
+    }
+
+    // FR-04: 원격제어 OFF 후 룰 일괄 비활성화
+    if (isRemoteControl && !newVal) {
+      const bulkResult = await automationStore.bulkDisableByDevice(device.id)
+      if (bulkResult.disabledCount > 0) {
+        notify.info('자동화 비활성화', `자동화 룰 ${bulkResult.disabledCount}개가 비활성화되었습니다`)
+      }
     }
   } catch (err) {
     console.error('관수 장비 제어 실패:', err)
@@ -466,6 +502,7 @@ onMounted(async () => {
   await deviceStore.fetchDevices()
   deviceStore.fetchAllActuatorStatuses()
   deviceStore.fetchAllSensorStatuses()
+  automationStore.fetchIrrigationStatus()
 })
 
 const handleDeviceRegistered = () => {
@@ -603,14 +640,14 @@ const handleTuyaSync = async () => {
 }
 
 .page-header h2 {
-  font-size: calc(32px * var(--content-scale, 1));
+  font-size: var(--font-size-display);
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .page-description {
   color: var(--text-secondary);
-  font-size: calc(16px * var(--content-scale, 1));
+  font-size: var(--font-size-body);
   margin-top: 4px;
 }
 
@@ -626,7 +663,7 @@ const handleTuyaSync = async () => {
   border: none;
   border-radius: 8px;
   font-weight: 600;
-  font-size: calc(16px * var(--content-scale, 1));
+  font-size: var(--font-size-body);
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -639,7 +676,7 @@ const handleTuyaSync = async () => {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   font-weight: 500;
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
 }
@@ -669,7 +706,7 @@ const handleTuyaSync = async () => {
 }
 
 .search-icon {
-  font-size: calc(16px * var(--content-scale, 1));
+  font-size: var(--font-size-body);
   color: var(--text-muted);
 }
 
@@ -678,7 +715,7 @@ const handleTuyaSync = async () => {
   border: none;
   outline: none;
   padding: 12px 0;
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   background: none;
 }
 
@@ -695,7 +732,7 @@ const handleTuyaSync = async () => {
   border: none;
   border-radius: 8px;
   background: none;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 500;
   color: var(--text-link);
   cursor: pointer;
@@ -712,11 +749,11 @@ const handleTuyaSync = async () => {
   text-align: center;
   padding: 60px 20px;
   color: var(--text-secondary);
-  font-size: calc(16px * var(--content-scale, 1));
+  font-size: var(--font-size-body);
 }
 .empty-icon { font-size: 64px; margin-bottom: 16px; }
-.empty-state h3 { font-size: calc(22px * var(--content-scale, 1)); color: var(--text-primary); margin-bottom: 8px; }
-.empty-state p { margin-bottom: 24px; font-size: calc(16px * var(--content-scale, 1)); }
+.empty-state h3 { font-size: var(--font-size-title); color: var(--text-primary); margin-bottom: 8px; }
+.empty-state p { margin-bottom: 24px; font-size: var(--font-size-body); }
 
 /* 장비 그리드 */
 .devices-grid {
@@ -755,7 +792,7 @@ const handleTuyaSync = async () => {
 .type-badge {
   padding: 4px 12px;
   border-radius: 6px;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -768,7 +805,7 @@ const handleTuyaSync = async () => {
 }
 
 .card-title h4 {
-  font-size: calc(18px * var(--content-scale, 1));
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
   color: var(--text-primary);
   overflow: hidden;
@@ -777,7 +814,7 @@ const handleTuyaSync = async () => {
 }
 
 .card-category {
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   color: var(--text-muted);
 }
 
@@ -797,27 +834,27 @@ const handleTuyaSync = async () => {
 }
 
 .big-number {
-  font-size: calc(22px * var(--content-scale, 1));
+  font-size: var(--font-size-title);
   font-weight: 700;
   color: var(--sensor-accent);
   font-variant-numeric: tabular-nums;
 }
 
 .big-unit {
-  font-size: calc(12px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   color: var(--text-muted);
   margin-left: 1px;
 }
 
 .big-label {
   display: block;
-  font-size: calc(12px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   color: var(--text-muted);
   margin-top: 2px;
 }
 
 .sensor-loading, .sensor-offline {
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   color: var(--text-muted);
   text-align: center;
   padding: 8px;
@@ -842,7 +879,7 @@ const handleTuyaSync = async () => {
 }
 
 .toggle-label {
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 600;
   color: var(--accent);
 }
@@ -900,7 +937,7 @@ input:checked + .toggle-slider:before {
 }
 
 .last-seen {
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   color: var(--text-muted);
 }
 
@@ -910,7 +947,7 @@ input:checked + .toggle-slider:before {
   color: var(--danger);
   border: 1px solid var(--danger);
   border-radius: 6px;
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
@@ -940,7 +977,7 @@ input:checked + .toggle-slider:before {
 }
 
 .opener-title {
-  font-size: calc(18px * var(--content-scale, 1));
+  font-size: var(--font-size-subtitle);
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -958,7 +995,7 @@ input:checked + .toggle-slider:before {
 }
 
 .opener-label {
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 500;
   color: var(--text-secondary);
   min-width: 40px;
@@ -971,7 +1008,7 @@ input:checked + .toggle-slider:before {
   border-radius: 8px;
   background: var(--bg-secondary);
   color: var(--text-primary);
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
@@ -1018,7 +1055,7 @@ input:checked + .toggle-slider:before {
 
 .irrigation-title {
   flex: 1;
-  font-size: calc(18px * var(--content-scale, 1));
+  font-size: var(--font-size-subtitle);
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -1037,7 +1074,7 @@ input:checked + .toggle-slider:before {
 
 .irrigation-label {
   flex: 1;
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -1063,7 +1100,7 @@ input:checked + .toggle-slider:before {
   background: none;
   border: none;
   color: var(--text-link);
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   cursor: pointer;
   padding: 2px 0;
 }
@@ -1071,7 +1108,7 @@ input:checked + .toggle-slider:before {
   margin-top: 8px;
 }
 .mapping-desc {
-  font-size: 11px;
+  font-size: var(--font-size-tiny);
   color: var(--text-secondary);
   margin-bottom: 8px;
 }
@@ -1083,7 +1120,7 @@ input:checked + .toggle-slider:before {
   margin-bottom: 6px;
 }
 .mapping-label {
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   color: var(--text-primary);
   flex: 1;
 }
@@ -1091,7 +1128,7 @@ input:checked + .toggle-slider:before {
   padding: 3px 6px;
   border: 1px solid var(--border-input);
   border-radius: 4px;
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   background: var(--bg-secondary);
   color: var(--text-primary);
   min-width: 110px;
@@ -1100,7 +1137,7 @@ input:checked + .toggle-slider:before {
   border-color: #e67e22;
 }
 .warning-text {
-  font-size: 11px;
+  font-size: var(--font-size-tiny);
   color: #e67e22;
   margin: 4px 0;
 }
@@ -1115,7 +1152,7 @@ input:checked + .toggle-slider:before {
   color: #fff;
   border: none;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   cursor: pointer;
 }
 .mapping-actions .btn-save:disabled {
@@ -1128,7 +1165,7 @@ input:checked + .toggle-slider:before {
   color: var(--text-secondary);
   border: 1px solid var(--border-input);
   border-radius: 6px;
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   cursor: pointer;
 }
 
@@ -1139,7 +1176,7 @@ input:checked + .toggle-slider:before {
   color: var(--text-link);
   border: 1px solid var(--border-input);
   border-radius: 6px;
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 600;
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
@@ -1178,7 +1215,7 @@ input:checked + .toggle-slider:before {
 }
 
 .status-modal-header h3 {
-  font-size: calc(18px * var(--content-scale, 1));
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
   margin: 0;
 }
@@ -1186,7 +1223,7 @@ input:checked + .toggle-slider:before {
 .close-btn {
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: var(--font-size-subtitle);
   color: var(--text-muted);
   cursor: pointer;
   width: 32px;
@@ -1212,13 +1249,13 @@ input:checked + .toggle-slider:before {
 }
 
 .status-row-label {
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 500;
   color: var(--text-primary);
 }
 
 .status-row-value {
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 600;
   padding: 4px 12px;
   border-radius: 6px;
