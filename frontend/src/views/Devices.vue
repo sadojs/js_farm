@@ -2,14 +2,14 @@
   <div class="page-container">
     <header class="page-header">
       <div>
-        <h2>장비 관리</h2>
-        <p class="page-description">농장 장비와 센서를 관리합니다</p>
+        <h2>장치 관리</h2>
+        <p class="page-description">농장 장치와 센서를 관리합니다</p>
       </div>
       <div class="header-actions">
         <button class="btn-outline" @click="handleTuyaSync" :disabled="syncing">
           {{ syncing ? '동기화 중...' : '센서 동기화' }}
         </button>
-        <button v-if="!authStore.isFarmUser" class="btn-primary" @click="showRegistrationModal = true">+ 장비 추가</button>
+        <button v-if="!authStore.isFarmUser" class="btn-primary" @click="showRegistrationModal = true">+ 장치 추가</button>
       </div>
     </header>
 
@@ -20,7 +20,7 @@
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="장비 이름으로 검색..."
+          placeholder="장치 이름으로 검색..."
           class="search-input"
         />
       </div>
@@ -29,7 +29,7 @@
           전체 ({{ deviceStore.devices.length }})
         </button>
         <button class="tab" :class="{ active: activeTab === 'actuator' }" @click="activeTab = 'actuator'">
-          장비 ({{ actuatorDevices.length }})
+          장치 ({{ actuatorDevices.length }})
         </button>
         <button class="tab" :class="{ active: activeTab === 'sensor' }" @click="activeTab = 'sensor'">
           센서 ({{ sensorDevices.length }})
@@ -39,16 +39,16 @@
 
     <!-- 로딩 상태 -->
     <div v-if="deviceStore.loading" class="loading-state">
-      <p>장비 목록을 불러오는 중...</p>
+      <p>장치 목록을 불러오는 중...</p>
     </div>
 
-    <!-- 장비 없음 -->
+    <!-- 장치 없음 -->
     <EmptyState
       v-else-if="filteredDevices.length === 0"
       :icon="searchQuery ? 'device' : 'sensor'"
-      :title="searchQuery ? '검색 결과가 없습니다' : '등록된 장비가 없습니다'"
-      :description="searchQuery ? '다른 검색어를 입력해보세요.' : 'Tuya 장비 동기화를 통해 센서와 장비를 가져오세요'"
-      :action-label="!searchQuery && !authStore.isFarmUser ? '장비 추가' : undefined"
+      :title="searchQuery ? '검색 결과가 없습니다' : '등록된 장치가 없습니다'"
+      :description="searchQuery ? '다른 검색어를 입력해보세요.' : 'Tuya 장치 동기화를 통해 센서와 장치를 가져오세요'"
+      :action-label="!searchQuery && !authStore.isFarmUser ? '장치 추가' : undefined"
       @action="showRegistrationModal = true"
     />
 
@@ -57,7 +57,7 @@
       <div v-for="group in openerGroups" :key="group.groupName" class="opener-group-card" style="border-top: 3px solid var(--device-opener)">
         <div class="opener-header">
           <div class="opener-title">{{ group.groupName }}</div>
-          <span class="type-badge actuator">장비</span>
+          <span class="type-badge actuator">장치</span>
           <button class="btn-icon-delete" @click="handleRemoveOpenerGroup(group)" aria-label="삭제">삭제</button>
         </div>
         <div class="opener-controls">
@@ -85,13 +85,13 @@
       </div>
     </div>
 
-    <!-- 관수 장비 그룹 -->
+    <!-- 관수 장치 그룹 -->
     <div v-if="irrigationDevices.length > 0 && (activeTab === 'all' || activeTab === 'actuator')" class="irrigation-groups">
       <div v-for="device in irrigationDevices" :key="device.id" class="irrigation-group-card" style="border-top: 3px solid var(--device-irrigation)">
         <div class="irrigation-header">
           <div class="irrigation-title">{{ device.name }}</div>
           <button class="btn-status" @click="openIrrigationStatusModal(device)">상태</button>
-          <span class="type-badge actuator">장비</span>
+          <span class="type-badge actuator">장치</span>
           <button class="btn-icon-delete" @click="handleRemoveDevice(device.id)" aria-label="삭제">삭제</button>
         </div>
         <div class="irrigation-controls">
@@ -123,7 +123,7 @@
       </div>
     </div>
 
-    <!-- 장비 목록 -->
+    <!-- 장치 목록 -->
     <div v-if="filteredDevices.length > 0" class="devices-grid">
       <div
         v-for="device in filteredDevices"
@@ -136,7 +136,7 @@
         <div class="card-top">
           <span :class="['status-dot', device.online ? 'online' : 'offline']"></span>
           <span :class="['type-badge', device.deviceType === 'sensor' ? 'sensor' : 'actuator']">
-            {{ device.deviceType === 'sensor' ? '센서' : '장비' }}
+            {{ device.deviceType === 'sensor' ? '센서' : '장치' }}
           </span>
           <div class="card-title">
             <h4>{{ device.name }}</h4>
@@ -157,7 +157,7 @@
           <div v-else class="sensor-offline">오프라인</div>
         </div>
 
-        <!-- 장비: 토글 스위치 -->
+        <!-- 장치: 토글 스위치 -->
         <div v-else class="card-control">
           <div class="toggle-row" :class="{ disabled: !device.online }">
             <span class="toggle-label">
@@ -287,7 +287,7 @@ async function interlockControl(group: OpenerGroup, action: 'open' | 'close') {
       if (v.verified) {
         notify.success('적용 완료', `${targetDevice.name} OFF`)
       } else if (v.actualValue !== undefined) {
-        notify.warning('상태 미변경', '명령은 전달되었으나 장비 상태가 변경되지 않았습니다')
+        notify.warning('상태 미변경', '명령은 전달되었으나 장치 상태가 변경되지 않았습니다')
         targetDevice.switchState = v.actualValue
       }
       return
@@ -316,7 +316,7 @@ async function interlockControl(group: OpenerGroup, action: 'open' | 'close') {
     if (v.verified) {
       notify.success('적용 완료', `${targetDevice.name} ${action === 'open' ? '열림' : '닫힘'}`)
     } else if (v.actualValue !== undefined) {
-      notify.warning('상태 미변경', '명령은 전달되었으나 장비 상태가 변경되지 않았습니다')
+      notify.warning('상태 미변경', '명령은 전달되었으나 장치 상태가 변경되지 않았습니다')
       targetDevice.switchState = v.actualValue
     }
   } catch (err) {
@@ -328,7 +328,7 @@ async function interlockControl(group: OpenerGroup, action: 'open' | 'close') {
   }
 }
 
-// 관수 장비
+// 관수 장치
 const irrigationDevices = computed(() =>
   deviceStore.devices.filter(d => d.equipmentType === 'irrigation')
 )
@@ -366,7 +366,7 @@ async function handleIrrigationControl(device: Device, switchCode: string) {
     if (enabledCount > 0) {
       const ok = await confirm({
         title: '원격제어 끄기',
-        message: `원격제어를 끄면 이 장비의 자동화 룰 ${enabledCount}개도 비활성화됩니다.${deviceStatus?.isRunning ? '\n현재 가동 중인 관수도 중단됩니다.' : ''}`,
+        message: `원격제어를 끄면 이 장치의 자동화 룰 ${enabledCount}개도 비활성화됩니다.${deviceStatus?.isRunning ? '\n현재 가동 중인 관수도 중단됩니다.' : ''}`,
         confirmText: '끄기',
         variant: 'danger',
       })
@@ -398,10 +398,10 @@ async function handleIrrigationControl(device: Device, switchCode: string) {
     if (verification.verified) {
       notify.success('적용 완료', `${label} ${newVal ? 'ON' : 'OFF'}`)
     } else if (verification.actualValue !== undefined) {
-      notify.warning('상태 미변경', '명령은 전달되었으나 장비 상태가 변경되지 않았습니다')
+      notify.warning('상태 미변경', '명령은 전달되었으나 장치 상태가 변경되지 않았습니다')
       device.switchStates[switchCode] = verification.actualValue
     } else {
-      notify.warning('상태 확인 실패', '장비 상태를 확인할 수 없습니다')
+      notify.warning('상태 확인 실패', '장치 상태를 확인할 수 없습니다')
     }
 
     // FR-04: 원격제어 OFF 후 룰 일괄 비활성화
@@ -412,7 +412,7 @@ async function handleIrrigationControl(device: Device, switchCode: string) {
       }
     }
   } catch (err) {
-    console.error('관수 장비 제어 실패:', err)
+    console.error('관수 장치 제어 실패:', err)
     notify.remove(loadingId)
     notify.error('제어 실패', '네트워크 오류가 발생했습니다')
   } finally {
@@ -436,7 +436,7 @@ const filteredDevices = computed(() => {
   else if (activeTab.value === 'sensor') list = sensorDevices.value
   else list = actuatorDevices.value
 
-  // 개폐기, 관수 장비는 별도 카드로 표시되므로 제외
+  // 개폐기, 관수 장치는 별도 카드로 표시되므로 제외
   list = list.filter(d => !openerDeviceIds.value.has(d.id) && !irrigationDeviceIds.value.has(d.id))
 
   if (searchQuery.value.trim()) {
@@ -515,7 +515,7 @@ const handleControl = async (deviceId: string, turnOn: boolean) => {
   if (controllingId.value) return
   controllingId.value = deviceId
   const device = deviceStore.devices.find(d => d.id === deviceId)
-  const loadingId = notify.add('info', '적용 중...', `${device?.name || '장비'} ${turnOn ? 'ON' : 'OFF'} 명령 전송 중`, 0)
+  const loadingId = notify.add('info', '적용 중...', `${device?.name || '장치'} ${turnOn ? 'ON' : 'OFF'} 명령 전송 중`, 0)
   try {
     const result = await deviceStore.controlDevice(deviceId, [{ code: 'switch_1', value: turnOn }])
     if (!result.success) {
@@ -527,15 +527,15 @@ const handleControl = async (deviceId: string, turnOn: boolean) => {
     const verification = await deviceStore.verifyDeviceStatus(deviceId, 'switch_1', turnOn)
     notify.remove(loadingId)
     if (verification.verified) {
-      notify.success('적용 완료', `${device?.name || '장비'} ${turnOn ? 'ON' : 'OFF'}`)
+      notify.success('적용 완료', `${device?.name || '장치'} ${turnOn ? 'ON' : 'OFF'}`)
     } else if (verification.actualValue !== undefined && device) {
-      notify.warning('상태 미변경', '명령은 전달되었으나 장비 상태가 변경되지 않았습니다')
+      notify.warning('상태 미변경', '명령은 전달되었으나 장치 상태가 변경되지 않았습니다')
       device.switchState = verification.actualValue
     } else {
-      notify.warning('상태 확인 실패', '장비 상태를 확인할 수 없습니다')
+      notify.warning('상태 확인 실패', '장치 상태를 확인할 수 없습니다')
     }
   } catch (err: any) {
-    console.error('장비 제어 실패:', err)
+    console.error('장치 제어 실패:', err)
     notify.remove(loadingId)
     notify.error('제어 실패', '네트워크 오류가 발생했습니다')
     if (device) device.switchState = !turnOn
@@ -561,16 +561,16 @@ const handleRemoveDevice = async (id: string) => {
     }
 
     const ok = await confirm({
-      title: '장비 삭제',
-      message: `"${device?.name ?? '이 장비'}"를 삭제하시겠습니까?`,
+      title: '장치 삭제',
+      message: `"${device?.name ?? '이 장치'}"를 삭제하시겠습니까?`,
       confirmText: '삭제',
       variant: 'danger',
     })
     if (!ok) return
     await deviceStore.removeDevice(id)
   } catch (err: any) {
-    console.error('장비 삭제 실패:', err)
-    alert('장비 삭제에 실패했습니다.')
+    console.error('장치 삭제 실패:', err)
+    alert('장치 삭제에 실패했습니다.')
   }
 }
 
@@ -755,7 +755,7 @@ const handleTuyaSync = async () => {
 .empty-state h3 { font-size: var(--font-size-title); color: var(--text-primary); margin-bottom: 8px; }
 .empty-state p { margin-bottom: 24px; font-size: var(--font-size-body); }
 
-/* 장비 그리드 */
+/* 장치 그리드 */
 .devices-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -860,7 +860,7 @@ const handleTuyaSync = async () => {
   padding: 8px;
 }
 
-/* 장비 토글 */
+/* 장치 토글 */
 .card-control {
   padding: 12px;
   background: var(--bg-actuator);
@@ -1030,7 +1030,7 @@ input:checked + .toggle-slider:before {
   background: var(--accent-bg);
 }
 
-/* 관수 장비 그룹 */
+/* 관수 장치 그룹 */
 .irrigation-groups {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));

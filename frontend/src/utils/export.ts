@@ -69,7 +69,7 @@ export function formatSensorDataForExport(rawData: any[], sensorTypeLabel: (t: s
     '센서 타입': sensorTypeLabel(item.sensorType || item.type || ''),
     '값': item.value ?? '',
     '단위': item.unit || '',
-    '장비명': item.deviceName || '',
+    '장치명': item.deviceName || '',
     '그룹': item.groupName || '',
   }))
 }

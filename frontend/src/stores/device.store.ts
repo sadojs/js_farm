@@ -99,7 +99,7 @@ export const useDeviceStore = defineStore('device', () => {
             device.switchState = switchStatus.value
           }
 
-          // 관수 장비: 개별 스위치 상태 저장
+          // 관수 장치: 개별 스위치 상태 저장
           if (device.equipmentType === 'irrigation') {
             const states: Record<string, boolean> = {}
             for (const s of data.status) {

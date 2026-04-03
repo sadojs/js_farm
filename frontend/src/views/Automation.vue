@@ -3,7 +3,7 @@
     <header class="page-header">
       <div>
         <h2>자동화 룰</h2>
-        <p class="page-description">센서 값에 따라 장비를 자동으로 제어합니다</p>
+        <p class="page-description">센서 값에 따라 장치를 자동으로 제어합니다</p>
       </div>
       <button class="btn-primary" @click="openWizard()">+ 룰 추가</button>
     </header>
@@ -31,7 +31,7 @@
       v-else-if="filteredRules.length === 0"
       icon="rule"
       title="자동화 룰이 없습니다"
-      description="센서 값에 따라 장비를 자동으로 제어하세요"
+      description="센서 값에 따라 장치를 자동으로 제어하세요"
       action-label="첫 번째 룰 만들기"
       @action="openWizard()"
     />
@@ -89,9 +89,9 @@
           </div>
         </template>
 
-        <!-- 장비 목록 -->
+        <!-- 장치 목록 -->
         <div v-if="getRuleDeviceNames(rule).length > 0" class="rule-devices">
-          <span class="device-label">대상 장비:</span>
+          <span class="device-label">대상 장치:</span>
           <span class="device-names">{{ getRuleDeviceNames(rule).join(', ') }}</span>
         </div>
 

@@ -20,11 +20,11 @@
       v-else-if="sensorGroups.length === 0"
       icon="sensor"
       title="센서가 등록된 그룹이 없습니다"
-      description="장비를 등록하고 그룹에 배치하면 환경 데이터를 확인할 수 있습니다"
-      action-label="장비 관리로 이동"
+      description="장치를 등록하고 그룹에 배치하면 환경 데이터를 확인할 수 있습니다"
+      action-label="장치 관리로 이동"
       action-to="/devices"
       :steps="[
-        { label: '장비 등록', done: false },
+        { label: '장치 등록', done: false },
         { label: '그룹 설정', done: false },
         { label: '환경 설정', done: false },
         { label: '모니터링 시작', done: false },

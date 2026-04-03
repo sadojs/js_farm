@@ -35,7 +35,7 @@
               <h5>{{ project.name }}</h5>
               <p>{{ project.description }}</p>
               <div class="project-meta">
-                <span>{{ project.deviceCount }}개 장비</span>
+                <span>{{ project.deviceCount }}개 장치</span>
                 <span>·</span>
                 <span>{{ project.region }}</span>
               </div>

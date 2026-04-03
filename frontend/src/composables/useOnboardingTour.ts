@@ -23,19 +23,19 @@ const dashboardTour: TourStep[] = [
   {
     target: '.summary-cards-grid',
     title: '요약 현황',
-    content: '전체 장비, 활성 그룹, 자동화 룰, 온라인 기기 현황을 한눈에 확인합니다.',
+    content: '전체 장치, 활성 그룹, 자동화 룰, 온라인 기기 현황을 한눈에 확인합니다.',
     position: 'bottom',
   },
   {
     target: '.sidebar-nav',
     title: '메뉴 탐색',
-    content: '장비 관리, 그룹 설정, 자동화 룰, 환경 모니터링 등 각 기능을 이용하세요.',
+    content: '장치 관리, 그룹 설정, 자동화 룰, 환경 모니터링 등 각 기능을 이용하세요.',
     position: 'right',
   },
   {
     target: '.notification-bell',
     title: '알림',
-    content: '센서 이상, 장비 상태 변화, 자동화 실행 결과를 실시간으로 확인합니다.',
+    content: '센서 이상, 장치 상태 변화, 자동화 실행 결과를 실시간으로 확인합니다.',
     position: 'bottom',
   },
 ]

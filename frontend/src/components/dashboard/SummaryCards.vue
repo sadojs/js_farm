@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard-detail">
-    <!-- 요약 카드 4개 (전체 장비, 활성 그룹, 자동화 룰, 온라인 기기) -->
+    <!-- 요약 카드 4개 (전체 장치, 활성 그룹, 자동화 룰, 온라인 기기) -->
     <div class="summary-row">
       <div :class="['summary-item', canNavigate(0) && 'summary-item-link']" @click="navigateTo(0)">
         <div class="summary-icon equip">
@@ -8,7 +8,7 @@
         </div>
         <div class="summary-text">
           <span class="summary-number">{{ actuatorCount + sensorCount }}</span>
-          <span class="summary-label">전체 장비</span>
+          <span class="summary-label">전체 장치</span>
         </div>
       </div>
       <div :class="['summary-item', canNavigate(1) && 'summary-item-link']" @click="navigateTo(1)">
