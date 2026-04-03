@@ -52,10 +52,12 @@ export class DevicesController {
     @Body() body: { commands: { code: string; value: any }[] },
   ) {
     const result = await this.devicesService.controlDevice(id, this.getEffectiveUserId(user), body.commands);
+    const cmdSummary = body.commands.map(c => `${c.code}=${c.value}`).join(', ');
     this.activityLog.log({
       userId: user.id, userName: user.name || user.username,
       action: 'device.control', targetType: 'device', targetId: id,
-      details: { commands: body.commands },
+      targetName: result.deviceName,
+      details: { commands: body.commands, commandSummary: cmdSummary, equipmentType: result.equipmentType },
     });
     return result;
   }

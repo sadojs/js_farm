@@ -59,9 +59,9 @@
           <div class="log-summary">
             <span v-if="log.groupName" class="chip">{{ log.groupName }}</span>
             <span v-if="log.targetName" class="chip device">{{ log.targetName }}</span>
-            <span v-if="log.details?.commands" class="chip cmd">
-              {{ log.details.commands.map((c: any) => `${c.code}=${c.value}`).join(', ') }}
-            </span>
+            <span v-if="log.details?.equipmentType" class="chip">{{ formatEquipment(log.details.equipmentType) }}</span>
+            <span v-if="log.details?.ruleType" class="chip">{{ log.details.ruleType === 'time' ? '시간 기반' : '센서 기반' }}</span>
+            <span v-if="log.details?.commandSummary" class="chip cmd">{{ log.details.commandSummary }}</span>
           </div>
         </div>
         <button v-if="actHasMore" class="btn-more" @click="loadMoreAct" :disabled="actLoadingMore">

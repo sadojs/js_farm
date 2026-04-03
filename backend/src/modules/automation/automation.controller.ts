@@ -29,6 +29,7 @@ export class AutomationController {
       userId: user.id, userName: user.name || user.username,
       groupId: dto.groupId, action: 'rule.create', targetType: 'rule',
       targetId: result.id, targetName: dto.name,
+      details: { ruleType: result.ruleType, equipmentType: result.actions?.equipmentType },
     });
     return result;
   }
@@ -38,8 +39,9 @@ export class AutomationController {
     const result = await this.automationService.update(id, this.getEffectiveUserId(user), dto);
     this.activityLog.log({
       userId: user.id, userName: user.name || user.username,
-      action: 'rule.update', targetType: 'rule',
+      groupId: result.groupId, action: 'rule.update', targetType: 'rule',
       targetId: id, targetName: dto.name || result.name,
+      details: { ruleType: result.ruleType },
     });
     return result;
   }
@@ -55,8 +57,9 @@ export class AutomationController {
     });
     this.activityLog.log({
       userId: user.id, userName: user.name || user.username,
-      action: result.enabled ? 'rule.enable' : 'rule.disable', targetType: 'rule',
+      groupId: result.groupId, action: result.enabled ? 'rule.enable' : 'rule.disable', targetType: 'rule',
       targetId: id, targetName: result.name,
+      details: { ruleType: result.ruleType, equipmentType: result.actions?.equipmentType },
     });
     return result;
   }

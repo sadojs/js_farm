@@ -187,7 +187,7 @@ export class DevicesService {
 
     const result = await this.tuyaService.sendDeviceCommand(credentials, device.tuyaDeviceId, finalCommands);
     this.logger.log(`장비 제어: ${device.name} → ${JSON.stringify(finalCommands)}`);
-    return result;
+    return { ...result, deviceName: device.name, equipmentType: device.equipmentType };
   }
 
   async getDeviceStatus(id: string, userId: string) {
