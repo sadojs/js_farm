@@ -19,6 +19,7 @@ import { SensorAlertsModule } from './modules/sensor-alerts/sensor-alerts.module
 import { EnvConfigModule } from './modules/env-config/env-config.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ActivityLogModule } from './modules/activity-log/activity-log.module';
+import { RetentionService } from './common/retention.service';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { ActivityLogModule } from './modules/activity-log/activity-log.module';
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    RetentionService,
   ],
 })
 export class AppModule {}
