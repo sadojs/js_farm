@@ -296,7 +296,7 @@ const handleProjectAssign = async (project: any) => {
 }
 
 .page-header h2 {
-  font-size: 28px;
+  font-size: var(--font-size-display);
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -304,7 +304,7 @@ const handleProjectAssign = async (project: any) => {
 .page-description {
   flex: 1;
   color: var(--text-link);
-  font-size: 14px;
+  font-size: var(--font-size-label);
 }
 
 .btn-primary {
@@ -345,14 +345,14 @@ const handleProjectAssign = async (project: any) => {
   text-align: left;
   font-weight: 600;
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: var(--font-size-label);
   border-bottom: 2px solid var(--border-input);
 }
 
 .users-table td {
   padding: 16px;
   border-bottom: 1px solid var(--border-light);
-  font-size: 14px;
+  font-size: var(--font-size-label);
   color: var(--text-secondary);
 }
 
@@ -376,14 +376,14 @@ const handleProjectAssign = async (project: any) => {
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 14px;
+  font-size: var(--font-size-label);
 }
 
 .role-badge {
   display: inline-block;
   padding: 4px 12px;
   border-radius: 12px;
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   font-weight: 500;
   white-space: nowrap;
 }
@@ -408,13 +408,13 @@ const handleProjectAssign = async (project: any) => {
   margin-left: 6px;
   padding: 2px 8px;
   border-radius: 8px;
-  font-size: 11px;
+  font-size: var(--font-size-tiny);
   background: var(--bg-badge);
   color: var(--text-muted);
 }
 
 .address-text {
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   color: var(--text-link);
 }
 
@@ -424,7 +424,7 @@ const handleProjectAssign = async (project: any) => {
   background: #e8f5e9;
   color: #2e7d32;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   font-weight: 500;
   font-family: monospace;
   white-space: nowrap;
@@ -433,14 +433,14 @@ const handleProjectAssign = async (project: any) => {
 .text-muted {
   color: var(--text-muted);
   font-style: italic;
-  font-size: 13px;
+  font-size: var(--font-size-caption);
 }
 
 .status-badge {
   display: inline-block;
   padding: 4px 12px;
   border-radius: 12px;
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   font-weight: 500;
   white-space: nowrap;
 }
@@ -463,7 +463,7 @@ const handleProjectAssign = async (project: any) => {
 .btn-icon {
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: var(--font-size-subtitle);
   cursor: pointer;
   padding: 6px;
   border-radius: 6px;
@@ -485,7 +485,7 @@ const handleProjectAssign = async (project: any) => {
 
 .empty-state p {
   color: var(--text-muted);
-  font-size: 16px;
+  font-size: var(--font-size-body);
 }
 
 @media (max-width: 1024px) {

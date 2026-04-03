@@ -453,7 +453,7 @@ onBeforeUnmount(() => {
 }
 
 .page-header h2 {
-  font-size: calc(1.4em * var(--content-title-scale, 1));
+  font-size: var(--font-size-subtitle);
   font-weight: 700;
   color: var(--text-primary);
 }
@@ -666,7 +666,7 @@ onBeforeUnmount(() => {
   color: var(--accent);
   font-weight: 600;
   text-decoration: none;
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
 }
 .empty-cta-link:hover { text-decoration: underline; }
 

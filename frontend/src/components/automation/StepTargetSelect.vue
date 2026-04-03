@@ -39,11 +39,11 @@ const groupStore = useGroupStore()
 
 <style scoped>
 .step-target { display: flex; flex-direction: column; gap: 16px; }
-.step-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0; }
-.step-desc { font-size: 14px; color: var(--text-muted); margin: 0; }
+.step-title { font-size: var(--font-size-subtitle); font-weight: 700; color: var(--text-primary); margin: 0; }
+.step-desc { font-size: var(--font-size-label); color: var(--text-muted); margin: 0; }
 
 .loading, .empty {
-  text-align: center; padding: 32px; color: var(--text-muted); font-size: 14px;
+  text-align: center; padding: 32px; color: var(--text-muted); font-size: var(--font-size-label);
 }
 
 .group-list { display: flex; flex-direction: column; gap: 8px; }
@@ -58,12 +58,12 @@ const groupStore = useGroupStore()
 
 .group-icon { font-size: 24px; }
 .group-info { flex: 1; }
-.group-name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
-.group-meta { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.group-name { font-size: var(--font-size-label); font-weight: 600; color: var(--text-primary); }
+.group-meta { font-size: var(--font-size-caption); color: var(--text-muted); margin-top: 2px; }
 
 .check-mark {
   width: 24px; height: 24px; border-radius: 50%;
-  background: #4caf50; color: white; font-size: 14px; font-weight: 700;
+  background: #4caf50; color: white; font-size: var(--font-size-label); font-weight: 700;
   display: flex; align-items: center; justify-content: center;
 }
 </style>

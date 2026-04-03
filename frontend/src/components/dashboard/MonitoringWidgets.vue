@@ -530,7 +530,7 @@ function gaugeFillStyle(value: number, min: number, max: number) {
 }
 
 .widget-title {
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 600;
   color: var(--text-secondary);
 }
@@ -538,7 +538,7 @@ function gaugeFillStyle(value: number, min: number, max: number) {
 .widget-badge {
   padding: 2px 10px;
   border-radius: 12px;
-  font-size: calc(11px * var(--content-scale, 1));
+  font-size: var(--font-size-tiny);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -560,7 +560,7 @@ function gaugeFillStyle(value: number, min: number, max: number) {
 }
 
 .widget-value {
-  font-size: calc(28px * var(--content-scale, 1));
+  font-size: var(--font-size-display);
   font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
@@ -568,18 +568,18 @@ function gaugeFillStyle(value: number, min: number, max: number) {
 }
 
 .widget-unit {
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   color: var(--text-muted);
 }
 
 .widget-hint {
-  font-size: calc(11px * var(--content-scale, 1));
+  font-size: var(--font-size-tiny);
   color: var(--text-muted);
   line-height: 1.4;
 }
 
 .widget-advice {
-  font-size: calc(12px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   color: var(--text-secondary);
   background: var(--bg-hover, rgba(0,0,0,0.03));
   border-radius: 8px;
@@ -611,7 +611,7 @@ function gaugeFillStyle(value: number, min: number, max: number) {
 }
 
 .gauge-label {
-  font-size: calc(12px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 600;
   color: var(--text-secondary);
   width: 32px;
@@ -655,7 +655,7 @@ function gaugeFillStyle(value: number, min: number, max: number) {
 }
 
 .gauge-value {
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 700;
   color: var(--text-primary);
   width: 56px;
@@ -692,7 +692,7 @@ function gaugeFillStyle(value: number, min: number, max: number) {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   line-height: 1.5;
   padding: 6px 10px;
   border-radius: 8px;
@@ -751,7 +751,7 @@ function gaugeFillStyle(value: number, min: number, max: number) {
 }
 
 .score-value {
-  font-size: calc(24px * var(--content-scale, 1));
+  font-size: var(--font-size-title);
   font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
@@ -770,7 +770,7 @@ function gaugeFillStyle(value: number, min: number, max: number) {
   }
 
   .widget-value {
-    font-size: calc(24px * var(--content-scale, 1));
+    font-size: var(--font-size-title);
   }
 
   .score-circle {
@@ -779,7 +779,7 @@ function gaugeFillStyle(value: number, min: number, max: number) {
   }
 
   .score-value {
-    font-size: calc(20px * var(--content-scale, 1));
+    font-size: var(--font-size-subtitle);
   }
 }
 </style>

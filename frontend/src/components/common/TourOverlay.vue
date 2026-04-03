@@ -144,7 +144,7 @@ onUnmounted(() => {
 .tour-step-badge {
   background: var(--color-primary, #2e7d32);
   color: #fff;
-  font-size: 11px;
+  font-size: var(--font-size-tiny);
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 10px;
@@ -153,12 +153,12 @@ onUnmounted(() => {
 
 .tour-tooltip-header h4 {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-weight: 600;
 }
 
 .tour-tooltip-content {
-  font-size: 14px;
+  font-size: var(--font-size-label);
   color: #555;
   line-height: 1.5;
   margin: 0 0 16px;
@@ -175,7 +175,7 @@ onUnmounted(() => {
   border: none;
   color: #999;
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   padding: 6px 0;
 }
 
@@ -190,7 +190,7 @@ onUnmounted(() => {
   border-radius: 8px;
   background: #fff;
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--font-size-caption);
 }
 
 .tour-btn-next {
@@ -200,7 +200,7 @@ onUnmounted(() => {
   background: var(--color-primary, #2e7d32);
   color: #fff;
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   font-weight: 500;
 }
 

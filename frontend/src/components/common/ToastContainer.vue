@@ -88,7 +88,7 @@ const iconMap: Record<string, string> = {
 
 .toast-title {
   display: block;
-  font-size: 14px;
+  font-size: var(--font-size-label);
   font-weight: 600;
   color: var(--text-primary, #333);
   line-height: 1.4;
@@ -96,7 +96,7 @@ const iconMap: Record<string, string> = {
 
 .toast-message {
   margin-top: 2px;
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary, #555);
   line-height: 1.4;
 }

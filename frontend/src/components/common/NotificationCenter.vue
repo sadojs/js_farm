@@ -135,7 +135,7 @@ async function enablePush() {
   right: 2px;
   background: var(--color-error);
   color: #fff;
-  font-size: 10px;
+  font-size: var(--font-size-tiny);
   font-weight: 700;
   min-width: 18px;
   height: 18px;
@@ -191,7 +191,7 @@ async function enablePush() {
 
 .nc-header h4 {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-weight: 600;
 }
 
@@ -199,7 +199,7 @@ async function enablePush() {
   background: none;
   border: none;
   color: var(--color-primary);
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   cursor: pointer;
   padding: 4px 8px;
   border-radius: var(--radius-sm);
@@ -219,7 +219,7 @@ async function enablePush() {
   padding: 32px 16px;
   text-align: center;
   color: var(--text-secondary, var(--color-text-secondary));
-  font-size: 14px;
+  font-size: var(--font-size-label);
 }
 
 .nc-item {
@@ -241,7 +241,7 @@ async function enablePush() {
 
 .nc-severity {
   flex-shrink: 0;
-  font-size: 14px;
+  font-size: var(--font-size-label);
   margin-top: 2px;
 }
 
@@ -251,14 +251,14 @@ async function enablePush() {
 }
 
 .nc-title {
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   font-weight: 600;
   color: var(--text-primary, var(--color-text-primary));
   margin-bottom: 2px;
 }
 
 .nc-message {
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary, var(--color-text-secondary));
   line-height: 1.4;
   overflow: hidden;
@@ -267,7 +267,7 @@ async function enablePush() {
 }
 
 .nc-time {
-  font-size: 11px;
+  font-size: var(--font-size-tiny);
   color: var(--text-muted, var(--color-text-disabled));
   margin-top: 4px;
 }
@@ -279,7 +279,7 @@ async function enablePush() {
 }
 
 .nc-view-all {
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   color: var(--color-primary);
   text-decoration: none;
 }
@@ -295,7 +295,7 @@ async function enablePush() {
 }
 
 .nc-push-prompt p {
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   margin: 0 0 8px;
   color: var(--text-primary, var(--color-text-primary));
 }
@@ -308,7 +308,7 @@ async function enablePush() {
 .btn-sm {
   padding: 6px 14px;
   border-radius: var(--radius-md);
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   cursor: pointer;
   border: none;
   background: var(--color-primary);

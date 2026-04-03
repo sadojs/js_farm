@@ -2,11 +2,15 @@ import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, HttpCode,
 import { DevicesService } from './devices.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 @Controller('devices')
 @UseGuards(JwtAuthGuard)
 export class DevicesController {
-  constructor(private devicesService: DevicesService) {}
+  constructor(
+    private devicesService: DevicesService,
+    private activityLog: ActivityLogService,
+  ) {}
 
   private getEffectiveUserId(user: any): string {
     return user.role === 'farm_user' && user.parentUserId ? user.parentUserId : user.id;
@@ -18,11 +22,19 @@ export class DevicesController {
   }
 
   @Post('register')
-  register(
+  async register(
     @CurrentUser() user: any,
     @Body() body: { devices: any[]; houseId?: string },
   ) {
-    return this.devicesService.registerBatch(this.getEffectiveUserId(user), body.devices, body.houseId);
+    const result = await this.devicesService.registerBatch(this.getEffectiveUserId(user), body.devices, body.houseId);
+    for (const d of body.devices) {
+      this.activityLog.log({
+        userId: user.id, userName: user.name || user.username,
+        action: 'device.register', targetType: 'device', targetName: d.name,
+        details: { category: d.category, deviceType: d.deviceType },
+      });
+    }
+    return result;
   }
 
   @Get(':id/status')
@@ -34,12 +46,18 @@ export class DevicesController {
   }
 
   @Post(':id/control')
-  control(
+  async control(
     @Param('id') id: string,
     @CurrentUser() user: any,
     @Body() body: { commands: { code: string; value: any }[] },
   ) {
-    return this.devicesService.controlDevice(id, this.getEffectiveUserId(user), body.commands);
+    const result = await this.devicesService.controlDevice(id, this.getEffectiveUserId(user), body.commands);
+    this.activityLog.log({
+      userId: user.id, userName: user.name || user.username,
+      action: 'device.control', targetType: 'device', targetId: id,
+      details: { commands: body.commands },
+    });
+    return result;
   }
 
   @Get(':id/dependencies')
@@ -64,7 +82,12 @@ export class DevicesController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.devicesService.remove(id, this.getEffectiveUserId(user));
+  async remove(@Param('id') id: string, @CurrentUser() user: any) {
+    const result = await this.devicesService.remove(id, this.getEffectiveUserId(user));
+    this.activityLog.log({
+      userId: user.id, userName: user.name || user.username,
+      action: 'device.delete', targetType: 'device', targetId: id,
+    });
+    return result;
   }
 }

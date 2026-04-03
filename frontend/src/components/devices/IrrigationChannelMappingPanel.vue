@@ -89,28 +89,28 @@ function reset() {
   background: none;
   border: none;
   color: var(--text-link);
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   cursor: pointer;
   padding: 2px 0;
 }
 .channel-mapping-panel { margin-top: 8px; }
-.mapping-desc { font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; }
+.mapping-desc { font-size: var(--font-size-tiny); color: var(--text-secondary); margin-bottom: 8px; }
 .mapping-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
-.mapping-label { font-size: 12px; color: var(--text-primary); flex: 1; }
+.mapping-label { font-size: var(--font-size-caption); color: var(--text-primary); flex: 1; }
 .mapping-select {
   padding: 3px 6px; border: 1px solid var(--border-input); border-radius: 4px;
-  font-size: 12px; background: var(--bg-secondary); color: var(--text-primary); min-width: 110px;
+  font-size: var(--font-size-caption); background: var(--bg-secondary); color: var(--text-primary); min-width: 110px;
 }
 .mapping-select.duplicate-warning { border-color: #e67e22; }
-.warning-text { font-size: 11px; color: #e67e22; margin: 4px 0; }
+.warning-text { font-size: var(--font-size-tiny); color: #e67e22; margin: 4px 0; }
 .mapping-actions { display: flex; gap: 8px; margin-top: 8px; }
 .mapping-actions .btn-save {
   padding: 5px 14px; background: var(--color-primary, #2ecc71); color: #fff;
-  border: none; border-radius: 6px; font-size: 12px; cursor: pointer;
+  border: none; border-radius: 6px; font-size: var(--font-size-caption); cursor: pointer;
 }
 .mapping-actions .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
 .mapping-actions .btn-reset {
   padding: 5px 14px; background: var(--bg-secondary); color: var(--text-secondary);
-  border: 1px solid var(--border-input); border-radius: 6px; font-size: 12px; cursor: pointer;
+  border: 1px solid var(--border-input); border-radius: 6px; font-size: var(--font-size-caption); cursor: pointer;
 }
 </style>

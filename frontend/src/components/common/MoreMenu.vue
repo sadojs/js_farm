@@ -63,7 +63,7 @@ function handleLogout() {
   padding: 14px 20px;
   text-decoration: none;
   color: var(--text-primary);
-  font-size: 15px;
+  font-size: var(--font-size-label);
   font-weight: 500;
   border: none;
   background: none;

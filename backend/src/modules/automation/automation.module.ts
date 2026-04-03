@@ -11,6 +11,7 @@ import { TuyaProject } from '../users/entities/tuya-project.entity';
 import { TuyaModule } from '../integrations/tuya/tuya.module';
 import { GatewayModule } from '../gateway/gateway.module';
 import { DevicesModule } from '../devices/devices.module';
+import { ActivityLogModule } from '../activity-log/activity-log.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { DevicesModule } from '../devices/devices.module';
     TuyaModule,
     GatewayModule,
     DevicesModule,
+    ActivityLogModule,
   ],
   controllers: [AutomationController],
   providers: [AutomationService, AutomationRunnerService, IrrigationSchedulerService],

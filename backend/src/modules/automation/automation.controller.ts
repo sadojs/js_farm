@@ -3,11 +3,15 @@ import { AutomationService } from './automation.service';
 import { CreateRuleDto, UpdateRuleDto } from './dto/create-rule.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 @Controller('automation')
 @UseGuards(JwtAuthGuard)
 export class AutomationController {
-  constructor(private automationService: AutomationService) {}
+  constructor(
+    private automationService: AutomationService,
+    private activityLog: ActivityLogService,
+  ) {}
 
   private getEffectiveUserId(user: any): string {
     return user.role === 'farm_user' && user.parentUserId ? user.parentUserId : user.id;
@@ -19,24 +23,42 @@ export class AutomationController {
   }
 
   @Post('rules')
-  create(@CurrentUser() user: any, @Body() dto: CreateRuleDto) {
-    return this.automationService.create(this.getEffectiveUserId(user), dto);
+  async create(@CurrentUser() user: any, @Body() dto: CreateRuleDto) {
+    const result = await this.automationService.create(this.getEffectiveUserId(user), dto);
+    this.activityLog.log({
+      userId: user.id, userName: user.name || user.username,
+      groupId: dto.groupId, action: 'rule.create', targetType: 'rule',
+      targetId: result.id, targetName: dto.name,
+    });
+    return result;
   }
 
   @Put('rules/:id')
-  update(@Param('id') id: string, @CurrentUser() user: any, @Body() dto: UpdateRuleDto) {
-    return this.automationService.update(id, this.getEffectiveUserId(user), dto);
+  async update(@Param('id') id: string, @CurrentUser() user: any, @Body() dto: UpdateRuleDto) {
+    const result = await this.automationService.update(id, this.getEffectiveUserId(user), dto);
+    this.activityLog.log({
+      userId: user.id, userName: user.name || user.username,
+      action: 'rule.update', targetType: 'rule',
+      targetId: id, targetName: dto.name || result.name,
+    });
+    return result;
   }
 
   @Patch('rules/:id/toggle')
-  toggle(
+  async toggle(
     @Param('id') id: string,
     @CurrentUser() user: any,
     @Query('autoEnableRemote') autoEnableRemote?: string,
   ) {
-    return this.automationService.toggle(id, this.getEffectiveUserId(user), {
+    const result = await this.automationService.toggle(id, this.getEffectiveUserId(user), {
       autoEnableRemote: autoEnableRemote === 'true',
     });
+    this.activityLog.log({
+      userId: user.id, userName: user.name || user.username,
+      action: result.enabled ? 'rule.enable' : 'rule.disable', targetType: 'rule',
+      targetId: id, targetName: result.name,
+    });
+    return result;
   }
 
   @Post('rules/:id/run')
@@ -45,8 +67,13 @@ export class AutomationController {
   }
 
   @Delete('rules/:id')
-  remove(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.automationService.remove(id, this.getEffectiveUserId(user));
+  async remove(@Param('id') id: string, @CurrentUser() user: any) {
+    const result = await this.automationService.remove(id, this.getEffectiveUserId(user));
+    this.activityLog.log({
+      userId: user.id, userName: user.name || user.username,
+      action: 'rule.delete', targetType: 'rule', targetId: id,
+    });
+    return result;
   }
 
   @Get('irrigation/status')

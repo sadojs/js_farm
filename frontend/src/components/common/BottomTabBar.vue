@@ -93,7 +93,7 @@ function isActive(path: string) {
   gap: 2px;
   text-decoration: none;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   font-weight: 500;
   border: none;
   background: none;

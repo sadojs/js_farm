@@ -89,13 +89,29 @@ export class AutomationRunnerService {
       });
     }
 
+    // 로그에 요약 정보 포함
+    const deviceNames = actionResults
+      .map((r: any) => r.deviceName || r.deviceId)
+      .filter(Boolean);
+    const commandSummary = actionResults
+      .map((r: any) => r.commands?.map((c: any) => `${c.code}=${c.value}`)?.join(', '))
+      .filter(Boolean)
+      .join('; ');
     await this.logsRepo.save(
       this.logsRepo.create({
         ruleId: rule.id,
         userId: rule.userId,
         success,
-        conditionsMet: conditionResult.details,
-        actionsExecuted: actionResults,
+        conditionsMet: {
+          ...conditionResult.details,
+          ruleName: rule.name,
+          equipmentType: rule.actions?.equipmentType || null,
+        },
+        actionsExecuted: {
+          deviceNames,
+          commandSummary: commandSummary || null,
+          results: actionResults,
+        },
         errorMessage,
       }),
     );
@@ -489,6 +505,7 @@ export class AutomationRunnerService {
             sent = true;
             results.push({
               deviceId: device.id,
+              deviceName: device.name,
               tuyaDeviceId: device.tuyaDeviceId,
               success: true,
               commands: commandSet,
@@ -504,6 +521,7 @@ export class AutomationRunnerService {
       if (!sent) {
         results.push({
           deviceId: device.id,
+          deviceName: device.name,
           tuyaDeviceId: device.tuyaDeviceId,
           success: false,
           error: lastError || 'Unknown error',

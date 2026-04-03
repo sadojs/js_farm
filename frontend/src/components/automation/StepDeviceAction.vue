@@ -182,8 +182,8 @@ function emitAction() {
 </script>
 
 <style scoped>
-.step-title { font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
-.step-desc { color: #888; font-size: 14px; margin-bottom: 20px; }
+.step-title { font-size: var(--font-size-subtitle); font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+.step-desc { color: #888; font-size: var(--font-size-label); margin-bottom: 20px; }
 
 .device-selector { display: flex; gap: 12px; margin-bottom: 24px; }
 .device-card {
@@ -194,26 +194,26 @@ function emitAction() {
 .device-card:hover { border-color: #4caf50; }
 .device-card.active { border-color: #4caf50; background: #f1f8e9; }
 .device-icon { font-size: 32px; }
-.device-label { font-weight: 600; font-size: 15px; color: var(--text-primary); }
+.device-label { font-weight: 600; font-size: var(--font-size-label); color: var(--text-primary); }
 
 .action-form { background: #fafafa; border-radius: 12px; padding: 20px; }
 .form-group { margin-bottom: 16px; }
 .form-group:last-child { margin-bottom: 0; }
-.field-label { display: block; font-weight: 600; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; }
+.field-label { display: block; font-weight: 600; font-size: var(--font-size-label); color: var(--text-secondary); margin-bottom: 8px; }
 
 .btn-group { display: flex; gap: 8px; }
 .btn-option {
   padding: 8px 16px; border: 2px solid var(--border-input); border-radius: 8px; background: var(--bg-card);
-  cursor: pointer; font-weight: 500; font-size: 14px; color: var(--text-link); transition: all 0.2s;
+  cursor: pointer; font-weight: 500; font-size: var(--font-size-label); color: var(--text-link); transition: all 0.2s;
 }
 .btn-option:hover { border-color: #4caf50; }
 .btn-option.active { border-color: #4caf50; background: #4caf50; color: white; }
 
 .range-input { width: 100%; margin: 8px 0; accent-color: #4caf50; }
-.range-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); }
+.range-labels { display: flex; justify-content: space-between; font-size: var(--font-size-caption); color: var(--text-muted); }
 
 .form-input {
   width: 100%; padding: 10px 12px; border: 1px solid var(--border-input); border-radius: 8px;
-  font-size: 14px; color: var(--text-primary);
+  font-size: var(--font-size-label); color: var(--text-primary);
 }
 </style>

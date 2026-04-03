@@ -73,14 +73,14 @@ const { state, handleConfirm, handleCancel } = useConfirm()
 }
 
 .confirm-title {
-  font-size: 18px;
+  font-size: var(--font-size-subtitle);
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 8px;
 }
 
 .confirm-message {
-  font-size: 15px;
+  font-size: var(--font-size-label);
   color: var(--text-secondary);
   line-height: 1.5;
   margin-bottom: 24px;
@@ -97,7 +97,7 @@ const { state, handleConfirm, handleCancel } = useConfirm()
   min-height: 44px;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 15px;
+  font-size: var(--font-size-label);
   cursor: pointer;
   border: none;
   transition: background 0.2s, transform 0.1s;

@@ -176,7 +176,7 @@ const closeModal = () => {
 }
 
 .modal-header h2 {
-  font-size: 24px;
+  font-size: var(--font-size-title);
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
@@ -185,7 +185,7 @@ const closeModal = () => {
 .close-btn {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: var(--font-size-title);
   color: var(--text-muted);
   cursor: pointer;
   padding: 4px;
@@ -229,25 +229,25 @@ const closeModal = () => {
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 18px;
+  font-size: var(--font-size-subtitle);
   flex-shrink: 0;
 }
 
 .user-info h3 {
-  font-size: 18px;
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 4px 0;
 }
 
 .user-info p {
-  font-size: 14px;
+  font-size: var(--font-size-label);
   color: var(--text-link);
   margin: 0;
 }
 
 .projects-list h4 {
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 16px 0;
@@ -300,14 +300,14 @@ const closeModal = () => {
 }
 
 .project-info h5 {
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 4px 0;
 }
 
 .project-info p {
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   color: var(--text-link);
   margin: 0 0 8px 0;
 }
@@ -315,7 +315,7 @@ const closeModal = () => {
 .project-meta {
   display: flex;
   gap: 8px;
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   color: var(--text-muted);
 }
 
@@ -324,7 +324,7 @@ const closeModal = () => {
   background: var(--automation-bg);
   color: var(--automation-text);
   border-radius: 12px;
-  font-size: 11px;
+  font-size: var(--font-size-tiny);
   font-weight: 500;
   flex-shrink: 0;
 }
@@ -343,7 +343,7 @@ const closeModal = () => {
   border: none;
   border-radius: 8px;
   font-weight: 500;
-  font-size: 14px;
+  font-size: var(--font-size-label);
   cursor: pointer;
   transition: all 0.2s;
 }

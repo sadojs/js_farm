@@ -359,8 +359,8 @@ onUnmounted(() => {
   gap: 12px;
 }
 
-.page-header h2 { font-size: calc(32px * var(--content-scale, 1)); font-weight: 700; color: var(--text-primary); }
-.page-description { color: var(--text-secondary); font-size: calc(16px * var(--content-scale, 1)); margin-top: 4px; }
+.page-header h2 { font-size: var(--font-size-display); font-weight: 700; color: var(--text-primary); }
+.page-description { color: var(--text-secondary); font-size: var(--font-size-body); margin-top: 4px; }
 
 .btn-refresh {
   padding: 12px 24px;
@@ -369,7 +369,7 @@ onUnmounted(() => {
   border: none;
   border-radius: 8px;
   font-weight: 500;
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -380,10 +380,10 @@ onUnmounted(() => {
   text-align: center;
   padding: 60px 20px;
   color: var(--text-secondary);
-  font-size: calc(16px * var(--content-scale, 1));
+  font-size: var(--font-size-body);
 }
-.empty-state h3 { font-size: calc(22px * var(--content-scale, 1)); color: var(--text-primary); margin-bottom: 8px; }
-.empty-state p { font-size: calc(14px * var(--content-scale, 1)); margin-bottom: 4px; }
+.empty-state h3 { font-size: var(--font-size-title); color: var(--text-primary); margin-bottom: 8px; }
+.empty-state p { font-size: var(--font-size-label); margin-bottom: 4px; }
 .btn-cta {
   display: inline-block;
   margin-top: 16px;
@@ -393,7 +393,7 @@ onUnmounted(() => {
   border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   transition: background 0.2s;
 }
 .btn-cta:hover { background: var(--accent-hover); }
@@ -428,10 +428,10 @@ onUnmounted(() => {
   gap: 10px;
 }
 
-.expand-icon { font-size: calc(13px * var(--content-scale, 1)); color: var(--text-muted); width: 16px; }
+.expand-icon { font-size: var(--font-size-caption); color: var(--text-muted); width: 16px; }
 
 .group-title h3 {
-  font-size: calc(20px * var(--content-scale, 1));
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
@@ -441,7 +441,7 @@ onUnmounted(() => {
   padding: 4px 12px;
   background: var(--bg-badge);
   border-radius: 20px;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   color: var(--text-secondary);
   font-weight: 500;
 }
@@ -456,7 +456,7 @@ onUnmounted(() => {
   padding: 6px 14px;
   background: var(--bg-hover);
   border-radius: 8px;
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 600;
   color: var(--text-secondary);
   white-space: nowrap;
@@ -470,14 +470,14 @@ onUnmounted(() => {
   text-align: center;
   padding: 24px;
   color: var(--text-muted);
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
 }
 
 .env-unconfigured {
   text-align: center;
   padding: 32px 20px;
   color: var(--text-secondary);
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
 }
 .env-unconfigured p {
   margin-bottom: 12px;
@@ -485,7 +485,7 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .page-container { padding: 16px; }
-  .page-header h2 { font-size: calc(24px * var(--content-scale, 1)); }
+  .page-header h2 { font-size: var(--font-size-title); }
   .group-header {
     flex-direction: column;
     align-items: flex-start;
@@ -527,13 +527,13 @@ onUnmounted(() => {
   border: none;
   background: var(--bg-card, var(--color-surface));
   cursor: pointer;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   text-align: left;
   color: var(--text-primary, var(--color-text-primary));
 }
 
 .metric-icon {
-  font-size: 16px;
+  font-size: var(--font-size-body);
   flex-shrink: 0;
 }
 
@@ -549,7 +549,7 @@ onUnmounted(() => {
 }
 
 .metric-badge {
-  font-size: 11px;
+  font-size: var(--font-size-tiny);
   padding: 2px 8px;
   border-radius: 10px;
   font-weight: 600;
@@ -571,7 +571,7 @@ onUnmounted(() => {
 }
 
 .accordion-arrow {
-  font-size: 10px;
+  font-size: var(--font-size-tiny);
   transition: transform 0.2s;
   color: var(--text-muted, var(--color-text-disabled));
   flex-shrink: 0;
@@ -590,7 +590,7 @@ onUnmounted(() => {
 .metric-detail-row {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   padding: 4px 0;
 }
 

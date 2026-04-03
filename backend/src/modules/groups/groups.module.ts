@@ -6,9 +6,13 @@ import { HouseGroup } from './entities/house-group.entity';
 import { House } from './entities/house.entity';
 import { Device } from '../devices/entities/device.entity';
 import { AutomationRule } from '../automation/entities/automation-rule.entity';
+import { ActivityLogModule } from '../activity-log/activity-log.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([HouseGroup, House, Device, AutomationRule])],
+  imports: [
+    TypeOrmModule.forFeature([HouseGroup, House, Device, AutomationRule]),
+    ActivityLogModule,
+  ],
   controllers: [GroupsController],
   providers: [GroupsService],
   exports: [GroupsService],

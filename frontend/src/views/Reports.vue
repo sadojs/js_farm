@@ -667,8 +667,8 @@ onMounted(async () => {
   display: flex; align-items: flex-start; justify-content: space-between;
   margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
 }
-.page-header h2 { font-size: calc(28px * var(--content-scale, 1)); font-weight: 700; color: var(--text-primary); }
-.page-description { color: var(--text-secondary); font-size: calc(14px * var(--content-scale, 1)); margin-top: 4px; }
+.page-header h2 { font-size: var(--font-size-display); font-weight: 700; color: var(--text-primary); }
+.page-description { color: var(--text-secondary); font-size: var(--font-size-label); margin-top: 4px; }
 
 /* 필터 */
 .filter-section {
@@ -678,11 +678,11 @@ onMounted(async () => {
 .filter-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
 .filter-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 150px; }
 .filter-group label, .period-row > label, .download-label {
-  font-size: calc(14px * var(--content-scale, 1)); font-weight: 600; color: var(--text-secondary);
+  font-size: var(--font-size-label); font-weight: 600; color: var(--text-secondary);
 }
 .filter-select, .filter-input {
   padding: 12px 14px; border: 1px solid var(--border-input); border-radius: 8px;
-  font-size: calc(15px * var(--content-scale, 1)); background: var(--bg-input); color: var(--text-primary);
+  font-size: var(--font-size-label); background: var(--bg-input); color: var(--text-primary);
 }
 .filter-select:focus, .filter-input:focus { outline: none; border-color: var(--accent); }
 
@@ -692,7 +692,7 @@ onMounted(async () => {
 .period-btn {
   padding: 10px 24px; border: 1px solid var(--border-input); border-radius: 8px;
   background: var(--bg-input); color: var(--text-primary); cursor: pointer;
-  font-size: calc(15px * var(--content-scale, 1)); font-weight: 500; transition: all 0.2s;
+  font-size: var(--font-size-label); font-weight: 500; transition: all 0.2s;
 }
 .period-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 .period-btn:hover:not(.active) { border-color: var(--accent); background: var(--accent-bg); }
@@ -738,7 +738,7 @@ onMounted(async () => {
 }
 
 :deep(.dp__input) {
-  font-size: calc(15px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 500;
   padding: 12px 14px;
   padding-left: 14px !important;
@@ -750,7 +750,7 @@ onMounted(async () => {
 /* 다운로드 */
 .download-row { display: flex; align-items: center; gap: 12px; }
 .btn-download {
-  padding: 10px 20px; border-radius: 8px; font-size: calc(14px * var(--content-scale, 1));
+  padding: 10px 20px; border-radius: 8px; font-size: var(--font-size-label);
   font-weight: 500; cursor: pointer; transition: all 0.2s;
 }
 .btn-download.csv {
@@ -764,7 +764,7 @@ onMounted(async () => {
 .btn-download.pdf:hover { opacity: 0.85; }
 .btn-download:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.btn-primary { padding: 12px 24px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: calc(15px * var(--content-scale, 1)); }
+.btn-primary { padding: 12px 24px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: var(--font-size-label); }
 .btn-primary:hover { background: var(--accent-hover); }
 .btn-sm { padding: 10px 16px; }
 
@@ -774,22 +774,22 @@ onMounted(async () => {
   background: var(--bg-card); border: 1px solid var(--border-card);
   border-radius: 14px; padding: 20px; box-shadow: var(--shadow-card);
 }
-.stat-label { font-size: calc(14px * var(--content-scale, 1)); color: var(--text-muted); font-weight: 500; margin-bottom: 8px; }
+.stat-label { font-size: var(--font-size-label); color: var(--text-muted); font-weight: 500; margin-bottom: 8px; }
 .stat-value {
-  font-size: calc(32px * var(--content-scale, 1)); font-weight: 700;
+  font-size: var(--font-size-display); font-weight: 700;
   font-variant-numeric: tabular-nums; line-height: 1.2;
 }
 .stat-value.temp { color: #e53935; }
 .stat-value.humidity { color: var(--accent); }
 .stat-value.actuator { color: #673ab7; }
-.stat-unit { font-size: calc(16px * var(--content-scale, 1)); font-weight: 500; color: var(--text-muted); margin-left: 4px; }
+.stat-unit { font-size: var(--font-size-body); font-weight: 500; color: var(--text-muted); margin-left: 4px; }
 
 /* 차트 카드 */
 .chart-card {
   background: var(--bg-card); border: 1px solid var(--border-card);
   border-radius: 14px; padding: 20px; box-shadow: var(--shadow-card); margin-bottom: 24px;
 }
-.chart-title { font-size: calc(18px * var(--content-scale, 1)); font-weight: 600; color: var(--text-primary); margin: 0 0 16px; }
+.chart-title { font-size: var(--font-size-subtitle); font-weight: 600; color: var(--text-primary); margin: 0 0 16px; }
 .chart-container { height: 320px; position: relative; }
 
 /* 테이블 */
@@ -798,11 +798,11 @@ onMounted(async () => {
 .data-table thead { background: var(--bg-secondary); }
 .data-table th {
   padding: 14px 16px; text-align: left; font-weight: 600; color: var(--text-primary);
-  font-size: calc(14px * var(--content-scale, 1)); border-bottom: 2px solid var(--border-input);
+  font-size: var(--font-size-label); border-bottom: 2px solid var(--border-input);
 }
 .data-table td {
   padding: 12px 16px; border-bottom: 1px solid var(--border-light);
-  font-size: calc(14px * var(--content-scale, 1)); color: var(--text-secondary);
+  font-size: var(--font-size-label); color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
 }
 .data-table tbody tr:hover { background: var(--bg-hover); }
@@ -815,7 +815,7 @@ onMounted(async () => {
   background: rgba(245, 158, 11, 0.1);
   border: 1px solid #f59e0b;
   border-radius: 10px;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   color: var(--text-primary);
   margin-bottom: 16px;
   flex-wrap: wrap;
@@ -829,7 +829,7 @@ onMounted(async () => {
 .warning-link:hover { text-decoration: underline; }
 
 .loading-state, .empty-state {
-  text-align: center; padding: 60px 20px; color: var(--text-secondary); font-size: calc(16px * var(--content-scale, 1));
+  text-align: center; padding: 60px 20px; color: var(--text-secondary); font-size: var(--font-size-body);
 }
 
 @media (max-width: 768px) {
@@ -867,7 +867,7 @@ onMounted(async () => {
     padding: 6px 14px;
     border-radius: 20px;
     white-space: nowrap;
-    font-size: 13px;
+    font-size: var(--font-size-caption);
   }
   .period-row {
     flex-direction: column;
@@ -910,7 +910,7 @@ onMounted(async () => {
   padding: 10px 20px;
   border: none;
   background: none;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 500;
   color: var(--text-secondary, var(--color-text-secondary));
   cursor: pointer;

@@ -263,7 +263,7 @@ async function handleSave() {
   display: flex; justify-content: space-between; align-items: center;
   padding: 20px 24px 12px;
 }
-.modal-title { font-size: 22px; font-weight: 700; color: var(--text-primary); }
+.modal-title { font-size: var(--font-size-title); font-weight: 700; color: var(--text-primary); }
 .btn-close {
   background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;
   padding: 4px 8px;
@@ -278,11 +278,11 @@ async function handleSave() {
 .step-circle {
   width: 44px; height: 44px; border-radius: 50%; border: 2.5px solid var(--border-input);
   display: flex; align-items: center; justify-content: center;
-  font-size: 19px; font-weight: 700; color: var(--text-muted);
+  font-size: var(--font-size-subtitle); font-weight: 700; color: var(--text-muted);
 }
 .step-item.active .step-circle { border-color: #4caf50; background: #4caf50; color: white; }
 .step-item.done .step-circle { border-color: #4caf50; color: #4caf50; }
-.step-name { font-size: 16px; color: var(--text-muted); }
+.step-name { font-size: var(--font-size-body); color: var(--text-muted); }
 .step-item.active .step-name { color: #4caf50; font-weight: 600; }
 .step-item.done .step-name { color: #4caf50; }
 
@@ -296,14 +296,14 @@ async function handleSave() {
 
 .btn-primary {
   padding: 10px 28px; background: #4caf50; color: white; border: none;
-  border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+  border-radius: 10px; font-size: var(--font-size-label); font-weight: 600; cursor: pointer;
 }
 .btn-primary:hover { background: #43a047; }
 .btn-primary:disabled { background: var(--text-muted); cursor: not-allowed; }
 
 .btn-secondary {
   padding: 10px 28px; background: var(--bg-card); color: var(--text-link); border: 1px solid var(--border-input);
-  border-radius: 10px; font-size: 15px; font-weight: 500; cursor: pointer;
+  border-radius: 10px; font-size: var(--font-size-label); font-weight: 500; cursor: pointer;
 }
 .btn-secondary:hover { background: var(--bg-hover); }
 
@@ -318,8 +318,8 @@ async function handleSave() {
     padding-bottom: env(safe-area-inset-bottom, 0);
   }
   .stepper { gap: 16px; padding: 12px 16px 16px; }
-  .step-circle { width: 36px; height: 36px; font-size: 16px; }
-  .step-name { font-size: 13px; }
+  .step-circle { width: 36px; height: 36px; font-size: var(--font-size-body); }
+  .step-name { font-size: var(--font-size-caption); }
   .modal-body { padding: 16px; }
   .modal-header { padding: 16px 16px 8px; padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
   .modal-footer { padding: 12px 16px; }

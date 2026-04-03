@@ -18,6 +18,7 @@ import { WeatherModule } from './modules/weather/weather.module';
 import { SensorAlertsModule } from './modules/sensor-alerts/sensor-alerts.module';
 import { EnvConfigModule } from './modules/env-config/env-config.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ActivityLogModule } from './modules/activity-log/activity-log.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     SensorAlertsModule,
     EnvConfigModule,
     NotificationsModule,
+    ActivityLogModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

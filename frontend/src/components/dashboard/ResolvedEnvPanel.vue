@@ -85,7 +85,7 @@ function formatValue(item: ResolvedValue): string {
 }
 
 .env-section-title {
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -127,14 +127,14 @@ function formatValue(item: ResolvedValue): string {
 }
 
 .env-label {
-  font-size: calc(12px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   color: var(--text-muted);
   font-weight: 500;
   white-space: nowrap;
 }
 
 .env-value {
-  font-size: calc(20px * var(--content-scale, 1));
+  font-size: var(--font-size-subtitle);
   font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
@@ -142,20 +142,20 @@ function formatValue(item: ResolvedValue): string {
 }
 
 .env-value.unmapped {
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 400;
   color: var(--text-muted);
 }
 
 .env-unit {
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   font-weight: 500;
   color: var(--text-muted);
   margin-left: 2px;
 }
 
 .env-source {
-  font-size: calc(11px * var(--content-scale, 1));
+  font-size: var(--font-size-tiny);
   color: var(--text-muted);
   text-align: right;
   flex-shrink: 0;

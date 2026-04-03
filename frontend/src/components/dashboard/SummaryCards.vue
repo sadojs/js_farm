@@ -158,7 +158,7 @@ onMounted(async () => {
 }
 
 .summary-number {
-  font-size: calc(24px * var(--content-scale, 1));
+  font-size: var(--font-size-title);
   font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
@@ -166,7 +166,7 @@ onMounted(async () => {
 }
 
 .summary-label {
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   color: var(--text-muted);
   margin-top: 2px;
 }
@@ -182,7 +182,7 @@ onMounted(async () => {
   }
 
   .summary-number {
-    font-size: calc(20px * var(--content-scale, 1));
+    font-size: var(--font-size-subtitle);
   }
 }
 </style>

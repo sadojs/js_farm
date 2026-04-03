@@ -1,21 +1,5 @@
 <template>
   <div class="automation-log">
-    <!-- 통계 미니 카드 -->
-    <div class="log-stats">
-      <div class="stat-card">
-        <span class="stat-value">{{ stats.todayCount }}</span>
-        <span class="stat-label">오늘 실행</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value">{{ stats.successRate }}%</span>
-        <span class="stat-label">성공률</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value">{{ stats.mostActiveRule || '-' }}</span>
-        <span class="stat-label">가장 활발</span>
-      </div>
-    </div>
-
     <!-- 로그 리스트 -->
     <div v-if="loading" class="log-loading">로그를 불러오는 중...</div>
     <div v-else-if="logs.length === 0" class="log-empty">
@@ -26,37 +10,31 @@
       />
     </div>
     <div v-else class="log-timeline">
-      <div
-        v-for="log in logs"
-        :key="log.id"
-        :class="['log-entry', log.success ? 'success' : 'failed']"
-      >
-        <div class="log-indicator">
-          <span :class="['log-dot', log.success ? 'success' : 'failed']"></span>
-          <span class="log-line"></span>
+      <div v-for="log in logs" :key="log.id" class="log-entry">
+        <div class="log-main">
+          <span class="log-status" :class="getLogStatusClass(log)">
+            {{ getLogTypeLabel(log) }}
+          </span>
+          <span class="log-name">{{ log.ruleName || log.conditionsMet?.ruleName || '자동화' }}</span>
+          <span class="log-time">{{ formatTime(log.executedAt) }}</span>
         </div>
-        <div class="log-body">
-          <div class="log-header">
-            <span :class="['log-status', log.success ? 'success' : 'failed']">
-              {{ log.success ? '🟢' : '🔴' }}
-            </span>
-            <span class="log-time">{{ formatTime(log.executedAt) }}</span>
-            <span class="log-rule-name">{{ log.ruleName || '알 수 없는 룰' }}</span>
-          </div>
-          <div class="log-details">
-            <div v-if="log.conditionsMet && Object.keys(log.conditionsMet).length > 0" class="log-detail-row">
-              <span class="detail-label">조건:</span>
-              <span class="detail-value">{{ formatConditions(log.conditionsMet) }}</span>
-            </div>
-            <div v-if="log.actionsExecuted && Object.keys(log.actionsExecuted).length > 0" class="log-detail-row">
-              <span class="detail-label">동작:</span>
-              <span class="detail-value">{{ formatActions(log.actionsExecuted) }}</span>
-            </div>
-            <div v-if="log.errorMessage" class="log-error">
-              <span class="detail-label">오류:</span>
-              <span class="detail-value error">{{ log.errorMessage }}</span>
-            </div>
-          </div>
+        <div class="log-summary">
+          <!-- 관수 로그 -->
+          <template v-if="isIrrigationLog(log)">
+            <span v-if="log.conditionsMet?.deviceName" class="summary-chip device">{{ log.conditionsMet.deviceName }}</span>
+            <span v-if="log.conditionsMet?.startTime" class="summary-chip">{{ log.conditionsMet.startTime }}</span>
+            <span v-if="log.conditionsMet?.enabledZones != null" class="summary-chip">{{ log.conditionsMet.enabledZones }}/{{ log.conditionsMet.totalZones }}구역</span>
+            <span v-if="log.actionsExecuted?.estimatedDurationMin" class="summary-chip">소요 {{ log.actionsExecuted.estimatedDurationMin }}분</span>
+            <span v-if="log.conditionsMet?.irrigationMin" class="summary-chip">관수 {{ log.conditionsMet.irrigationMin }}분</span>
+            <span v-if="log.conditionsMet?.fertilizerMin" class="summary-chip">액비 {{ log.conditionsMet.fertilizerMin }}분</span>
+          </template>
+          <!-- 일반 자동화 로그 -->
+          <template v-else>
+            <span v-for="name in (log.actionsExecuted?.deviceNames || [])" :key="name" class="summary-chip device">{{ name }}</span>
+            <span v-if="log.conditionsMet?.equipmentType" class="summary-chip">{{ formatEquipmentType(log.conditionsMet.equipmentType) }}</span>
+            <span v-if="log.actionsExecuted?.commandSummary" class="summary-chip cmd">{{ log.actionsExecuted.commandSummary }}</span>
+          </template>
+          <span v-if="log.errorMessage" class="summary-chip error">{{ log.errorMessage }}</span>
         </div>
       </div>
 
@@ -72,17 +50,15 @@
 import { ref, onMounted } from 'vue'
 import { automationLogApi, type AutomationLogEntry, type AutomationLogStats } from '@/api/automation-log.api'
 import EmptyState from '@/components/common/EmptyState.vue'
-import dayjs from 'dayjs'
 
 const logs = ref<AutomationLogEntry[]>([])
-const stats = ref<AutomationLogStats>({ todayCount: 0, successRate: 0, mostActiveRule: null })
 const loading = ref(true)
 const loadingMore = ref(false)
 const page = ref(1)
 const hasMore = ref(true)
 
 onMounted(async () => {
-  await Promise.all([fetchLogs(), fetchStats()])
+  await fetchLogs()
 })
 
 async function fetchLogs() {
@@ -98,10 +74,6 @@ async function fetchLogs() {
   }
 }
 
-async function fetchStats() {
-  stats.value = await automationLogApi.getStats()
-}
-
 async function loadMore() {
   loadingMore.value = true
   page.value++
@@ -114,177 +86,133 @@ async function loadMore() {
   }
 }
 
+function isIrrigationLog(log: AutomationLogEntry): boolean {
+  const t = log.conditionsMet?.type
+  return t === 'irrigation' || t === 'irrigation_started' || t === 'irrigation_cancelled'
+}
+
+function getLogTypeLabel(log: AutomationLogEntry): string {
+  const t = log.conditionsMet?.type
+  if (t === 'irrigation_started') return '시작'
+  if (t === 'irrigation_cancelled') return '취소'
+  if (t === 'irrigation') return log.success ? '완료' : '실패'
+  return log.success ? '실행' : '실패'
+}
+
+function getLogStatusClass(log: AutomationLogEntry): string {
+  const t = log.conditionsMet?.type
+  if (t === 'irrigation_started') return 'started'
+  if (t === 'irrigation_cancelled') return 'cancelled'
+  if (!log.success) return 'fail'
+  return 'success'
+}
+
+function formatEquipmentType(type: string): string {
+  const map: Record<string, string> = {
+    fan: '팬', irrigation: '관수', opener_open: '개폐기(열림)',
+    opener_close: '개폐기(닫힘)', other: '기타',
+  }
+  return map[type] || type
+}
+
 function formatTime(dateStr: string): string {
-  return dayjs(dateStr).format('HH:mm')
-}
-
-function formatConditions(conditions: Record<string, any>): string {
-  if (typeof conditions === 'string') return conditions
-  const entries = Object.entries(conditions)
-  if (entries.length === 0) return '-'
-  return entries.map(([k, v]) => `${k}: ${v}`).join(', ')
-}
-
-function formatActions(actions: Record<string, any>): string {
-  if (typeof actions === 'string') return actions
-  const entries = Object.entries(actions)
-  if (entries.length === 0) return '-'
-  return entries.map(([k, v]) => `${k} → ${v}`).join(', ')
+  const d = new Date(dateStr)
+  const now = new Date()
+  const diffMs = now.getTime() - d.getTime()
+  const diffMin = Math.floor(diffMs / 60000)
+  if (diffMin < 1) return '방금'
+  if (diffMin < 60) return `${diffMin}분 전`
+  const diffHour = Math.floor(diffMin / 60)
+  if (diffHour < 24) return `${diffHour}시간 전`
+  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 </script>
 
 <style scoped>
-.automation-log {
-  padding: 0;
-}
-
-.log-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.stat-card {
-  background: var(--bg-card, var(--color-surface));
-  border: 1px solid var(--border-color, var(--color-border));
-  border-radius: var(--radius-md);
-  padding: 14px;
-  text-align: center;
-}
-
-.stat-value {
-  display: block;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-primary, var(--color-text-primary));
-  margin-bottom: 4px;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: var(--text-secondary, var(--color-text-secondary));
-}
-
 .log-loading {
   text-align: center;
   padding: 32px;
-  color: var(--text-secondary, var(--color-text-secondary));
-}
-
-.log-timeline {
-  display: flex;
-  flex-direction: column;
+  color: var(--text-secondary);
 }
 
 .log-entry {
-  display: flex;
-  gap: 12px;
-  padding-bottom: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-light);
 }
+.log-entry:last-child { border-bottom: none; }
 
-.log-indicator {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 20px;
-  flex-shrink: 0;
-}
-
-.log-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.log-dot.success { background: var(--color-success); }
-.log-dot.failed { background: var(--color-error); }
-
-.log-line {
-  width: 2px;
-  flex: 1;
-  background: var(--border-color, var(--color-border));
-  margin-top: 4px;
-}
-
-.log-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.log-header {
+.log-main {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 4px;
 }
-
 .log-status {
-  font-size: 12px;
-}
-
-.log-time {
-  font-size: 13px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: var(--font-size-tiny);
   font-weight: 600;
-  color: var(--text-primary, var(--color-text-primary));
+  flex-shrink: 0;
 }
-
-.log-rule-name {
-  font-size: 13px;
-  color: var(--text-secondary, var(--color-text-secondary));
+.log-status.success { background: #e8f5e9; color: #2e7d32; }
+.log-status.fail { background: #ffebee; color: #c62828; }
+.log-status.started { background: #e3f2fd; color: #1565c0; }
+.log-status.cancelled { background: #fff3e0; color: #e65100; }
+.log-name {
+  flex: 1;
+  font-size: var(--font-size-caption);
+  color: var(--text-primary);
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-.log-details {
-  padding-left: 4px;
-}
-
-.log-detail-row {
-  font-size: 12px;
-  color: var(--text-secondary, var(--color-text-secondary));
-  margin-bottom: 2px;
-  display: flex;
-  gap: 6px;
-}
-
-.detail-label {
-  color: var(--text-muted, var(--color-text-disabled));
+.log-time {
+  font-size: var(--font-size-caption);
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 
-.detail-value.error {
-  color: var(--color-error);
+.log-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+  padding-left: 4px;
+}
+.summary-chip {
+  font-size: var(--font-size-tiny);
+  color: var(--text-secondary);
+  background: var(--bg-badge);
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.summary-chip.device {
+  color: var(--accent);
+  font-weight: 600;
+}
+.summary-chip.cmd {
+  font-family: monospace;
+  font-size: var(--font-size-tiny);
+}
+.summary-chip.error {
+  color: #c62828;
+  background: #ffebee;
 }
 
 .log-more-btn {
   align-self: center;
+  display: block;
+  margin: 12px auto 0;
   padding: 8px 24px;
-  border: 1px solid var(--border-color, var(--color-border));
-  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
   background: transparent;
-  color: var(--text-secondary, var(--color-text-secondary));
+  color: var(--text-secondary);
   cursor: pointer;
-  font-size: 13px;
-  margin-top: 8px;
+  font-size: var(--font-size-caption);
 }
-
 .log-more-btn:hover {
-  background: var(--bg-hover, rgba(0,0,0,0.03));
-}
-
-@media (max-width: 768px) {
-  .log-stats {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-  .stat-card {
-    padding: 10px 8px;
-  }
-  .stat-value {
-    font-size: 16px;
-  }
+  background: var(--bg-hover);
 }
 </style>

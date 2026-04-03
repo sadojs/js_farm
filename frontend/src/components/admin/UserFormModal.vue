@@ -485,7 +485,7 @@ const closeModal = () => {
 }
 
 .modal-header h2 {
-  font-size: 24px;
+  font-size: var(--font-size-title);
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
@@ -494,7 +494,7 @@ const closeModal = () => {
 .close-btn {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: var(--font-size-title);
   color: var(--text-muted);
   cursor: pointer;
   padding: 4px;
@@ -528,7 +528,7 @@ const closeModal = () => {
 
 .form-group label {
   display: block;
-  font-size: 14px;
+  font-size: var(--font-size-label);
   font-weight: 500;
   color: var(--text-secondary);
   margin-bottom: 8px;
@@ -540,7 +540,7 @@ const closeModal = () => {
   padding: 10px 12px;
   border: 2px solid var(--border-input);
   border-radius: 8px;
-  font-size: 14px;
+  font-size: var(--font-size-label);
   transition: all 0.2s;
   font-family: inherit;
   background: var(--bg-input);
@@ -555,7 +555,7 @@ const closeModal = () => {
 }
 
 .help-text {
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   color: var(--text-muted);
   margin: 6px 0 0 0;
   line-height: 1.5;
@@ -575,7 +575,7 @@ const closeModal = () => {
   margin-top: 8px;
   padding: 10px 12px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   color: var(--text-primary);
   background: var(--bg-secondary);
   border: 1px solid var(--border-light);
@@ -590,14 +590,14 @@ const closeModal = () => {
 }
 
 .section-title {
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 8px 0;
 }
 
 .section-description {
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary);
   margin: 0 0 20px 0;
   line-height: 1.6;
@@ -617,7 +617,7 @@ const closeModal = () => {
   border: none;
   border-radius: 8px;
   font-weight: 500;
-  font-size: 14px;
+  font-size: var(--font-size-label);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -649,7 +649,7 @@ const closeModal = () => {
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: var(--font-size-label);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -668,7 +668,7 @@ const closeModal = () => {
   margin-top: 8px;
   padding: 10px 12px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: var(--font-size-caption);
 }
 
 .test-result.success {

@@ -210,7 +210,7 @@ const recommendations = computed(() => {
 }
 
 .env-score-title {
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 700;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -220,7 +220,7 @@ const recommendations = computed(() => {
 .score-badge {
   padding: 4px 14px;
   border-radius: 20px;
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -266,13 +266,13 @@ const recommendations = computed(() => {
 }
 
 .metric-label {
-  font-size: calc(12px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   color: var(--text-muted);
   font-weight: 500;
 }
 
 .metric-value {
-  font-size: calc(18px * var(--content-scale, 1));
+  font-size: var(--font-size-subtitle);
   font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
@@ -280,7 +280,7 @@ const recommendations = computed(() => {
 }
 
 .metric-unit {
-  font-size: calc(11px * var(--content-scale, 1));
+  font-size: var(--font-size-tiny);
   font-weight: 500;
   color: var(--text-muted);
   margin-left: 2px;
@@ -290,7 +290,7 @@ const recommendations = computed(() => {
   display: inline-block;
   padding: 1px 8px;
   border-radius: 10px;
-  font-size: calc(10px * var(--content-scale, 1));
+  font-size: var(--font-size-tiny);
   font-weight: 700;
   width: fit-content;
   margin-top: 2px;
@@ -310,7 +310,7 @@ const recommendations = computed(() => {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  font-size: calc(12px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   line-height: 1.5;
   padding: 6px 10px;
   border-radius: 8px;
@@ -348,7 +348,7 @@ const recommendations = computed(() => {
   }
 
   .metric-value {
-    font-size: calc(16px * var(--content-scale, 1));
+    font-size: var(--font-size-body);
   }
 }
 </style>

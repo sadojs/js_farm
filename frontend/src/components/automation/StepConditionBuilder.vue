@@ -548,8 +548,8 @@ function addGroup() {
 
 <style scoped>
 .step-condition { display: flex; flex-direction: column; gap: 16px; }
-.step-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0; }
-.step-desc { font-size: 14px; color: var(--text-muted); margin: 0; }
+.step-title { font-size: var(--font-size-subtitle); font-weight: 700; color: var(--text-primary); margin: 0; }
+.step-desc { font-size: var(--font-size-label); color: var(--text-muted); margin: 0; }
 
 .condition-groups { display: flex; flex-direction: column; gap: 12px; }
 
@@ -559,9 +559,9 @@ function addGroup() {
 
 .logic-select {
   padding: 6px 12px; border: 1px solid var(--border-input); border-radius: 8px;
-  font-size: 13px; color: var(--text-secondary); background: var(--bg-input); cursor: pointer;
+  font-size: var(--font-size-caption); color: var(--text-secondary); background: var(--bg-input); cursor: pointer;
 }
-.logic-select.small { padding: 4px 8px; font-size: 12px; }
+.logic-select.small { padding: 4px 8px; font-size: var(--font-size-caption); }
 
 .group-box {
   border: 1px solid var(--border-input); border-radius: 12px; padding: 16px;
@@ -578,31 +578,31 @@ function addGroup() {
 
 .field-select, .op-select, .value-input {
   padding: 8px 12px; border: 1px solid var(--border-input); border-radius: 8px;
-  font-size: 14px; background: var(--bg-input); color: var(--text-primary);
+  font-size: var(--font-size-label); background: var(--bg-input); color: var(--text-primary);
 }
 .field-select { min-width: 160px; }
 .op-select { min-width: 80px; }
 .value-input { min-width: 80px; max-width: 120px; }
 .value-input.small { min-width: 60px; max-width: 80px; }
 
-.range-sep { color: var(--text-muted); font-size: 14px; }
-.unit { font-size: 13px; color: var(--text-muted); }
+.range-sep { color: var(--text-muted); font-size: var(--font-size-label); }
+.unit { font-size: var(--font-size-caption); color: var(--text-muted); }
 
 .btn-remove {
-  background: none; border: none; color: #f44336; font-size: 16px;
+  background: none; border: none; color: #f44336; font-size: var(--font-size-body);
   cursor: pointer; padding: 4px 8px; border-radius: 6px;
 }
 .btn-remove:hover { background: rgba(244, 67, 54, 0.1); }
 
 .btn-add-condition {
   background: none; border: 1px dashed var(--border-input); border-radius: 8px;
-  padding: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer;
+  padding: 8px; font-size: var(--font-size-caption); color: var(--text-muted); cursor: pointer;
 }
 .btn-add-condition:hover { border-color: var(--text-muted); color: var(--text-secondary); }
 
 .btn-add-group {
   background: none; border: 1px dashed var(--border-input); border-radius: 10px;
-  padding: 10px; font-size: 14px; color: var(--text-muted); cursor: pointer;
+  padding: 10px; font-size: var(--font-size-label); color: var(--text-muted); cursor: pointer;
 }
 .btn-add-group:hover { border-color: var(--text-muted); color: var(--text-secondary); }
 
@@ -611,10 +611,10 @@ function addGroup() {
   display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
 }
 .hysteresis-row label {
-  font-size: 13px; font-weight: 600; color: var(--text-secondary);
+  font-size: var(--font-size-caption); font-weight: 600; color: var(--text-secondary);
 }
 .hysteresis-preview {
-  width: 100%; font-size: 12px; color: var(--accent); background: var(--accent-bg);
+  width: 100%; font-size: var(--font-size-caption); color: var(--accent); background: var(--accent-bg);
   padding: 6px 10px; border-radius: 6px; margin-top: 4px;
 }
 
@@ -624,7 +624,7 @@ function addGroup() {
 }
 .relay-toggle {
   display: flex; align-items: center; gap: 8px;
-  font-size: 14px; color: var(--text-secondary); cursor: pointer;
+  font-size: var(--font-size-label); color: var(--text-secondary); cursor: pointer;
 }
 .relay-toggle input { width: 18px; height: 18px; cursor: pointer; }
 
@@ -633,7 +633,7 @@ function addGroup() {
   border: 1px solid var(--border-input); border-radius: 12px; padding: 16px;
   background: var(--bg-secondary); display: flex; flex-direction: column; gap: 12px;
 }
-.scheduler-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0; }
+.scheduler-title { font-size: var(--font-size-label); font-weight: 700; color: var(--text-primary); margin: 0; }
 
 .time-slot {
   display: flex; align-items: center; gap: 8px;
@@ -644,7 +644,7 @@ function addGroup() {
 }
 .day-btn {
   padding: 6px 12px; border: 1px solid var(--border-input); border-radius: 8px;
-  background: var(--bg-card); font-size: 13px; cursor: pointer;
+  background: var(--bg-card); font-size: var(--font-size-caption); cursor: pointer;
   color: var(--text-primary); transition: all 0.15s;
 }
 .day-btn.active {
@@ -653,7 +653,7 @@ function addGroup() {
 
 .repeat-toggle {
   display: flex; align-items: center; gap: 8px;
-  font-size: 14px; color: var(--text-secondary); cursor: pointer;
+  font-size: var(--font-size-label); color: var(--text-secondary); cursor: pointer;
 }
 .repeat-toggle input { width: 18px; height: 18px; cursor: pointer; }
 
@@ -662,7 +662,7 @@ function addGroup() {
   border-top: 1px solid var(--border-input); padding-top: 12px; margin-top: 4px;
 }
 .relay-desc {
-  font-size: 12px; color: var(--text-muted); margin: 4px 0 0 0; line-height: 1.5;
+  font-size: var(--font-size-caption); color: var(--text-muted); margin: 4px 0 0 0; line-height: 1.5;
 }
 .relay-inputs {
   display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap;

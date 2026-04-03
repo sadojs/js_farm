@@ -117,8 +117,22 @@ export class AutomationService {
       qb.andWhere('l.rule_id = :ruleId', { ruleId: params.ruleId });
     }
 
-    const [items] = await qb.getManyAndCount();
-    return items;
+    const items = await qb.getMany();
+
+    // ruleName 조인
+    const ruleIds = [...new Set(items.map(l => l.ruleId))];
+    const rules = ruleIds.length > 0
+      ? await this.rulesRepo.findByIds(ruleIds)
+      : [];
+    const ruleMap = new Map(rules.map(r => [r.id, r.name]));
+
+    return {
+      data: items.map(log => ({
+        ...log,
+        ruleName: ruleMap.get(log.ruleId) || null,
+      })),
+      total: items.length,
+    };
   }
 
   async getLogStats(userId: string) {
@@ -235,15 +249,29 @@ export class AutomationService {
       }
     }
 
+    // 그룹 이름 캐시
+    const groupNameCache = new Map<string, string>();
+    for (const rule of irrigationRules) {
+      if (rule.groupId && !groupNameCache.has(rule.groupId)) {
+        const row = await this.devicesRepo.query(
+          'SELECT name FROM house_groups WHERE id = $1', [rule.groupId],
+        );
+        groupNameCache.set(rule.groupId, row?.[0]?.name || null);
+      }
+    }
+
     const result: any[] = [];
     for (const [deviceId, devRules] of deviceRuleMap) {
       try {
         const device = await this.devicesRepo.findOne({ where: { id: deviceId } });
         if (!device) continue;
         const activeInfo = this.irrigationScheduler.getActiveByDevice(device.tuyaDeviceId);
+        const groupId = devRules[0]?.groupId || null;
         result.push({
           deviceId,
           deviceName: device.name,
+          groupId,
+          groupName: groupId ? groupNameCache.get(groupId) || null : null,
           tuyaDeviceId: device.tuyaDeviceId,
           enabledRuleCount: devRules.filter(r => r.enabled).length,
           totalRuleCount: devRules.length,
@@ -254,6 +282,18 @@ export class AutomationService {
             startedAt: activeInfo.startedAt,
             estimatedEndAt: activeInfo.estimatedEndAt,
           } : undefined,
+          ruleSummaries: devRules.filter(r => r.enabled).map(r => {
+            const cond = r.conditions as any;
+            return {
+              ruleId: r.id,
+              ruleName: r.name,
+              startTime: cond?.startTime || null,
+              enabledZones: cond?.zones?.filter((z: any) => z.enabled).length || 0,
+              totalZones: cond?.zones?.length || 0,
+              days: cond?.schedule?.days || [],
+              repeat: cond?.schedule?.repeat ?? true,
+            };
+          }),
         });
       } catch {
         // 장비가 삭제된 경우 무시

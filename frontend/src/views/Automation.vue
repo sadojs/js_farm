@@ -97,7 +97,6 @@
 
         <!-- 카드 하단 -->
         <div class="rule-footer">
-          <span class="priority-badge">우선순위 {{ rule.priority }}</span>
           <label class="toggle-switch" @click.stop>
             <input type="checkbox" :checked="rule.enabled" @change="handleToggle(rule.id)" />
             <span class="toggle-slider"></span>
@@ -108,8 +107,11 @@
 
     </template>
 
-    <!-- 실행 로그 탭 -->
-    <AutomationLogTimeline v-if="mainTab === 'logs'" />
+    <!-- 실행 로그 탭 → 활동 로그 페이지 안내 -->
+    <div v-if="mainTab === 'logs'" class="log-redirect">
+      <p>실행 로그가 활동 로그 페이지로 이동했습니다.</p>
+      <router-link to="/activity-log" class="btn-link">활동 로그 보기 →</router-link>
+    </div>
 
     <!-- 위저드 모달 -->
     <RuleWizardModal
@@ -132,7 +134,7 @@ import { useNotificationStore } from '../stores/notification.store'
 import type { AutomationRule } from '../types/automation.types'
 import RuleWizardModal from '../components/automation/RuleWizardModal.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
-import AutomationLogTimeline from '@/components/automation/AutomationLogTimeline.vue'
+// AutomationLogTimeline → 활동 로그 페이지로 이전됨
 
 const automationStore = useAutomationStore()
 const groupStore = useGroupStore()
@@ -328,6 +330,14 @@ onMounted(async () => {
 .loading-state, .empty-state {
   text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: var(--font-size-body);
 }
+.log-redirect {
+  text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: var(--font-size-body);
+}
+.log-redirect .btn-link {
+  display: inline-block; margin-top: 12px; padding: 10px 24px;
+  background: var(--accent); color: white; border-radius: 10px;
+  text-decoration: none; font-weight: 600; font-size: var(--font-size-label);
+}
 .empty-state .btn-primary { margin-top: 16px; }
 
 .rules-grid {
@@ -476,15 +486,10 @@ onMounted(async () => {
 
 .rule-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   padding-top: 12px;
   border-top: 1px solid var(--border-light);
-}
-
-.priority-badge {
-  font-size: var(--font-size-label);
-  color: var(--text-muted);
 }
 
 /* 토글 */

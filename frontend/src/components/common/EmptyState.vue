@@ -130,14 +130,14 @@ const iconSvg = computed(() => icons[props.icon] || icons.plant)
 }
 
 .empty-title {
-  font-size: calc(16px * var(--content-scale, 1));
+  font-size: var(--font-size-body);
   font-weight: 600;
   color: var(--text-primary, var(--color-text-primary));
   margin: 0 0 8px;
 }
 
 .empty-description {
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   color: var(--text-secondary, var(--color-text-secondary));
   margin: 0 0 20px;
   max-width: 320px;
@@ -157,7 +157,7 @@ const iconSvg = computed(() => icons[props.icon] || icons.plant)
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: calc(13px * var(--content-scale, 1));
+  font-size: var(--font-size-caption);
   color: var(--text-secondary, var(--color-text-secondary));
 }
 
@@ -174,7 +174,7 @@ const iconSvg = computed(() => icons[props.icon] || icons.plant)
   border-radius: 50%;
   background: var(--bg-secondary, var(--color-border));
   color: var(--text-primary, var(--color-text-primary));
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -192,7 +192,7 @@ const iconSvg = computed(() => icons[props.icon] || icons.plant)
   color: #fff;
   border: none;
   border-radius: var(--radius-md);
-  font-size: calc(14px * var(--content-scale, 1));
+  font-size: var(--font-size-label);
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;

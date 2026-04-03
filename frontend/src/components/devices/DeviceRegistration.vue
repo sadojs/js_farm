@@ -652,14 +652,14 @@ const closeModal = () => {
 }
 
 .warning-content h3 {
-  font-size: 18px;
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
   color: var(--automation-text);
   margin: 0 0 8px 0;
 }
 
 .warning-content p {
-  font-size: 14px;
+  font-size: var(--font-size-label);
   color: var(--text-link);
   margin: 0 0 12px 0;
 }
@@ -670,7 +670,7 @@ const closeModal = () => {
 }
 
 .warning-content li {
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   color: var(--text-link);
   margin: 4px 0;
 }
@@ -684,7 +684,7 @@ const closeModal = () => {
 
 .project-info-box p {
   margin: 4px 0;
-  font-size: 14px;
+  font-size: var(--font-size-label);
   color: var(--text-primary);
 }
 
@@ -695,7 +695,7 @@ const closeModal = () => {
   border: 1px solid var(--danger);
   border-radius: 8px;
   color: var(--danger);
-  font-size: 14px;
+  font-size: var(--font-size-label);
 }
 
 .error-box p {
@@ -716,20 +716,20 @@ const closeModal = () => {
 }
 
 .empty-devices-box h3 {
-  font-size: 18px;
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 8px 0;
 }
 
 .empty-devices-box p {
-  font-size: 14px;
+  font-size: var(--font-size-label);
   color: var(--text-link);
   margin: 4px 0;
 }
 
 .empty-devices-box .help-text {
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   color: var(--text-muted);
   margin-top: 12px;
 }
@@ -772,7 +772,7 @@ const closeModal = () => {
 }
 
 .modal-header h2 {
-  font-size: 24px;
+  font-size: var(--font-size-title);
   font-weight: 700;
   margin: 0;
   color: var(--text-primary);
@@ -784,7 +784,7 @@ const closeModal = () => {
   border: none;
   background: var(--bg-hover);
   border-radius: 8px;
-  font-size: 20px;
+  font-size: var(--font-size-subtitle);
   cursor: pointer;
   transition: background 0.2s;
   color: var(--text-muted);
@@ -830,7 +830,7 @@ const closeModal = () => {
 }
 
 .step-header h3 {
-  font-size: 20px;
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
   margin: 0;
   color: var(--text-primary);
@@ -843,7 +843,7 @@ const closeModal = () => {
 .input-group label {
   display: block;
   font-weight: 600;
-  font-size: 15px;
+  font-size: var(--font-size-label);
   margin-bottom: 8px;
   color: var(--text-primary);
 }
@@ -855,7 +855,7 @@ const closeModal = () => {
   padding: 14px;
   border: 2px solid var(--border-input);
   border-radius: 8px;
-  font-size: 16px;
+  font-size: var(--font-size-body);
   transition: border-color 0.2s;
   background: var(--bg-input);
   color: var(--text-primary);
@@ -883,7 +883,7 @@ const closeModal = () => {
   border: none;
   border-radius: 10px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: var(--font-size-body);
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -984,7 +984,7 @@ const closeModal = () => {
 }
 
 .device-info h4 {
-  font-size: 17px;
+  font-size: var(--font-size-body);
   font-weight: 600;
   margin: 0 0 4px 0;
   color: var(--text-primary);
@@ -992,7 +992,7 @@ const closeModal = () => {
 
 .device-id,
 .device-type {
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary);
   margin: 2px 0;
 }
@@ -1000,7 +1000,7 @@ const closeModal = () => {
 .status-badge {
   padding: 4px 12px;
   border-radius: 12px;
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   font-weight: 500;
 }
 
@@ -1047,7 +1047,7 @@ const closeModal = () => {
 }
 
 .selected-devices-preview h4 {
-  font-size: 14px;
+  font-size: var(--font-size-label);
   font-weight: 600;
   margin: 0 0 12px 0;
 }
@@ -1066,7 +1066,7 @@ const closeModal = () => {
   background: var(--bg-card);
   border: 2px solid var(--border-input);
   border-radius: 20px;
-  font-size: 14px;
+  font-size: var(--font-size-label);
 }
 
 .chip-remove {
@@ -1076,7 +1076,7 @@ const closeModal = () => {
   background: #f44336;
   color: white;
   border-radius: 50%;
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1089,7 +1089,7 @@ const closeModal = () => {
 }
 
 .step-description {
-  font-size: 15px;
+  font-size: var(--font-size-label);
   color: var(--text-secondary);
   margin: -12px 0 20px 0;
 }
@@ -1124,7 +1124,7 @@ const closeModal = () => {
 }
 
 .type-badge {
-  font-size: 11px;
+  font-size: var(--font-size-tiny);
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 10px;
@@ -1147,13 +1147,13 @@ const closeModal = () => {
 }
 
 .device-name-input-wrap .form-input {
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-weight: 500;
   padding: 10px 14px;
 }
 
 .device-name-id {
-  font-size: 11px;
+  font-size: var(--font-size-tiny);
   color: var(--text-muted);
   margin: 4px 0 0 0;
 }
@@ -1180,7 +1180,7 @@ const closeModal = () => {
 }
 
 .status-text {
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   color: var(--text-link);
   white-space: nowrap;
 }
@@ -1196,13 +1196,13 @@ const closeModal = () => {
 .opener-group-name-box label {
   display: block;
   font-weight: 600;
-  font-size: 15px;
+  font-size: var(--font-size-label);
   margin-bottom: 8px;
   color: var(--text-primary);
 }
 
 .opener-group-name-box .help-text {
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary);
   margin: 8px 0 0 0;
 }
@@ -1214,7 +1214,7 @@ const closeModal = () => {
   border-radius: 8px;
   margin-bottom: 16px;
   color: var(--accent);
-  font-size: 14px;
+  font-size: var(--font-size-label);
 }
 
 .device-type-select {
@@ -1228,7 +1228,7 @@ const closeModal = () => {
   border: 2px solid var(--border-input);
   border-radius: 8px;
   background: var(--bg-card);
-  font-size: 14px;
+  font-size: var(--font-size-label);
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s, color 0.2s;
   white-space: nowrap;
@@ -1255,7 +1255,7 @@ const closeModal = () => {
   padding: 8px 12px;
   border: 2px solid var(--border-input);
   border-radius: 8px;
-  font-size: 14px;
+  font-size: var(--font-size-label);
   cursor: pointer;
   background: var(--bg-input);
   color: var(--text-primary);
@@ -1273,7 +1273,7 @@ const closeModal = () => {
 }
 
 .wizard-success-title {
-  font-size: 20px;
+  font-size: var(--font-size-subtitle);
   font-weight: 700;
   color: var(--text-primary);
   text-align: center;
@@ -1281,7 +1281,7 @@ const closeModal = () => {
 }
 
 .wizard-success-desc {
-  font-size: 15px;
+  font-size: var(--font-size-label);
   color: var(--text-secondary);
   text-align: center;
   margin: 0 0 28px 0;
@@ -1324,12 +1324,12 @@ const closeModal = () => {
 }
 
 .wizard-option-label {
-  font-size: 14px;
+  font-size: var(--font-size-label);
   font-weight: 600;
 }
 
 .wizard-option-hint {
-  font-size: 11px;
+  font-size: var(--font-size-tiny);
   color: var(--text-muted);
 }
 
@@ -1340,7 +1340,7 @@ const closeModal = () => {
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: var(--font-size-label);
   cursor: pointer;
   text-align: center;
   text-decoration: underline;
@@ -1390,13 +1390,13 @@ const closeModal = () => {
 
 .group-radio-name {
   flex: 1;
-  font-size: 15px;
+  font-size: var(--font-size-label);
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .group-radio-count {
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   color: var(--text-muted);
 }
 
@@ -1429,7 +1429,7 @@ const closeModal = () => {
     gap: 8px;
   }
   .device-info h4 {
-    font-size: 14px;
+    font-size: var(--font-size-label);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1445,11 +1445,11 @@ const closeModal = () => {
   }
   .type-btn {
     padding: 4px 8px;
-    font-size: 11px;
+    font-size: var(--font-size-tiny);
   }
   .equipment-select {
     padding: 4px 6px;
-    font-size: 12px;
+    font-size: var(--font-size-caption);
   }
 }
 </style>

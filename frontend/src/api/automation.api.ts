@@ -29,9 +29,21 @@ export const automationApi = {
     ),
 }
 
+export interface IrrigationRuleSummary {
+  ruleId: string
+  ruleName: string
+  startTime: string | null
+  enabledZones: number
+  totalZones: number
+  days: number[]
+  repeat: boolean
+}
+
 export interface IrrigationDeviceStatus {
   deviceId: string
   deviceName: string
+  groupId: string | null
+  groupName: string | null
   tuyaDeviceId: string
   enabledRuleCount: number
   totalRuleCount: number
@@ -42,4 +54,5 @@ export interface IrrigationDeviceStatus {
     startedAt: number
     estimatedEndAt: number
   }
+  ruleSummaries: IrrigationRuleSummary[]
 }

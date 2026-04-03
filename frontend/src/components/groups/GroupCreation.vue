@@ -303,7 +303,7 @@ const closeModal = () => {
 }
 
 .modal-header h2 {
-  font-size: 24px;
+  font-size: var(--font-size-title);
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
@@ -312,7 +312,7 @@ const closeModal = () => {
 .close-btn {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: var(--font-size-title);
   color: var(--text-muted);
   cursor: pointer;
   padding: 4px;
@@ -344,14 +344,14 @@ const closeModal = () => {
 }
 
 .form-section h3 {
-  font-size: 18px;
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 12px;
 }
 
 .section-desc {
-  font-size: 14px;
+  font-size: var(--font-size-label);
   color: var(--text-secondary);
   margin: -4px 0 16px 0;
 }
@@ -366,7 +366,7 @@ const closeModal = () => {
 
 .form-group label {
   display: block;
-  font-size: 15px;
+  font-size: var(--font-size-label);
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 8px;
@@ -378,7 +378,7 @@ const closeModal = () => {
   padding: 12px 14px;
   border: 2px solid var(--border-input);
   border-radius: 8px;
-  font-size: 16px;
+  font-size: var(--font-size-body);
   transition: all 0.2s;
   font-family: inherit;
   background: var(--bg-input);
@@ -406,7 +406,7 @@ const closeModal = () => {
   padding: 12px 14px;
   border: 2px solid var(--border-input);
   border-radius: 8px;
-  font-size: 16px;
+  font-size: var(--font-size-body);
   background: var(--bg-input);
   color: var(--text-primary);
 }
@@ -425,7 +425,7 @@ const closeModal = () => {
 
 .empty-devices p {
   color: var(--text-secondary);
-  font-size: 15px;
+  font-size: var(--font-size-label);
   margin: 0;
 }
 
@@ -434,7 +434,7 @@ const closeModal = () => {
 }
 
 .type-label {
-  font-size: 14px;
+  font-size: var(--font-size-label);
   font-weight: 600;
   padding: 8px 14px;
   border-radius: 6px 6px 0 0;
@@ -498,7 +498,7 @@ const closeModal = () => {
 }
 
 .device-info h4 {
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-weight: 500;
   color: var(--text-primary);
   margin: 0;
@@ -508,7 +508,7 @@ const closeModal = () => {
 }
 
 .device-meta {
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary);
   margin: 2px 0 0 0;
 }
@@ -540,7 +540,7 @@ const closeModal = () => {
   gap: 6px;
   padding: 5px 10px;
   border-radius: 16px;
-  font-size: 13px;
+  font-size: var(--font-size-caption);
 }
 
 .device-chip.sensor {
@@ -560,7 +560,7 @@ const closeModal = () => {
   border: none;
   cursor: pointer;
   padding: 0;
-  font-size: 14px;
+  font-size: var(--font-size-label);
   width: 16px;
   height: 16px;
   display: flex;
@@ -588,7 +588,7 @@ const closeModal = () => {
   border: none;
   border-radius: 10px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: var(--font-size-body);
   cursor: pointer;
   transition: all 0.2s;
 }

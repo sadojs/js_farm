@@ -258,7 +258,7 @@ onUnmounted(() => {
 
 .compare-group label {
   display: block;
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary, var(--color-text-secondary));
   margin-bottom: 4px;
 }
@@ -270,7 +270,7 @@ onUnmounted(() => {
   border-radius: var(--radius-md);
   background: var(--bg-input, var(--color-surface));
   color: var(--text-primary, var(--color-text-primary));
-  font-size: 14px;
+  font-size: var(--font-size-label);
 }
 
 .compare-vs {
@@ -286,7 +286,7 @@ onUnmounted(() => {
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--font-size-label);
   white-space: nowrap;
 }
 
@@ -309,7 +309,7 @@ onUnmounted(() => {
 .stats-header {
   padding: 10px 14px;
   background: var(--bg-secondary, #f8f9fa);
-  font-size: 13px;
+  font-size: var(--font-size-caption);
   font-weight: 600;
   border-bottom: 1px solid var(--border-color, var(--color-border));
 }
@@ -317,7 +317,7 @@ onUnmounted(() => {
 .stats-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--font-size-caption);
 }
 
 .stats-table th, .stats-table td {
@@ -328,7 +328,7 @@ onUnmounted(() => {
 
 .stats-table th {
   font-weight: 600;
-  font-size: 12px;
+  font-size: var(--font-size-caption);
   color: var(--text-secondary, var(--color-text-secondary));
 }
 
