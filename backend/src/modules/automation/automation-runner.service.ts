@@ -106,12 +106,14 @@ export class AutomationRunnerService {
       });
     }
 
-    // 로그에 요약 정보 포함
+    // 로그에 요약 정보 포함 (executeAction 반환: { action, devices: [{ deviceName, commands, ... }] })
     const deviceNames = actionResults
-      .map((r: any) => r.deviceName || r.deviceId)
+      .flatMap((r: any) => r.devices || [])
+      .map((d: any) => d.deviceName || d.deviceId)
       .filter(Boolean);
     const commandSummary = actionResults
-      .map((r: any) => r.commands?.map((c: any) => `${c.code}=${c.value}`)?.join(', '))
+      .flatMap((r: any) => r.devices || [])
+      .map((d: any) => d.commands?.map((c: any) => `${c.code}=${c.value}`)?.join(', '))
       .filter(Boolean)
       .join('; ');
     await this.logsRepo.save(
