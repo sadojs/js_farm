@@ -29,24 +29,28 @@ export class GroupsController {
   @Post()
   async createGroup(@CurrentUser() user: any, @Body() body: any) {
     const result = await this.groupsService.createGroup(this.getEffectiveUserId(user), body);
-    this.activityLog.log({
-      userId: user.id, userName: user.name || user.username,
-      groupId: result.id, groupName: body.name,
-      action: 'group.create', targetType: 'group',
-      targetId: result.id, targetName: body.name,
-    });
+    if (result) {
+      this.activityLog.log({
+        userId: user.id, userName: user.name || user.username,
+        groupId: result.id, groupName: body.name,
+        action: 'group.create', targetType: 'group',
+        targetId: result.id, targetName: body.name,
+      });
+    }
     return result;
   }
 
   @Put(':id')
   async updateGroup(@Param('id') id: string, @CurrentUser() user: any, @Body() body: any) {
     const result = await this.groupsService.updateGroup(id, this.getEffectiveUserId(user), body);
-    this.activityLog.log({
-      userId: user.id, userName: user.name || user.username,
-      groupId: id, groupName: body.name || result.name,
-      action: 'group.update', targetType: 'group',
-      targetId: id, targetName: body.name || result.name,
-    });
+    if (result) {
+      this.activityLog.log({
+        userId: user.id, userName: user.name || user.username,
+        groupId: id, groupName: body.name || result.name,
+        action: 'group.update', targetType: 'group',
+        targetId: id, targetName: body.name || result.name,
+      });
+    }
     return result;
   }
 
