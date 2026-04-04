@@ -1,50 +1,27 @@
 <template>
   <div class="dashboard-detail">
-    <!-- 요약 카드 4개 (전체 장치, 활성 구역, 자동 제어 설정, 온라인 기기) -->
     <div class="summary-row">
-      <div :class="['summary-item', canNavigate(0) && 'summary-item-link']" @click="navigateTo(0)">
-        <div class="summary-icon equip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <div
+        v-for="(card, i) in visibleCards"
+        :key="i"
+        :class="['summary-item', card.linkable && 'summary-item-link']"
+        @click="card.linkable && router.push(card.route)"
+      >
+        <div :class="['summary-icon', card.iconClass]">
+          <component :is="card.iconComponent" />
         </div>
         <div class="summary-text">
-          <span class="summary-number">{{ actuatorCount + sensorCount }}</span>
-          <span class="summary-label">전체 장치</span>
+          <span class="summary-number">{{ card.value }}</span>
+          <span class="summary-label">{{ card.label }}</span>
         </div>
-      </div>
-      <div :class="['summary-item', canNavigate(1) && 'summary-item-link']" @click="navigateTo(1)">
-        <div class="summary-icon group">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
-        <div class="summary-text">
-          <span class="summary-number">{{ groupCount }}</span>
-          <span class="summary-label">활성 구역</span>
-        </div>
-      </div>
-      <div :class="['summary-item', canNavigate(2) && 'summary-item-link']" @click="navigateTo(2)">
-        <div class="summary-icon auto">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </div>
-        <div class="summary-text">
-          <span class="summary-number">{{ ruleActive }} / {{ ruleCount }}</span>
-          <span class="summary-label">자동 제어 설정</span>
-        </div>
-      </div>
-      <div :class="['summary-item', canNavigate(3) && 'summary-item-link']" @click="navigateTo(3)">
-        <div class="summary-icon online">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        </div>
-        <div class="summary-text">
-          <span class="summary-number">{{ onlineTotal }}</span>
-          <span class="summary-label">온라인 기기</span>
-        </div>
+        <span v-if="card.linkable" class="summary-arrow">›</span>
       </div>
     </div>
-
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, h, type Component } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDeviceStore } from '../../stores/device.store'
 import { useGroupStore } from '../../stores/group.store'
@@ -57,31 +34,49 @@ const groupStore = useGroupStore()
 const automationStore = useAutomationStore()
 const authStore = useAuthStore()
 
-const summaryCards = [
-  { route: '/devices',    denyFarmUser: true  },
-  { route: '/groups',     denyFarmUser: false },
-  { route: '/automation', denyFarmUser: true  },
-  { route: '/devices',    denyFarmUser: true  },
-]
+const isFarmUser = computed(() => authStore.isFarmUser)
 
-function canNavigate(index: number): boolean {
-  if (summaryCards[index].denyFarmUser && authStore.isFarmUser) return false
-  return true
-}
+// SVG 아이콘 컴포넌트
+const IconDevice: Component = { render: () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [h('path', { d: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9' }), h('path', { d: 'M13.73 21a2 2 0 0 1-3.46 0' })]) }
+const IconGroup: Component = { render: () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [h('path', { d: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' }), h('circle', { cx: '9', cy: '7', r: '4' }), h('path', { d: 'M23 21v-2a4 4 0 0 0-3-3.87' }), h('path', { d: 'M16 3.13a4 4 0 0 1 0 7.75' })]) }
+const IconAuto: Component = { render: () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [h('circle', { cx: '12', cy: '12', r: '3' }), h('path', { d: 'M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z' })]) }
+const IconOnline: Component = { render: () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [h('path', { d: 'M22 11.08V12a10 10 0 1 1-5.93-9.14' }), h('polyline', { points: '22 4 12 14.01 9 11.01' })]) }
+const IconSensor: Component = { render: () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [h('path', { d: 'M12 2L2 7l10 5 10-5-10-5z' }), h('path', { d: 'M2 17l10 5 10-5' }), h('path', { d: 'M2 12l10 5 10-5' })]) }
 
-function navigateTo(index: number) {
-  if (!canNavigate(index)) return
-  router.push(summaryCards[index].route)
-}
-
-const sensorDevices = computed(() => deviceStore.sensorDevices)
-const actuatorDevices = computed(() => deviceStore.actuatorDevices)
-const sensorCount = computed(() => sensorDevices.value.length)
-const actuatorCount = computed(() => actuatorDevices.value.length)
+const sensorCount = computed(() => deviceStore.sensorDevices.length)
+const actuatorCount = computed(() => deviceStore.actuatorDevices.length)
 const groupCount = computed(() => groupStore.groups.length)
 const ruleCount = computed(() => automationStore.rules.length)
 const ruleActive = computed(() => automationStore.rules.filter(r => r.enabled).length)
 const onlineTotal = computed(() => deviceStore.onlineDevices.length)
+
+interface CardDef {
+  value: string
+  label: string
+  iconClass: string
+  iconComponent: Component
+  route: string
+  linkable: boolean
+}
+
+const visibleCards = computed<CardDef[]>(() => {
+  if (isFarmUser.value) {
+    // 일반 유저: 활성 구역, 농장 환경, 측정기, 온라인 기기
+    return [
+      { value: String(groupCount.value), label: '활성 구역', iconClass: 'group', iconComponent: IconGroup, route: '/groups', linkable: true },
+      { value: String(sensorCount.value), label: '농장 환경', iconClass: 'sensor', iconComponent: IconSensor, route: '/sensors', linkable: true },
+      { value: String(actuatorCount.value + sensorCount.value), label: '전체 장치', iconClass: 'equip', iconComponent: IconDevice, route: '', linkable: false },
+      { value: String(onlineTotal.value), label: '온라인 기기', iconClass: 'online', iconComponent: IconOnline, route: '', linkable: false },
+    ]
+  }
+  // 관리자: 기존 4개
+  return [
+    { value: String(actuatorCount.value + sensorCount.value), label: '전체 장치', iconClass: 'equip', iconComponent: IconDevice, route: '/devices', linkable: true },
+    { value: String(groupCount.value), label: '활성 구역', iconClass: 'group', iconComponent: IconGroup, route: '/groups', linkable: true },
+    { value: `${ruleActive.value} / ${ruleCount.value}`, label: '자동 제어 설정', iconClass: 'auto', iconComponent: IconAuto, route: '/automation', linkable: true },
+    { value: String(onlineTotal.value), label: '온라인 기기', iconClass: 'online', iconComponent: IconOnline, route: '/devices', linkable: true },
+  ]
+})
 
 onMounted(async () => {
   const promises: Promise<any>[] = []
@@ -97,7 +92,6 @@ onMounted(async () => {
   margin-bottom: 24px;
 }
 
-/* 요약 카드 (상단) */
 .summary-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -114,20 +108,39 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 14px;
+  opacity: 0.6;
+  position: relative;
 }
 
 .summary-item-link {
+  opacity: 1;
   cursor: pointer;
-  transition: background 0.15s, transform 0.15s;
+  border-color: var(--accent);
+  box-shadow: var(--shadow-card), 0 0 0 1px var(--accent);
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 
 .summary-item-link:hover {
   background: var(--bg-hover);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover, 0 4px 16px rgba(0, 0, 0, 0.12)), 0 0 0 1px var(--accent);
 }
 
 .summary-item-link:active {
   transform: translateY(0);
+}
+
+.summary-arrow {
+  font-size: var(--font-size-title);
+  color: var(--accent);
+  font-weight: 300;
+  margin-left: auto;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.summary-item-link:hover .summary-arrow {
+  opacity: 1;
 }
 
 .summary-icon {
@@ -151,6 +164,7 @@ onMounted(async () => {
 .summary-icon.group { background: var(--bg-info-banner); color: var(--text-info-banner); }
 .summary-icon.auto { background: var(--automation-bg); color: var(--automation-text); }
 .summary-icon.online { background: var(--accent-bg); color: var(--accent); }
+.summary-icon.sensor { background: #e8f5e9; color: #2e7d32; }
 
 .summary-text {
   display: flex;
