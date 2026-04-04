@@ -1890,5 +1890,12 @@ input:checked + .toggle-slider-sm:before { transform: translateX(16px); }
   }
 
   .btn-icon { min-width: 44px; min-height: 44px; }
+  .btn-sm { padding: 0 18px; line-height: 1.8; }
+  .btn-status-sm { padding: 0 18px; line-height: 1.8; }
+  .device-count-badge { padding: 0 18px; line-height: 1.8; }
+  .type-tag { padding: 0 18px; line-height: 1.8; }
+  .group-card { padding: 0; }
+  .group-header { padding: 14px; }
+  .group-body { padding: 0 14px 14px; }
 }
 </style>
