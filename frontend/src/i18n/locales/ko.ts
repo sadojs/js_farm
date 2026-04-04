@@ -22,7 +22,7 @@ export default {
     export: '내보내기',
   },
   nav: {
-    dashboard: '대시보드',
+    dashboard: '우리 농장',
     devices: '장치 관리',
     groups: '구역 관리',
     automation: '자동 제어 설정',
