@@ -834,7 +834,7 @@ const handleTuyaSync = async () => {
 }
 
 .big-number {
-  font-size: var(--font-size-title);
+  font-size: var(--font-size-subtitle);
   font-weight: 700;
   color: var(--sensor-accent);
   font-variant-numeric: tabular-nums;

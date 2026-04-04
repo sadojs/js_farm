@@ -186,17 +186,42 @@ onMounted(async () => {
 }
 
 @media (max-width: 768px) {
+  .dashboard-detail {
+    margin-bottom: 12px;
+  }
+
   .summary-row {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 10px;
+    margin-bottom: 0;
   }
 
   .summary-item {
-    padding: 14px 16px;
+    padding: 10px 10px;
+    gap: 10px;
+    border-radius: 12px;
+  }
+
+  .summary-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .summary-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .summary-label {
+    white-space: nowrap;
   }
 
   .summary-number {
     font-size: var(--font-size-subtitle);
+  }
+
+  .summary-arrow {
+    font-size: var(--font-size-body);
   }
 }
 </style>

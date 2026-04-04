@@ -395,15 +395,31 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .page-container {
-    padding: 16px;
+    padding: 12px;
+  }
+
+  .page-header {
+    margin-bottom: 12px;
   }
 
   .weather-card {
-    padding: 14px 16px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+  }
+
+  .weather-top {
+    margin-bottom: 8px;
   }
 
   .weather-details-grid {
     grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .weather-detail-item {
+    padding: 8px 10px;
+    gap: 2px;
   }
 
   .weather-temp-big {

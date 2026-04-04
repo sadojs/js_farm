@@ -436,16 +436,6 @@ body {
 /* sm = :root 기본값 사용 */
 
 #app.content-size-md {
-  --font-size-display: 35px;
-  --font-size-title: 24px;
-  --font-size-subtitle: 20px;
-  --font-size-body: 17px;
-  --font-size-label: 15px;
-  --font-size-caption: 13px;
-  --font-size-tiny: 12px;
-}
-
-#app.content-size-lg {
   --font-size-display: 38px;
   --font-size-title: 26px;
   --font-size-subtitle: 22px;
@@ -453,6 +443,16 @@ body {
   --font-size-label: 16px;
   --font-size-caption: 14px;
   --font-size-tiny: 13px;
+}
+
+#app.content-size-lg {
+  --font-size-display: 41px;
+  --font-size-title: 28px;
+  --font-size-subtitle: 24px;
+  --font-size-body: 19px;
+  --font-size-label: 17px;
+  --font-size-caption: 15px;
+  --font-size-tiny: 14px;
 }
 
 #app {

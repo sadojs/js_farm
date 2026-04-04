@@ -163,4 +163,17 @@ onMounted(async () => {
   font-size: var(--font-size-label);
   padding: 16px 0;
 }
+
+@media (max-width: 768px) {
+  .irrigation-history-card {
+    padding: 14px;
+    border-radius: 12px;
+  }
+  .widget-header {
+    margin-bottom: 10px;
+  }
+  .log-entry {
+    padding: 8px 0;
+  }
+}
 </style>
