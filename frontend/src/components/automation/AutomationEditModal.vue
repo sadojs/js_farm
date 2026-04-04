@@ -3,7 +3,7 @@
     <div class="modal-container">
       <!-- 헤더 -->
       <div class="modal-header">
-        <h2 class="modal-title">자동화 룰 수정</h2>
+        <h2 class="modal-title">자동 제어 설정 수정</h2>
         <button class="btn-close" @click="$emit('close')">✕</button>
       </div>
 

@@ -130,12 +130,12 @@ export class DevicesService {
     mapping: Record<string, string>,
   ): Promise<Device> {
     if (userRole !== 'admin' && userRole !== 'farm_admin') {
-      throw new ForbiddenException('채널 매핑 수정 권한이 없습니다.');
+      throw new ForbiddenException('구역 매핑 수정 권한이 없습니다.');
     }
     const device = await this.devicesRepo.findOne({ where: { id: deviceId, userId } });
     if (!device) throw new NotFoundException('장비를 찾을 수 없습니다.');
     if (device.equipmentType !== 'irrigation') {
-      throw new BadRequestException('관수 장비만 채널 매핑을 설정할 수 있습니다.');
+      throw new BadRequestException('관주 장비만 구역 매핑을 설정할 수 있습니다.');
     }
     const count = detectChannelCount(Object.values(mapping));
     const validCodes = new Set(getAvailableSwitchCodesByCount(count));
@@ -181,7 +181,7 @@ export class DevicesService {
           }
         }
         finalCommands = [...commands, ...extraCommands];
-        this.logger.log(`관수 원격제어 연동: ${remoteCmd.value ? 'ON' : 'OFF'} → ${JSON.stringify(extraCommands)}`);
+        this.logger.log(`관주 원격제어 연동: ${remoteCmd.value ? 'ON' : 'OFF'} → ${JSON.stringify(extraCommands)}`);
       }
     }
 
@@ -290,7 +290,7 @@ export class DevicesService {
 
     if (allRules.length > 0) {
       throw new ConflictException({
-        message: '자동화 룰에서 사용 중인 장비는 삭제할 수 없습니다.',
+        message: '자동 제어 설정에서 사용 중인 장비는 삭제할 수 없습니다.',
         dependencies: { automationRules: allRules },
       });
     }
@@ -320,7 +320,7 @@ export class DevicesService {
 
     if (rules.length > 0) {
       throw new ConflictException({
-        message: '자동화 룰에서 사용 중인 장비는 삭제할 수 없습니다.',
+        message: '자동 제어 설정에서 사용 중인 장비는 삭제할 수 없습니다.',
         dependencies: { automationRules: rules },
       });
     }

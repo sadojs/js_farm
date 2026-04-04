@@ -57,7 +57,7 @@ export class EnvConfigService {
       where: { id: groupId, userId },
       relations: ['devices'],
     });
-    if (!group) throw new NotFoundException('그룹을 찾을 수 없습니다.');
+    if (!group) throw new NotFoundException('구역을 찾을 수 없습니다.');
 
     const sensorDevices = group.devices.filter(d => d.deviceType === 'sensor');
     const deviceIds = sensorDevices.map(d => d.id);
@@ -143,7 +143,7 @@ export class EnvConfigService {
 
   async getMappings(userId: string, groupId: string): Promise<EnvMapping[]> {
     const group = await this.groupRepo.findOne({ where: { id: groupId, userId } });
-    if (!group) throw new NotFoundException('그룹을 찾을 수 없습니다.');
+    if (!group) throw new NotFoundException('구역을 찾을 수 없습니다.');
 
     return this.mappingRepo.find({
       where: { groupId },
@@ -163,7 +163,7 @@ export class EnvConfigService {
     }>,
   ): Promise<EnvMapping[]> {
     const group = await this.groupRepo.findOne({ where: { id: groupId, userId } });
-    if (!group) throw new NotFoundException('그룹을 찾을 수 없습니다.');
+    if (!group) throw new NotFoundException('구역을 찾을 수 없습니다.');
 
     await this.mappingRepo.delete({ groupId });
 
@@ -183,7 +183,7 @@ export class EnvConfigService {
 
   async getResolved(userId: string, groupId: string) {
     const group = await this.groupRepo.findOne({ where: { id: groupId, userId } });
-    if (!group) throw new NotFoundException('그룹을 찾을 수 없습니다.');
+    if (!group) throw new NotFoundException('구역을 찾을 수 없습니다.');
 
     const mappings = await this.mappingRepo.find({ where: { groupId } });
     const roles = await this.roleRepo.find({ order: { sortOrder: 'ASC' } });

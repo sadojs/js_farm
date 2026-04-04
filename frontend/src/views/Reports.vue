@@ -2,14 +2,14 @@
   <div class="page-container">
     <header class="page-header">
       <div>
-        <h2>리포트</h2>
+        <h2>기록 보기</h2>
         <p class="page-description">농장 운영 데이터를 분석합니다</p>
       </div>
     </header>
 
-    <!-- 메인 탭: 센서 데이터 / 비교 분석 -->
+    <!-- 메인 탭: 측정 기록 / 비교 분석 -->
     <div class="report-main-tabs">
-      <button class="main-tab" :class="{ active: reportTab === 'data' }" @click="reportTab = 'data'">센서 데이터</button>
+      <button class="main-tab" :class="{ active: reportTab === 'data' }" @click="reportTab = 'data'">측정 기록</button>
       <button class="main-tab" :class="{ active: reportTab === 'compare' }" @click="reportTab = 'compare'">비교 분석</button>
     </div>
 
@@ -18,9 +18,9 @@
     <div class="filter-section">
       <div class="filter-row">
         <div class="filter-group">
-          <label>그룹 선택</label>
+          <label>구역 선택</label>
           <select v-model="selectedGroup" class="filter-select">
-            <option value="">전체 그룹</option>
+            <option value="">전체 구역</option>
             <option v-for="group in groups" :key="group.id" :value="group.id">
               {{ group.name }}
             </option>
@@ -28,7 +28,7 @@
         </div>
 
         <div class="filter-group">
-          <label>센서 타입</label>
+          <label>측정기 타입</label>
           <select v-model="selectedSensorType" class="filter-select">
             <option v-for="st in sensorTypeOptions" :key="st.value" :value="st.value">
               {{ st.label }}
@@ -105,7 +105,7 @@
 
     <!-- 환경 미설정 경고 -->
     <div v-if="envWarning" class="env-warning-banner">
-      <span>⚠️ 선택된 그룹의 환경 항목이 설정되지 않았습니다.</span>
+      <span>⚠️ 선택된 구역의 환경 항목이 설정되지 않았습니다.</span>
       <router-link :to="`/groups?envConfig=${selectedGroup}`" class="warning-link">환경 설정하기</router-link>
     </div>
 
@@ -173,7 +173,7 @@
     </template>
 
     <div v-else class="empty-state">
-      <p>{{ envWarning ? '환경 설정 후 리포트를 확인할 수 있습니다.' : '조회된 데이터가 없습니다. 기간을 선택하여 조회해주세요.' }}</p>
+      <p>{{ envWarning ? '환경 설정 후 기록을 확인할 수 있습니다.' : '조회된 데이터가 없습니다. 기간을 선택하여 조회해주세요.' }}</p>
     </div>
     </template>
 

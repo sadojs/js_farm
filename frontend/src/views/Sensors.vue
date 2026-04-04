@@ -2,7 +2,7 @@
   <div class="page-container">
     <header class="page-header">
       <div>
-        <h2>환경 모니터링</h2>
+        <h2>농장 환경</h2>
         <p class="page-description">농장 환경을 종합적으로 확인합니다</p>
       </div>
       <button class="btn-refresh" @click="refreshAll" :disabled="refreshing">
@@ -12,22 +12,22 @@
 
     <!-- 로딩 -->
     <div v-if="loading" class="loading-state">
-      <p>센서 데이터를 불러오는 중...</p>
+      <p>측정 데이터를 불러오는 중...</p>
     </div>
 
     <!-- 센서 없음 -->
     <EmptyState
       v-else-if="sensorGroups.length === 0"
       icon="sensor"
-      title="센서가 등록된 그룹이 없습니다"
-      description="장치를 등록하고 그룹에 배치하면 환경 데이터를 확인할 수 있습니다"
+      title="측정기가 등록된 구역이 없습니다"
+      description="장치를 등록하고 구역에 배치하면 환경 데이터를 확인할 수 있습니다"
       action-label="장치 관리로 이동"
       action-to="/devices"
       :steps="[
         { label: '장치 등록', done: false },
-        { label: '그룹 설정', done: false },
+        { label: '구역 설정', done: false },
         { label: '환경 설정', done: false },
-        { label: '모니터링 시작', done: false },
+        { label: '확인 시작', done: false },
       ]"
     />
 
@@ -43,7 +43,7 @@
           <div class="group-title">
             <span class="expand-icon">{{ expandedGroups.has(group.id) ? '▼' : '▶' }}</span>
             <h3>{{ group.name }}</h3>
-            <span class="sensor-count">{{ group.sensors.length }}개 센서</span>
+            <span class="sensor-count">{{ group.sensors.length }}개 측정기</span>
           </div>
           <div class="group-summary">
             <span v-for="item in group.summaryItems" :key="item.label" class="summary-chip">
@@ -52,7 +52,7 @@
           </div>
         </div>
 
-        <!-- 환경 모니터링 위젯 (확장 시) -->
+        <!-- 농장 환경 위젯 (확장 시) -->
         <div v-if="expandedGroups.has(group.id)" class="group-widgets">
           <div v-if="loadingResolvedFor[group.id]" class="env-loading">
             <p>환경 데이터를 불러오는 중...</p>

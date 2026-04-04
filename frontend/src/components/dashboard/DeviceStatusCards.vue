@@ -1,6 +1,6 @@
 <template>
   <div class="device-status-wrapper">
-    <!-- 장치 + 센서 상세 현황 -->
+    <!-- 장치 + 측정기 상세 현황 -->
     <div class="detail-grid">
       <!-- 가동 중인 장치 -->
       <div class="detail-card">
@@ -30,7 +30,7 @@
             </div>
             <div v-if="device.equipmentType === 'irrigation'" class="item-status-group">
               <span :class="['item-status', getIrrigationScheduleStatus(device).scheduled ? 'scheduled' : 'stopped']">
-                {{ getIrrigationScheduleStatus(device).scheduled ? `스케줄 ON (${getIrrigationScheduleStatus(device).count})` : '스케줄 OFF' }}
+                {{ getIrrigationScheduleStatus(device).scheduled ? `일정 ON (${getIrrigationScheduleStatus(device).count})` : '일정 OFF' }}
               </span>
               <span :class="['item-status', getIrrigationScheduleStatus(device).running ? 'running' : 'stopped']">
                 {{ getIrrigationScheduleStatus(device).running ? '가동중' : '대기' }}
@@ -43,18 +43,18 @@
         </div>
       </div>
 
-      <!-- 센서 현황 -->
+      <!-- 측정기 현황 -->
       <div class="detail-card">
         <div class="detail-card-header">
           <div class="detail-icon sensors">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           </div>
-          <h3>센서 현황</h3>
+          <h3>측정기 현황</h3>
           <span class="detail-count">{{ sensorOnline }} / {{ sensorCount }}</span>
         </div>
         <div class="detail-list">
           <div v-if="sensorDevices.length === 0" class="detail-empty">
-            등록된 센서가 없습니다
+            등록된 측정기가 없습니다
             <router-link to="/devices" class="empty-inline-link">설정하기</router-link>
           </div>
           <div

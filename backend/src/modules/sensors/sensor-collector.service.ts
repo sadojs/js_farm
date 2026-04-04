@@ -103,13 +103,13 @@ export class SensorCollectorService {
               });
             }
           } catch (err) {
-            this.logger.warn(`센서 데이터 수집 실패 (${sensor.name}): ${err.message}`);
+            this.logger.warn(`측정 데이터 수집 실패 (${sensor.name}): ${err.message}`);
           }
         }
 
-        this.logger.log(`센서 데이터 수집 완료 (userId: ${project.userId}, ${sensors.length}개 센서)`);
+        this.logger.log(`측정 데이터 수집 완료 (userId: ${project.userId}, ${sensors.length}개 측정기)`);
       } catch (err) {
-        this.logger.error(`센서 데이터 수집 실패 (userId: ${project.userId}): ${err.message}`);
+        this.logger.error(`측정 데이터 수집 실패 (userId: ${project.userId}): ${err.message}`);
       }
     }
   }

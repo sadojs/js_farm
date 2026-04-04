@@ -2,31 +2,31 @@
   <div class="page-container">
     <header class="page-header">
       <div>
-        <h2>그룹 관리</h2>
-        <p class="page-description">장치를 그룹으로 묶어 관리합니다</p>
+        <h2>구역 관리</h2>
+        <p class="page-description">장치를 구역으로 묶어 관리합니다</p>
       </div>
       <div class="header-actions">
         <button class="btn-outline" @click="handleTuyaSync" :disabled="syncing">
-          {{ syncing ? '동기화 중...' : '센서 동기화' }}
+          {{ syncing ? '동기화 중...' : '측정기 동기화' }}
         </button>
-        <button v-if="!isFarmUser" class="btn-primary" @click="showGroupCreationModal = true">+ 그룹 추가</button>
+        <button v-if="!isFarmUser" class="btn-primary" @click="showGroupCreationModal = true">+ 구역 추가</button>
       </div>
     </header>
 
-    <div v-if="loading" class="loading-state">그룹 목록을 불러오는 중...</div>
+    <div v-if="loading" class="loading-state">구역 목록을 불러오는 중...</div>
 
     <EmptyState
       v-else-if="groups.length === 0"
       icon="group"
-      title="그룹을 만들어보세요"
-      description="장치를 그룹으로 묶어 효율적으로 관리하세요"
-      :action-label="!isFarmUser ? '그룹 추가' : undefined"
+      title="구역을 만들어보세요"
+      description="장치를 구역으로 묶어 효율적으로 관리하세요"
+      :action-label="!isFarmUser ? '구역 추가' : undefined"
       @action="showGroupCreationModal = true"
     />
 
     <div v-else class="groups-list">
       <div v-for="group in groups" :key="group.id" class="group-card">
-        <!-- 그룹 헤더 -->
+        <!-- 구역 헤더 -->
         <div class="group-header">
           <div class="group-title">
             <h3>{{ group.name }}</h3>
@@ -37,14 +37,14 @@
             <button v-if="!isFarmUser" class="btn-icon" @click="openEnvConfig(group)" title="환경설정" aria-label="환경설정">⚙</button>
             <button v-if="!isFarmUser" class="btn-icon" @click="openAddDeviceModal(group)" title="장치 추가" aria-label="장치 추가">+</button>
             <button v-if="!isFarmUser && hasAssignedDevices(group)" class="btn-icon" @click="openRemoveDeviceModal(group)" title="장치 제거" aria-label="장치 제거">−</button>
-            <button v-if="!isFarmUser" class="btn-icon danger" @click="deleteGroup(group)" title="그룹 삭제" aria-label="삭제">🗑</button>
+            <button v-if="!isFarmUser" class="btn-icon danger" @click="deleteGroup(group)" title="구역 삭제" aria-label="삭제">🗑</button>
             <button class="btn-icon" @click="toggleCollapse(group.id)" :title="collapsedGroups.has(group.id) ? '펼치기' : '접기'" :aria-label="collapsedGroups.has(group.id) ? '펼치기' : '접기'">
               {{ collapsedGroups.has(group.id) ? '▶' : '▼' }}
             </button>
           </div>
         </div>
 
-        <!-- 그룹 내 장치 (접기/펼치기) -->
+        <!-- 구역 내 장치 (접기/펼치기) -->
         <div v-if="!collapsedGroups.has(group.id)" class="group-body">
           <!-- 장치 없음 -->
           <div v-if="!group.devices || group.devices.length === 0" class="no-devices">
@@ -52,15 +52,15 @@
             <button v-if="!isFarmUser" class="btn-sm" @click="openAddDeviceModal(group)">+ 장치 추가</button>
           </div>
 
-          <!-- 센서 목록 -->
+          <!-- 측정기 목록 -->
           <template v-if="getGroupSensors(group).length > 0">
-            <div class="section-label sensor">센서 ({{ getGroupSensors(group).length }})</div>
+            <div class="section-label sensor">측정기 ({{ getGroupSensors(group).length }})</div>
             <div class="device-sub-grid">
               <div v-for="device in getGroupSensors(group)" :key="device.id" class="sub-card sensor">
                 <div class="sub-card-top">
                   <span :class="['status-dot', device.online ? 'online' : 'offline']"></span>
                   <span class="sub-card-name">{{ device.name }}</span>
-                  <span class="type-tag sensor">센서</span>
+                  <span class="type-tag sensor">측정기</span>
                 </div>
                 <div v-if="device.sensorData && Object.keys(device.sensorData).length > 0" class="sub-card-sensor-grid">
                   <div v-for="(val, key) in getTopSensorData(device.sensorData)" :key="key" class="sensor-grid-item">
@@ -73,7 +73,7 @@
             </div>
           </template>
 
-          <!-- 장치(액추에이터 + 개폐기 + 관수) 목록 -->
+          <!-- 장치(액추에이터 + 개폐기 + 관주) 목록 -->
           <template v-if="getGroupActuators(group).length > 0 || getGroupOpenerGroups(group).length > 0 || getGroupIrrigationDevices(group).length > 0">
             <div class="section-label actuator">장치 ({{ getGroupActuators(group).length + getGroupOpenerGroups(group).length + getGroupIrrigationDevices(group).length }})</div>
             <div class="device-sub-grid">
@@ -99,13 +99,13 @@
                   </label>
                 </div>
               </div>
-              <!-- 관수 장치 카드 -->
+              <!-- 관주 장치 카드 -->
               <div v-for="device in getGroupIrrigationDevices(group)" :key="device.id" class="sub-card actuator">
                 <div class="sub-card-top">
                   <span :class="['status-dot', device.online ? 'online' : 'offline']"></span>
                   <span class="sub-card-name">{{ device.name }}</span>
                   <button class="btn-status-sm" @click="openIrrigationStatusModal(device)">상태</button>
-                  <span class="type-tag actuator">관수</span>
+                  <span class="type-tag actuator">관주</span>
                 </div>
                 <!-- 원격제어 ON/OFF (조작 가능) -->
                 <div class="sub-card-control" :class="{ disabled: !device.online }">
@@ -123,7 +123,7 @@
                     <span class="toggle-slider"></span>
                   </label>
                 </div>
-                <!-- 채널 매핑 설정 (admin / farm_admin 전용) -->
+                <!-- 구역 매핑 설정 (admin / farm_admin 전용) -->
                 <IrrigationChannelMappingPanel v-if="authStore.isAdmin || authStore.isFarmAdmin" :device="device" />
               </div>
               <!-- 일반 장치 카드 -->
@@ -144,9 +144,9 @@
             </div>
           </template>
 
-          <!-- 자동화 룰 -->
+          <!-- 자동 제어 설정 -->
           <template v-if="getGroupRules(group.id).length > 0">
-            <div class="section-label automation">자동화 ({{ getGroupRules(group.id).length }})</div>
+            <div class="section-label automation">자동 제어 ({{ getGroupRules(group.id).length }})</div>
             <div class="rules-list">
               <div v-for="rule in getGroupRules(group.id)" :key="rule.id" class="rule-row clickable" @click="openEditRule(rule)">
                 <span class="rule-name">{{ rule.name }}</span>
@@ -190,7 +190,7 @@
               <input type="checkbox" :checked="addDeviceSelected.includes(device.id)" class="no-interact" tabindex="-1" />
               <span class="device-row-icon">{{ getCategoryIcon(device.category) }}</span>
               <span :class="['type-tag', device.deviceType === 'sensor' ? 'sensor' : 'actuator']">
-                {{ device.deviceType === 'sensor' ? '센서' : '장치' }}
+                {{ device.deviceType === 'sensor' ? '측정기' : '장치' }}
               </span>
               <span class="device-row-name">{{ device.name }}</span>
               <span :class="['status-indicator', device.online ? 'online' : 'offline']">
@@ -213,14 +213,14 @@
       </div>
     </div>
 
-    <!-- 관수 상태 모달 -->
+    <!-- 관주 상태 모달 -->
     <IrrigationStatusModal
       v-if="showIrrigationStatusModal"
       :device="irrigationStatusDevice"
       @close="showIrrigationStatusModal = false"
     />
 
-    <!-- 자동화 편집 모달 -->
+    <!-- 자동 제어 편집 모달 -->
     <AutomationEditModal
       :visible="showEditRuleModal"
       :rule="editingRule"
@@ -232,7 +232,7 @@
     <div v-if="showEnvConfigModal && envConfigGroup" class="modal-overlay" @click.self="showEnvConfigModal = false">
       <div class="env-config-modal">
         <div class="env-modal-header">
-          <h3>센서 환경 설정 — {{ envConfigGroup.name }}</h3>
+          <h3>측정기 환경 설정 — {{ envConfigGroup.name }}</h3>
           <button class="close-btn" @click="showEnvConfigModal = false">✕</button>
         </div>
         <div class="env-modal-body">
@@ -248,7 +248,7 @@
                 @change="onSourceSelect(role.roleKey, ($event.target as HTMLSelectElement).value)"
               >
                 <option value="">(미설정)</option>
-                <optgroup label="센서 장치">
+                <optgroup label="측정기 장치">
                   <option
                     v-for="s in envSources.sensors"
                     :key="`sensor:${s.deviceId}:${s.sensorType}`"
@@ -279,7 +279,7 @@
                 @change="onSourceSelect(role.roleKey, ($event.target as HTMLSelectElement).value)"
               >
                 <option value="">(미설정)</option>
-                <optgroup label="센서 장치">
+                <optgroup label="측정기 장치">
                   <option
                     v-for="s in envSources.sensors"
                     :key="`sensor:${s.deviceId}:${s.sensorType}`"
@@ -318,12 +318,12 @@
           <button class="close-btn" @click="showRemoveDeviceModal = false">✕</button>
         </div>
         <div class="remove-modal-desc">
-          제거할 장치를 선택하세요. 장치 자체는 삭제되지 않으며 그룹에서만 해제됩니다.
+          제거할 장치를 선택하세요. 장치 자체는 삭제되지 않으며 구역에서만 해제됩니다.
         </div>
         <div class="add-modal-body">
-          <!-- 센서 -->
+          <!-- 측정기 -->
           <template v-if="removeModalSensors.length > 0">
-            <div class="remove-section-label sensor">센서</div>
+            <div class="remove-section-label sensor">측정기</div>
             <div
               v-for="device in removeModalSensors"
               :key="device.id"
@@ -336,7 +336,7 @@
               <span class="device-row-name">{{ device.name }}</span>
               <span v-if="loadingDepsFor.has(device.id)" class="dep-loading">확인 중...</span>
               <span v-else-if="(removeWarnings[device.id]?.length ?? 0) > 0" class="dep-warning">
-                ⚠ 자동화 룰: {{ removeWarnings[device.id].map(r => r.name).join(', ') }}
+                ⚠ 자동 제어 설정: {{ removeWarnings[device.id].map(r => r.name).join(', ') }}
               </span>
               <span :class="['status-indicator', device.online ? 'online' : 'offline']">
                 {{ device.online ? '온라인' : '오프라인' }}
@@ -359,14 +359,14 @@
               <span class="device-row-name">{{ og.groupName }} <span class="pair-hint">(열림/닫힘 쌍)</span></span>
               <span v-if="loadingDepsFor.has(og.openDevice.id)" class="dep-loading">확인 중...</span>
               <span v-else-if="(removeWarnings[og.openDevice.id]?.length ?? 0) > 0" class="dep-warning">
-                ⚠ 자동화 룰: {{ removeWarnings[og.openDevice.id].map(r => r.name).join(', ') }}
+                ⚠ 자동 제어 설정: {{ removeWarnings[og.openDevice.id].map(r => r.name).join(', ') }}
               </span>
             </div>
           </template>
 
-          <!-- 관수 -->
+          <!-- 관주 -->
           <template v-if="removeModalIrrigation.length > 0">
-            <div class="remove-section-label actuator">관수</div>
+            <div class="remove-section-label actuator">관주</div>
             <div
               v-for="device in removeModalIrrigation"
               :key="device.id"
@@ -379,7 +379,7 @@
               <span class="device-row-name">{{ device.name }}</span>
               <span v-if="loadingDepsFor.has(device.id)" class="dep-loading">확인 중...</span>
               <span v-else-if="(removeWarnings[device.id]?.length ?? 0) > 0" class="dep-warning">
-                ⚠ 자동화 룰: {{ removeWarnings[device.id].map(r => r.name).join(', ') }}
+                ⚠ 자동 제어 설정: {{ removeWarnings[device.id].map(r => r.name).join(', ') }}
               </span>
               <span :class="['status-indicator', device.online ? 'online' : 'offline']">
                 {{ device.online ? '온라인' : '오프라인' }}
@@ -402,7 +402,7 @@
               <span class="device-row-name">{{ device.name }}</span>
               <span v-if="loadingDepsFor.has(device.id)" class="dep-loading">확인 중...</span>
               <span v-else-if="(removeWarnings[device.id]?.length ?? 0) > 0" class="dep-warning">
-                ⚠ 자동화 룰: {{ removeWarnings[device.id].map(r => r.name).join(', ') }}
+                ⚠ 자동 제어 설정: {{ removeWarnings[device.id].map(r => r.name).join(', ') }}
               </span>
               <span :class="['status-indicator', device.online ? 'online' : 'offline']">
                 {{ device.online ? '온라인' : '오프라인' }}
@@ -416,7 +416,7 @@
         </div>
 
         <div v-if="hasRemoveWarning" class="remove-warning-banner">
-          ⚠ 선택한 장치 중 자동화 룰에서 사용 중인 항목이 있습니다. 자동화 룰을 먼저 수정해 주세요.
+          ⚠ 선택한 장치 중 자동 제어 설정에서 사용 중인 항목이 있습니다. 자동 제어 설정을 먼저 수정해 주세요.
         </div>
 
         <div class="add-modal-footer">
@@ -428,7 +428,7 @@
           >
             <span v-if="removingDevices">제거 중...</span>
             <span v-else-if="removeChecked.size === 0">장치를 선택하세요</span>
-            <span v-else-if="hasRemoveWarning">자동화 룰 먼저 처리 필요</span>
+            <span v-else-if="hasRemoveWarning">자동 제어 설정 먼저 처리 필요</span>
             <span v-else>{{ removeChecked.size }}개 제거</span>
           </button>
         </div>
@@ -634,7 +634,7 @@ const handleIrrigationControl = async (device: Device, switchCode: string) => {
     if (enabledCount > 0) {
       const ok = await confirm({
         title: '원격제어 끄기',
-        message: `원격제어를 끄면 이 장치의 자동화 룰 ${enabledCount}개도 비활성화됩니다.${deviceStatus?.isRunning ? '\n현재 가동 중인 관수도 중단됩니다.' : ''}`,
+        message: `원격제어를 끄면 이 장치의 자동 제어 설정 ${enabledCount}개도 비활성화됩니다.${deviceStatus?.isRunning ? '\n현재 가동 중인 관주도 중단됩니다.' : ''}`,
         confirmText: '끄기',
         variant: 'danger',
       })
@@ -680,7 +680,7 @@ const handleIrrigationControl = async (device: Device, switchCode: string) => {
     if (isRemoteControl && !newVal) {
       const bulkResult = await automationStore.bulkDisableByDevice(device.id)
       if (bulkResult.disabledCount > 0) {
-        notify.info('자동화 비활성화', `자동화 룰 ${bulkResult.disabledCount}개가 비활성화되었습니다`)
+        notify.info('자동 제어 비활성화', `자동 제어 설정 ${bulkResult.disabledCount}개가 비활성화되었습니다`)
       }
     }
     // 관수 상태 갱신
@@ -688,7 +688,7 @@ const handleIrrigationControl = async (device: Device, switchCode: string) => {
       await automationStore.fetchIrrigationStatus()
     }
   } catch (err: any) {
-    console.error('관수 장치 제어 실패:', err)
+    console.error('관주 장치 제어 실패:', err)
     notify.remove(loadingId)
     notify.error('제어 실패', '네트워크 오류가 발생했습니다')
   } finally {
@@ -916,8 +916,8 @@ const deleteGroup = async (group: HouseGroup) => {
   }
 
   const ok = await confirm({
-    title: '그룹 삭제',
-    message: `"${group.name}" 그룹을 삭제하시겠습니까?`,
+    title: '구역 삭제',
+    message: `"${group.name}" 구역을 삭제하시겠습니까?`,
     confirmText: '삭제',
     variant: 'danger',
   })
@@ -925,8 +925,8 @@ const deleteGroup = async (group: HouseGroup) => {
   try {
     await groupStore.removeGroup(group.id)
   } catch (err) {
-    console.error('그룹 삭제 실패:', err)
-    alert('그룹 삭제에 실패했습니다.')
+    console.error('구역 삭제 실패:', err)
+    alert('구역 삭제에 실패했습니다.')
   }
 }
 
@@ -1011,7 +1011,7 @@ const confirmRemoveDevices = async () => {
     await groupStore.fetchGroups()
     showRemoveDeviceModal.value = false
   } catch (err) {
-    console.error('그룹 장치 제거 실패:', err)
+    console.error('구역 장치 제거 실패:', err)
     alert('장치 제거에 실패했습니다.')
   } finally {
     removingDevices.value = false

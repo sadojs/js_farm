@@ -3,11 +3,11 @@
     <header class="page-header">
       <div>
         <h2>장치 관리</h2>
-        <p class="page-description">농장 장치와 센서를 관리합니다</p>
+        <p class="page-description">농장 장치와 측정기를 관리합니다</p>
       </div>
       <div class="header-actions">
         <button class="btn-outline" @click="handleTuyaSync" :disabled="syncing">
-          {{ syncing ? '동기화 중...' : '센서 동기화' }}
+          {{ syncing ? '동기화 중...' : '측정기 동기화' }}
         </button>
         <button v-if="!authStore.isFarmUser" class="btn-primary" @click="showRegistrationModal = true">+ 장치 추가</button>
       </div>
@@ -32,7 +32,7 @@
           장치 ({{ actuatorDevices.length }})
         </button>
         <button class="tab" :class="{ active: activeTab === 'sensor' }" @click="activeTab = 'sensor'">
-          센서 ({{ sensorDevices.length }})
+          측정기 ({{ sensorDevices.length }})
         </button>
       </div>
     </div>
@@ -47,7 +47,7 @@
       v-else-if="filteredDevices.length === 0"
       :icon="searchQuery ? 'device' : 'sensor'"
       :title="searchQuery ? '검색 결과가 없습니다' : '등록된 장치가 없습니다'"
-      :description="searchQuery ? '다른 검색어를 입력해보세요.' : 'Tuya 장치 동기화를 통해 센서와 장치를 가져오세요'"
+      :description="searchQuery ? '다른 검색어를 입력해보세요.' : 'Tuya 장치 동기화를 통해 측정기와 장치를 가져오세요'"
       :action-label="!searchQuery && !authStore.isFarmUser ? '장치 추가' : undefined"
       @action="showRegistrationModal = true"
     />
@@ -85,7 +85,7 @@
       </div>
     </div>
 
-    <!-- 관수 장치 그룹 -->
+    <!-- 관주 장치 그룹 -->
     <div v-if="irrigationDevices.length > 0 && (activeTab === 'all' || activeTab === 'actuator')" class="irrigation-groups">
       <div v-for="device in irrigationDevices" :key="device.id" class="irrigation-group-card" style="border-top: 3px solid var(--device-irrigation)">
         <div class="irrigation-header">
@@ -118,7 +118,7 @@
             </div>
           </div>
         </div>
-        <!-- 채널 매핑 설정 (admin / farm_admin 전용) -->
+        <!-- 구역 매핑 설정 (admin / farm_admin 전용) -->
         <IrrigationChannelMappingPanel v-if="authStore.isAdmin || authStore.isFarmAdmin" :device="device" />
       </div>
     </div>
@@ -136,7 +136,7 @@
         <div class="card-top">
           <span :class="['status-dot', device.online ? 'online' : 'offline']"></span>
           <span :class="['type-badge', device.deviceType === 'sensor' ? 'sensor' : 'actuator']">
-            {{ device.deviceType === 'sensor' ? '센서' : '장치' }}
+            {{ device.deviceType === 'sensor' ? '측정기' : '장치' }}
           </span>
           <div class="card-title">
             <h4>{{ device.name }}</h4>
@@ -144,7 +144,7 @@
           </div>
         </div>
 
-        <!-- 센서: 큰 값 표시 -->
+        <!-- 측정기: 큰 값 표시 -->
         <div v-if="device.deviceType === 'sensor'" class="card-sensor-value">
           <template v-if="device.sensorData && Object.keys(device.sensorData).length > 0">
             <div v-for="(val, key) in getTopSensorData(device.sensorData)" :key="key" class="sensor-big-value">
@@ -180,7 +180,7 @@
       </div>
     </div>
 
-    <!-- 관수 상태 모달 -->
+    <!-- 관주 상태 모달 -->
     <IrrigationStatusModal
       v-if="showIrrigationStatusModal"
       :device="irrigationStatusDevice"
@@ -328,14 +328,14 @@ async function interlockControl(group: OpenerGroup, action: 'open' | 'close') {
   }
 }
 
-// 관수 장치
+// 관주 장치
 const irrigationDevices = computed(() =>
   deviceStore.devices.filter(d => d.equipmentType === 'irrigation')
 )
 const irrigationDeviceIds = computed(() => new Set(irrigationDevices.value.map(d => d.id)))
 const irrigationControlling = ref<string | null>(null)
 
-// 관수 상태 모달
+// 관주 상태 모달
 const showIrrigationStatusModal = ref(false)
 const irrigationStatusDevice = ref<Device | null>(null)
 
@@ -366,7 +366,7 @@ async function handleIrrigationControl(device: Device, switchCode: string) {
     if (enabledCount > 0) {
       const ok = await confirm({
         title: '원격제어 끄기',
-        message: `원격제어를 끄면 이 장치의 자동화 룰 ${enabledCount}개도 비활성화됩니다.${deviceStatus?.isRunning ? '\n현재 가동 중인 관수도 중단됩니다.' : ''}`,
+        message: `원격제어를 끄면 이 장치의 자동 제어 설정 ${enabledCount}개도 비활성화됩니다.${deviceStatus?.isRunning ? '\n현재 가동 중인 관주도 중단됩니다.' : ''}`,
         confirmText: '끄기',
         variant: 'danger',
       })
@@ -386,7 +386,7 @@ async function handleIrrigationControl(device: Device, switchCode: string) {
     }
     if (!device.switchStates) device.switchStates = {}
     device.switchStates[switchCode] = newVal
-    // 원격제어 OFF → 모든 관수 스위치 로컬 상태도 OFF 반영
+    // 원격제어 OFF → 모든 관주 스위치 로컬 상태도 OFF 반영
     if (isRemoteControl && !newVal) {
       const m = deviceStore.getEffectiveMapping(device)
       for (const fn of Object.keys(m)) {
@@ -404,15 +404,15 @@ async function handleIrrigationControl(device: Device, switchCode: string) {
       notify.warning('상태 확인 실패', '장치 상태를 확인할 수 없습니다')
     }
 
-    // FR-04: 원격제어 OFF 후 룰 일괄 비활성화
+    // FR-04: 원격제어 OFF 후 설정 일괄 비활성화
     if (isRemoteControl && !newVal) {
       const bulkResult = await automationStore.bulkDisableByDevice(device.id)
       if (bulkResult.disabledCount > 0) {
-        notify.info('자동화 비활성화', `자동화 룰 ${bulkResult.disabledCount}개가 비활성화되었습니다`)
+        notify.info('자동 제어 비활성화', `자동 제어 설정 ${bulkResult.disabledCount}개가 비활성화되었습니다`)
       }
     }
   } catch (err) {
-    console.error('관수 장치 제어 실패:', err)
+    console.error('관주 장치 제어 실패:', err)
     notify.remove(loadingId)
     notify.error('제어 실패', '네트워크 오류가 발생했습니다')
   } finally {
@@ -436,7 +436,7 @@ const filteredDevices = computed(() => {
   else if (activeTab.value === 'sensor') list = sensorDevices.value
   else list = actuatorDevices.value
 
-  // 개폐기, 관수 장치는 별도 카드로 표시되므로 제외
+  // 개폐기, 관주 장치는 별도 카드로 표시되므로 제외
   list = list.filter(d => !openerDeviceIds.value.has(d.id) && !irrigationDeviceIds.value.has(d.id))
 
   if (searchQuery.value.trim()) {
@@ -477,10 +477,10 @@ const getCategoryLabel = (category: string): string => {
     'wk': '환풍기', 'fs': '환풍기',
     'cl': '개폐기', 'mc': '개폐기',
     'dj': '조명', 'dd': '조명',
-    'bh': '관수', 'sfkzq': '관수',
-    'wsdcg': '온습도계', 'co2bj': 'CO2센서', 'ldcg': '토양센서',
-    'mcs': '복합센서', 'ywbj': '우량계', 'pm25': '미세먼지',
-    'qxj': '기상관측센서', 'hjjcy': '환경검측기',
+    'bh': '관주', 'sfkzq': '관주',
+    'wsdcg': '온습도계', 'co2bj': 'CO2측정기', 'ldcg': '토양측정기',
+    'mcs': '복합측정기', 'ywbj': '우량계', 'pm25': '미세먼지',
+    'qxj': '기상관측측정기', 'hjjcy': '환경검측기',
   }
   return labels[category] || category
 }
@@ -818,7 +818,7 @@ const handleTuyaSync = async () => {
   color: var(--text-muted);
 }
 
-/* 센서 값 표시 */
+/* 측정기 값 표시 */
 .card-sensor-value {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
@@ -1030,7 +1030,7 @@ input:checked + .toggle-slider:before {
   background: var(--accent-bg);
 }
 
-/* 관수 장치 그룹 */
+/* 관주 장치 그룹 */
 .irrigation-groups {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -1090,7 +1090,7 @@ input:checked + .toggle-slider:before {
   pointer-events: none;
 }
 
-/* 채널 매핑 패널 */
+/* 구역 매핑 패널 */
 .channel-mapping-section {
   margin-top: 8px;
   border-top: 1px solid var(--border-input);
@@ -1186,7 +1186,7 @@ input:checked + .toggle-slider:before {
   background: var(--accent-bg);
 }
 
-/* 관수 상태 모달 */
+/* 관주 상태 모달 */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;

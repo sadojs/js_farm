@@ -94,7 +94,7 @@ export class GroupsService {
 
     if (rules.length > 0) {
       throw new ConflictException({
-        message: '자동화 룰에서 사용 중인 그룹은 삭제할 수 없습니다.',
+        message: '자동 제어 설정에서 사용 중인 구역은 삭제할 수 없습니다.',
         dependencies: {
           automationRules: rules.map(r => ({ id: r.id, name: r.name, enabled: r.enabled })),
         },
@@ -155,6 +155,6 @@ export class GroupsService {
     group.devices = group.devices.filter(d => d.id !== deviceId);
     await this.groupsRepo.save(group);
 
-    return { message: '장비가 그룹에서 제거되었습니다.' };
+    return { message: '장비가 구역에서 제거되었습니다.' };
   }
 }

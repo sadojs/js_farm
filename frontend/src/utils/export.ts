@@ -1,5 +1,5 @@
 /**
- * 센서 데이터 내보내기 유틸리티
+ * 측정 기록 내보내기 유틸리티
  */
 
 interface ExportRow {
@@ -35,7 +35,7 @@ export async function exportToExcel(data: ExportRow[], filename: string) {
     const XLSX = await import('xlsx')
     const ws = XLSX.utils.json_to_sheet(data)
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, '센서 데이터')
+    XLSX.utils.book_append_sheet(wb, ws, '측정 기록')
 
     // 컬럼 너비 자동 조정
     const colWidths = Object.keys(data[0] || {}).map(key => ({
@@ -62,14 +62,14 @@ function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url)
 }
 
-// 센서 데이터를 내보내기 형식으로 변환
+// 측정 기록을 내보내기 형식으로 변환
 export function formatSensorDataForExport(rawData: any[], sensorTypeLabel: (t: string) => string): ExportRow[] {
   return rawData.map(item => ({
     '시간': item.time || item.timestamp || '',
-    '센서 타입': sensorTypeLabel(item.sensorType || item.type || ''),
+    '측정 항목': sensorTypeLabel(item.sensorType || item.type || ''),
     '값': item.value ?? '',
     '단위': item.unit || '',
     '장치명': item.deviceName || '',
-    '그룹': item.groupName || '',
+    '구역': item.groupName || '',
   }))
 }

@@ -60,7 +60,7 @@
               </option>
             </select>
             <p class="help-text">
-              농장 사용자는 선택한 농장 관리자의 장치/센서/그룹 데이터를 공유합니다
+              농장 사용자는 선택한 농장 관리자의 장치/측정기/구역 데이터를 공유합니다
             </p>
           </div>
 
@@ -100,9 +100,9 @@
           </div>
 
           <div v-if="formData.role !== 'farm_user'" class="form-section">
-            <h3 class="section-title">🔗 센서 클라우드 프로젝트 설정</h3>
+            <h3 class="section-title">🔗 측정기 클라우드 프로젝트 설정</h3>
             <p class="section-description">
-              사용자가 사용할 센서 클라우드 프로젝트의 인증 정보를 입력하세요
+              사용자가 사용할 측정기 클라우드 프로젝트의 인증 정보를 입력하세요
             </p>
 
             <div class="form-group">
@@ -174,10 +174,10 @@
                   v-model="formData.tuyaProject.enabled"
                   type="checkbox"
                 />
-                <span>센서 프로젝트 활성화</span>
+                <span>측정기 프로젝트 활성화</span>
               </label>
               <p class="help-text">
-                체크 해제 시 사용자는 센서 장치를 사용할 수 없습니다
+                체크 해제 시 사용자는 측정기 장치를 사용할 수 없습니다
               </p>
             </div>
 

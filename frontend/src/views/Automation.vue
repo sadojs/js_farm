@@ -2,16 +2,16 @@
   <div class="page-container">
     <header class="page-header">
       <div>
-        <h2>자동화 룰</h2>
-        <p class="page-description">센서 값에 따라 장치를 자동으로 제어합니다</p>
+        <h2>자동 제어 설정</h2>
+        <p class="page-description">측정값에 따라 장치를 자동으로 제어합니다</p>
       </div>
-      <button class="btn-primary" @click="openWizard()">+ 룰 추가</button>
+      <button class="btn-primary" @click="openWizard()">+ 설정 추가</button>
     </header>
 
-    <!-- 메인 탭: 룰 목록 / 실행 로그 -->
+    <!-- 메인 탭: 설정 목록 / 실행 기록 -->
     <div class="main-tabs">
-      <button class="main-tab" :class="{ active: mainTab === 'rules' }" @click="mainTab = 'rules'">룰 목록</button>
-      <button class="main-tab" :class="{ active: mainTab === 'logs' }" @click="mainTab = 'logs'">실행 로그</button>
+      <button class="main-tab" :class="{ active: mainTab === 'rules' }" @click="mainTab = 'rules'">설정 목록</button>
+      <button class="main-tab" :class="{ active: mainTab === 'logs' }" @click="mainTab = 'logs'">실행 기록</button>
     </div>
 
     <template v-if="mainTab === 'rules'">
@@ -19,20 +19,20 @@
       <button class="tab" :class="{ active: activeTab === 'all' }" @click="activeTab = 'all'">전체 ({{ rules.length }})</button>
       <button v-if="SHOW_OPENER_TAB" class="tab" :class="{ active: activeTab === 'opener' }" @click="activeTab = 'opener'">개폐기 ({{ openerRules.length }})</button>
       <button class="tab" :class="{ active: activeTab === 'fan' }" @click="activeTab = 'fan'">환풍기 ({{ fanRules.length }})</button>
-      <button class="tab" :class="{ active: activeTab === 'irrigation' }" @click="activeTab = 'irrigation'">관수 ({{ irrigationRules.length }})</button>
+      <button class="tab" :class="{ active: activeTab === 'irrigation' }" @click="activeTab = 'irrigation'">관주 ({{ irrigationRules.length }})</button>
       <button class="tab" :class="{ active: activeTab === 'other' }" @click="activeTab = 'other'">기타 ({{ otherRules.length }})</button>
     </div>
 
     <!-- 로딩 -->
-    <div v-if="loading" class="loading-state">룰 목록을 불러오는 중...</div>
+    <div v-if="loading" class="loading-state">설정 목록을 불러오는 중...</div>
 
     <!-- 빈 상태 -->
     <EmptyState
       v-else-if="filteredRules.length === 0"
       icon="rule"
-      title="자동화 룰이 없습니다"
-      description="센서 값에 따라 장치를 자동으로 제어하세요"
-      action-label="첫 번째 룰 만들기"
+      title="자동 제어 설정이 없습니다"
+      description="측정값에 따라 장치를 자동으로 제어하세요"
+      action-label="첫 번째 설정 만들기"
       @action="openWizard()"
     />
 
@@ -61,11 +61,11 @@
           <span class="rule-type-badge">{{ ruleTypeLabel(rule) }}</span>
         </div>
 
-        <!-- 관수 룰: 스케줄 정보 -->
+        <!-- 관주 설정: 일정 정보 -->
         <template v-if="isIrrigationConditions(rule.conditions)">
           <div class="rule-body irrigation-body">
             <div class="irrigation-schedule-row">
-              <span class="section-title">스케줄</span>
+              <span class="section-title">일정</span>
               <span class="section-content">{{ formatIrrigationSchedule(rule.conditions) }}</span>
             </div>
             <div class="irrigation-schedule-row">
@@ -75,7 +75,7 @@
           </div>
         </template>
 
-        <!-- 일반 룰: 조건 / 동작 2단 -->
+        <!-- 일반 설정: 조건 / 동작 2단 -->
         <template v-else>
           <div class="rule-body">
             <div class="rule-section condition">
@@ -107,10 +107,10 @@
 
     </template>
 
-    <!-- 실행 로그 탭 → 활동 로그 페이지 안내 -->
+    <!-- 실행 기록 탭 → 작업 내역 페이지 안내 -->
     <div v-if="mainTab === 'logs'" class="log-redirect">
-      <p>실행 로그가 활동 로그 페이지로 이동했습니다.</p>
-      <router-link to="/activity-log" class="btn-link">활동 로그 보기 →</router-link>
+      <p>실행 기록이 작업 내역 페이지로 이동했습니다.</p>
+      <router-link to="/activity-log" class="btn-link">작업 내역 보기 →</router-link>
     </div>
 
     <!-- 위저드 모달 -->
@@ -212,7 +212,7 @@ const filteredRules = computed(() => {
 const EQUIPMENT_LABELS: Record<RuleKind, string> = {
   opener: '개폐기',
   fan: '환풍기',
-  irrigation: '관수',
+  irrigation: '관주',
   other: '기타',
 }
 
@@ -223,7 +223,7 @@ function ruleTypeLabel(rule: AutomationRule) {
 function targetLabel(rule: AutomationRule) {
   const group = groupStore.groups.find(g => g.id === rule.groupId)
   if (!group) return '미지정'
-  if (!rule.houseId) return `${group.name} (그룹 전체)`
+  if (!rule.houseId) return `${group.name} (구역 전체)`
   const house = (group.houses || []).find(h => h.id === rule.houseId)
   return house ? `${group.name} > ${house.name}` : `${group.name} (하우스 미지정)`
 }
@@ -237,19 +237,19 @@ async function handleToggle(id: string) {
   const rule = rules.value.find(r => r.id === id)
   const newState = rule ? !rule.enabled : true
   try {
-    // FR-03: 관수 룰 활성화 시 autoEnableRemote 전달
+    // FR-03: 관주 설정 활성화 시 autoEnableRemote 전달
     const isIrrigationEnable = newState && (rule?.conditions as any)?.type === 'irrigation'
     await automationStore.toggleRule(id, isIrrigationEnable ? { autoEnableRemote: true } : undefined)
-    notify.success('적용 완료', `${rule?.name || '룰'}이(가) ${newState ? '활성화' : '비활성화'}되었습니다`)
+    notify.success('적용 완료', `${rule?.name || '설정'}이(가) ${newState ? '활성화' : '비활성화'}되었습니다`)
   } catch {
-    notify.error('적용 실패', '룰 상태 변경에 실패했습니다')
+    notify.error('적용 실패', '상태 변경에 실패했습니다')
   }
 }
 
 async function handleDelete(rule: AutomationRule) {
   const ok = await confirm({
-    title: '룰 삭제',
-    message: `"${rule.name}" 룰을 삭제하시겠습니까?`,
+    title: '설정 삭제',
+    message: `"${rule.name}" 설정을 삭제하시겠습니까?`,
     confirmText: '삭제',
     variant: 'danger',
   })

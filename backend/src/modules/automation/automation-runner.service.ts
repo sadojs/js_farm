@@ -96,7 +96,7 @@ export class AutomationRunnerService {
       });
     } catch (err: any) {
       success = false;
-      errorMessage = err?.message || '자동화 액션 실행 실패';
+      errorMessage = err?.message || '자동 제어 액션 실행 실패';
       this.logger.error(`Rule ${rule.id} execution failed: ${errorMessage}`);
       this.eventsGateway.broadcastAutomationExecuted({
         ruleId: rule.id,
@@ -505,7 +505,7 @@ export class AutomationRunnerService {
     const results: any[] = [];
     for (const device of candidateDevices) {
       this.logger.log(
-        `자동화 명령 전송: rule=${rule.name}, device=${device.name}(${device.tuyaDeviceId}), command=${JSON.stringify(commands[0])}`,
+        `자동 제어 명령 전송: rule=${rule.name}, device=${device.name}(${device.tuyaDeviceId}), command=${JSON.stringify(commands[0])}`,
       );
       let sent = false;
       let lastError = '';

@@ -3,7 +3,7 @@
       <div class="modal-container">
         <!-- 헤더 -->
         <div class="modal-header">
-          <h2 class="modal-title">{{ editRule ? '자동화 룰 수정' : '새 자동화 룰' }}</h2>
+          <h2 class="modal-title">{{ editRule ? '자동 제어 설정 수정' : '새 자동 제어 설정' }}</h2>
           <button class="btn-close" @click="$emit('close')">✕</button>
         </div>
 
@@ -100,8 +100,8 @@ const formData = ref<WizardFormData>(createEmptyWizardForm())
 const irrigationForm = ref<IrrigationConditions>(createDefaultIrrigationConditions())
 
 const stepList = [
-  { num: 1, label: '그룹' },
-  { num: 2, label: '센서' },
+  { num: 1, label: '구역' },
+  { num: 2, label: '측정기' },
   { num: 3, label: '장치' },
   { num: 4, label: '조건' },
   { num: 5, label: '확인' },

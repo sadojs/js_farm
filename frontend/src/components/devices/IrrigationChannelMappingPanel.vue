@@ -1,17 +1,17 @@
 <template>
   <div class="channel-mapping-section">
     <button class="btn-mapping-toggle" @click="isOpen = !isOpen">
-      채널 설정 {{ isOpen ? '▲' : '▼' }}
+      구역 설정 {{ isOpen ? '▲' : '▼' }}
     </button>
     <div v-if="isOpen && editMapping" class="channel-mapping-panel">
-      <p class="mapping-desc">각 기능에 연결될 릴레이 채널을 설정합니다.</p>
+      <p class="mapping-desc">각 기능에 연결될 릴레이 구역을 설정합니다.</p>
       <div v-for="fnKey in mappingKeys" :key="fnKey" class="mapping-row">
         <span class="mapping-label">{{ FUNCTION_LABELS[fnKey] || fnKey }}</span>
         <select v-model="editMapping[fnKey]" class="mapping-select" :class="{ 'duplicate-warning': isDuplicate(fnKey) }">
           <option v-for="sw in availableSwitchCodes" :key="sw" :value="sw">{{ sw }}</option>
         </select>
       </div>
-      <p v-if="hasDuplicate" class="warning-text">같은 채널이 중복 배정되어 있습니다.</p>
+      <p v-if="hasDuplicate" class="warning-text">같은 구역이 중복 배정되어 있습니다.</p>
       <div class="mapping-actions">
         <button class="btn-save" :disabled="hasDuplicate || saving" @click="save">
           {{ saving ? '저장 중...' : '저장' }}
@@ -65,10 +65,10 @@ async function save() {
   saving.value = true
   try {
     await deviceStore.updateChannelMapping(props.device.id, editMapping.value)
-    notify.success('저장 완료', '채널 매핑이 저장되었습니다')
+    notify.success('저장 완료', '구역 매핑이 저장되었습니다')
     isOpen.value = false
   } catch {
-    notify.error('저장 실패', '채널 매핑 저장에 실패했습니다')
+    notify.error('저장 실패', '구역 매핑 저장에 실패했습니다')
   } finally {
     saving.value = false
   }

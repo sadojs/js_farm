@@ -147,7 +147,7 @@ export class ReportsService {
 
     const rows = await this.dataSource.query(query, values);
 
-    const header = '시간,장비명,센서종류,값,단위,상태';
+    const header = '시간,장비명,측정항목,값,단위,상태';
     const csvRows = rows.map((row: any) =>
       [
         row.time,

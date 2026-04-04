@@ -28,7 +28,7 @@ export class ActivityLogService {
     try {
       await this.repo.save(this.repo.create(params));
     } catch (err: any) {
-      this.logger.warn(`활동 로그 기록 실패: ${err.message}`);
+      this.logger.warn(`작업 내역 기록 실패: ${err.message}`);
     }
   }
 

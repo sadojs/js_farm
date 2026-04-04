@@ -141,7 +141,7 @@ export class DashboardService {
     const qxjIds = qxjDevices.map(d => d.id);
 
     if (qxjIds.length === 0) {
-      this.logger.warn(`qxj 센서 없음 (userId: ${userId})`);
+      this.logger.warn(`qxj 측정기 없음 (userId: ${userId})`);
       return { inside: null, history: null, trend6h: null, uvStats14d: null, currentStage: null };
     }
 

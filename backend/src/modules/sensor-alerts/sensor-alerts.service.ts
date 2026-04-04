@@ -379,7 +379,7 @@ export class SensorAlertsService {
         sensorType: row.sensor_type,
         alertType: 'unstable' as any,
         severity: 'warning',
-        message: `${row.sensor_type} 센서가 ${FLAPPING_WINDOW_HOURS}시간 내 ${row.cnt}회 데이터 끊김/복구 반복 — 센서를 점검하세요`,
+        message: `${row.sensor_type} 측정기가 ${FLAPPING_WINDOW_HOURS}시간 내 ${row.cnt}회 데이터 끊김/복구 반복 — 측정기를 점검하세요`,
         threshold: `${FLAPPING_WINDOW_HOURS}h 내 ${FLAPPING_THRESHOLD}회 이상`,
       });
       await this.alertRepo.save(alert);
@@ -404,7 +404,7 @@ export class SensorAlertsService {
           { resolved: true, resolvedAt: new Date() },
         );
         this.logger.log(
-          `[Auto-Resolve] ${alert.deviceName} / ${alert.sensorType}: 대기 목록 센서 → 자동 해제`,
+          `[Auto-Resolve] ${alert.deviceName} / ${alert.sensorType}: 대기 목록 측정기 → 자동 해제`,
         );
         continue;
       }

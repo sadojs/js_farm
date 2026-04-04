@@ -73,7 +73,7 @@ export class IrrigationSchedulerService {
       if (this.activeIrrigations.has(rule.id)) continue;
 
       if (this.shouldStartNow(conditions, now)) {
-        this.logger.log(`관수 스케줄 시작: ${rule.name} (${rule.id})`);
+        this.logger.log(`관주 일정 시작: ${rule.name} (${rule.id})`);
         await this.startIrrigation(rule, conditions);
       }
     }
@@ -98,7 +98,7 @@ export class IrrigationSchedulerService {
     try {
       await this._startIrrigationInternal(rule, conditions);
     } catch (err: any) {
-      this.logger.error(`관수 시작 실패: ${rule.name} - ${err.message}`, err.stack);
+      this.logger.error(`관주 시작 실패: ${rule.name} - ${err.message}`, err.stack);
     }
   }
 
@@ -106,13 +106,13 @@ export class IrrigationSchedulerService {
     const actions = rule.actions as any;
     const deviceIds = actions?.targetDeviceIds || (actions?.targetDeviceId ? [actions.targetDeviceId] : []);
     if (deviceIds.length === 0) {
-      this.logger.warn(`관수 룰 ${rule.id}: 대상 장비 없음`);
+      this.logger.warn(`관주 설정 ${rule.id}: 대상 장비 없음`);
       return;
     }
 
     const device = await this.devicesRepo.findOne({ where: { id: deviceIds[0] } });
     if (!device) {
-      this.logger.warn(`관수 룰 ${rule.id}: 장비 찾을 수 없음`);
+      this.logger.warn(`관주 설정 ${rule.id}: 장비 찾을 수 없음`);
       return;
     }
 
@@ -120,7 +120,7 @@ export class IrrigationSchedulerService {
       where: { userId: rule.userId, enabled: true },
     });
     if (!credentials) {
-      this.logger.warn(`관수 룰 ${rule.id}: Tuya 프로젝트 없음`);
+      this.logger.warn(`관주 설정 ${rule.id}: Tuya 프로젝트 없음`);
       return;
     }
 
@@ -141,7 +141,7 @@ export class IrrigationSchedulerService {
         (s: any) => s.code === remoteControlSwitch,
       )?.value === true;
       if (!remoteControlOn) {
-        this.logger.log(`관수 스케줄 스킵: 원격제어(${remoteControlSwitch}) OFF - ${rule.name}`);
+        this.logger.log(`관주 일정 스킵: 원격제어(${remoteControlSwitch}) OFF - ${rule.name}`);
         return;
       }
     } catch (err: any) {
@@ -150,7 +150,7 @@ export class IrrigationSchedulerService {
 
     // 타임라인 생성
     const timeline = this.buildTimeline(conditions, mapping);
-    this.logger.log(`관수 타임라인 (${timeline.length}개 액션): ${JSON.stringify(timeline.map(a => ({ t: Math.round(a.time / 60000), type: a.type, sw: a.switchCode })))}`);
+    this.logger.log(`관주 타임라인 (${timeline.length}개 액션): ${JSON.stringify(timeline.map(a => ({ t: Math.round(a.time / 60000), type: a.type, sw: a.switchCode })))}`);
 
     // 타이머 등록
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -202,12 +202,12 @@ export class IrrigationSchedulerService {
     for (const action of timeline) {
       const timer = setTimeout(async () => {
         try {
-          this.logger.log(`관수 실행: ${action.label} (${action.switchCode}=${action.value})`);
+          this.logger.log(`관주 실행: ${action.label} (${action.switchCode}=${action.value})`);
           await this.tuyaService.sendDeviceCommand(tuyaCreds, device.tuyaDeviceId, [
             { code: action.switchCode, value: action.value },
           ]);
         } catch (err: any) {
-          this.logger.error(`관수 명령 실패: ${action.label} - ${err.message}`);
+          this.logger.error(`관주 명령 실패: ${action.label} - ${err.message}`);
         }
       }, action.time);
       timers.push(timer);
@@ -223,7 +223,7 @@ export class IrrigationSchedulerService {
           ruleId: rule.id,
           tuyaDeviceId: device.tuyaDeviceId,
         });
-        this.logger.log(`관수 완료: ${rule.name}`);
+        this.logger.log(`관주 완료: ${rule.name}`);
 
         // 비반복: 이번 주 남은 요일이 없으면 비활성화
         // 주간 순서: 월(1)→화(2)→수(3)→목(4)→금(5)→토(6)→일(0)
@@ -239,9 +239,9 @@ export class IrrigationSchedulerService {
           if (!hasRemaining) {
             rule.enabled = false;
             await this.rulesRepo.save(rule);
-            this.logger.log(`관수 비반복 룰 비활성화 (이번 주 완료): ${rule.name}`);
+            this.logger.log(`관주 비반복 설정 비활성화 (이번 주 완료): ${rule.name}`);
           } else {
-            this.logger.log(`관수 비반복 룰 유지: 이번 주 남은 요일 있음 - ${rule.name}`);
+            this.logger.log(`관주 비반복 설정 유지: 이번 주 남은 요일 있음 - ${rule.name}`);
           }
         }
 
@@ -271,7 +271,7 @@ export class IrrigationSchedulerService {
           actions: [{ type: 'irrigation_complete' }],
         });
       } catch (err: any) {
-        this.logger.error(`관수 정리 실패: ${rule.name} - ${err.message}`);
+        this.logger.error(`관주 정리 실패: ${rule.name} - ${err.message}`);
       }
     }, totalDurationMs);
     timers.push(cleanupTimer);
@@ -427,10 +427,10 @@ export class IrrigationSchedulerService {
                 // 개별 스위치 OFF 실패 시 계속 진행
               }
             }
-            this.logger.log(`관수 강제 중단 + 스위치 OFF: ${offCodes.join(', ')}`);
+            this.logger.log(`관주 강제 중단 + 스위치 OFF: ${offCodes.join(', ')}`);
           }
         } catch (err: any) {
-          this.logger.warn(`관수 중단 시 스위치 OFF 실패: ${err.message}`);
+          this.logger.warn(`관주 중단 시 스위치 OFF 실패: ${err.message}`);
         }
 
         // 취소 로그 기록
@@ -445,7 +445,7 @@ export class IrrigationSchedulerService {
         );
 
         this.eventsGateway.emitIrrigationStopped({ ruleId, tuyaDeviceId });
-        this.logger.log(`관수 강제 중단: ruleId=${ruleId}`);
+        this.logger.log(`관주 강제 중단: ruleId=${ruleId}`);
         return true;
       }
     }
