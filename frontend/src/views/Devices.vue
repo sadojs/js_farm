@@ -144,14 +144,12 @@
           </div>
         </div>
 
-        <!-- 측정기: 큰 값 표시 -->
-        <div v-if="device.deviceType === 'sensor'" class="card-sensor-value">
+        <!-- 측정기: 칩 형태 가로 나열 (구역 관리와 동일) -->
+        <div v-if="device.deviceType === 'sensor'" class="card-sensor-chips">
           <template v-if="device.sensorData && Object.keys(device.sensorData).length > 0">
-            <div v-for="(val, key) in getTopSensorData(device.sensorData)" :key="key" class="sensor-big-value">
-              <span class="big-number">{{ formatSensorVal(key as string, val as number) }}</span>
-              <span class="big-unit">{{ SENSOR_META[key as string]?.unit || '' }}</span>
-              <span class="big-label">{{ SENSOR_META[key as string]?.label || key }}</span>
-            </div>
+            <span v-for="(val, key) in getTopSensorData(device.sensorData)" :key="key" class="sensor-chip">
+              {{ SENSOR_META[key as string]?.label || key }} <b>{{ formatSensorVal(key as string, val as number) }}{{ SENSOR_META[key as string]?.unit || '' }}</b>
+            </span>
           </template>
           <div v-else-if="device.online" class="sensor-loading">데이터 로딩 중...</div>
           <div v-else class="sensor-offline">오프라인</div>
@@ -818,39 +816,26 @@ const handleTuyaSync = async () => {
   color: var(--text-muted);
 }
 
-/* 측정기 값 표시 */
-.card-sensor-value {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: 8px;
-  padding: 12px;
+/* 측정기 값 표시 — 칩 형태 */
+.card-sensor-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sensor-chip {
+  display: inline-block;
+  padding: 3px 10px;
   background: var(--sensor-value-bg);
-  border-radius: 10px;
-}
-
-.sensor-big-value {
-  text-align: center;
-  padding: 4px 0;
-}
-
-.big-number {
-  font-size: var(--font-size-subtitle);
-  font-weight: 700;
+  border-radius: 14px;
+  font-size: var(--font-size-caption);
   color: var(--sensor-accent);
-  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-.big-unit {
-  font-size: var(--font-size-caption);
-  color: var(--text-muted);
-  margin-left: 1px;
-}
-
-.big-label {
-  display: block;
-  font-size: var(--font-size-caption);
-  color: var(--text-muted);
-  margin-top: 2px;
+.sensor-chip b {
+  font-weight: 700;
+  margin-left: 2px;
 }
 
 .sensor-loading, .sensor-offline {
