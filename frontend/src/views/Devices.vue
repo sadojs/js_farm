@@ -1284,8 +1284,8 @@ input:checked + .toggle-slider:before {
   .opener-header { margin-bottom: 10px; }
   .irrigation-header { margin-bottom: 10px; }
   .card-top { gap: 8px; }
-  .btn-icon-delete { padding: 2px 10px; }
-  .btn-status { padding: 2px 10px; }
-  .type-badge { padding: 2px 8px; }
+  .btn-icon-delete { padding: 0 18px; line-height: 1.8; }
+  .btn-status { padding: 0 18px; line-height: 1.8; }
+  .type-badge { padding: 0 18px; line-height: 1.8; }
 }
 </style>
