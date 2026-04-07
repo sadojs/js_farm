@@ -70,7 +70,7 @@
             v-if="isSupported"
             class="btn-mic"
             :class="{ active: isListening }"
-            :disabled="isProcessing || isSpeaking"
+            :disabled="isProcessing"
             @click="handleVoiceInput"
           >
             {{ isListening ? '⏹' : '🎙' }}
@@ -105,7 +105,7 @@ import { ref, nextTick, watch } from 'vue'
 import { useVoiceRecognition } from './useVoiceRecognition'
 import { useVoiceCommands } from './useVoiceCommands'
 
-const { isSupported, isListening, interimText, startListening, stopListening, speak, cancelSpeak } = useVoiceRecognition()
+const { isSupported, isListening, interimText, startListening, stopListening, speak, cancelSpeak, unlockAudio } = useVoiceRecognition()
 const { messages, isProcessing, sendCommand } = useVoiceCommands()
 
 const panelOpen = ref(false)
@@ -132,9 +132,17 @@ function closePanel() {
 }
 
 async function handleVoiceInput() {
+  unlockAudio() // 모바일 TTS 활성화
+
   if (isListening.value) {
     stopListening()
     return
+  }
+
+  // TTS 중이면 중단
+  if (isSpeaking.value) {
+    cancelSpeak()
+    isSpeaking.value = false
   }
 
   try {
@@ -151,6 +159,7 @@ async function handleVoiceInput() {
 async function handleTextInput() {
   const text = textInput.value.trim()
   if (!text || isProcessing.value) return
+  unlockAudio() // 모바일 TTS 활성화
   textInput.value = ''
   await processCommand(text)
 }
