@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-07T03:20:40.843Z",
+  "lastUpdated": "2026-04-07T03:37:36.851Z",
   "activeFeatures": [
     "automation",
     "frontend",
@@ -28,9 +28,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-04T10:24:17.003Z",
-        "lastUpdated": "2026-04-07T02:40:58.860Z"
+        "lastUpdated": "2026-04-07T03:37:36.851Z"
       },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/backend/src/modules/automation/automation.service.ts"
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/components/automation/StepIrrigationCondition.vue"
     },
     "frontend": {
       "phase": "do",
@@ -41,9 +41,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-04T10:24:31.532Z",
-        "lastUpdated": "2026-04-07T03:20:40.843Z"
+        "lastUpdated": "2026-04-07T03:25:41.034Z"
       },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/views/Login.vue"
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/frontend/src/App.vue"
     },
     "composables": {
       "phase": "do",
@@ -158,9 +158,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-04-05T22:30:42.676Z",
-        "lastUpdated": "2026-04-06T22:38:32.206Z"
+        "lastUpdated": "2026-04-07T03:25:06.631Z"
       },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/backend/src/app.module.ts"
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/backend/src/app.module.ts"
     },
     "api": {
       "phase": "do",
@@ -221,7 +221,7 @@
   "session": {
     "startedAt": "2026-04-04T10:24:17.003Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-07T03:20:40.843Z"
+    "lastActivity": "2026-04-07T03:37:36.851Z"
   },
   "history": [
     {
@@ -1937,6 +1937,90 @@
     {
       "timestamp": "2026-04-07T03:20:40.843Z",
       "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-07T03:24:43.540Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-07T03:24:50.345Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-07T03:25:06.631Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-07T03:25:41.034Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-07T03:33:21.700Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-07T03:33:40.336Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-07T03:33:59.591Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-07T03:34:12.074Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-07T03:34:30.219Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-07T03:34:36.290Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-07T03:34:47.921Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-07T03:35:01.119Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-07T03:37:24.518Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-07T03:37:36.851Z",
+      "feature": "automation",
       "phase": "do",
       "action": "updated"
     }

@@ -121,27 +121,33 @@
             <option v-for="sw in AVAILABLE_SWITCH_CODES" :key="sw" :value="sw">{{ sw }}</option>
           </select>
           <span v-else class="switch-hint">{{ effectiveMapping['fertilizer_motor'] }}</span>
+        </div>
+        <div class="setting-fields">
+          <template v-if="form.fertilizer.enabled">
+            <div class="field-group">
+              <label class="field-label">투여시간</label>
+              <div class="input-with-unit">
+                <input type="number" v-model.number="form.fertilizer.duration" min="0" class="num-input" />
+                <span class="unit">분</span>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">종료전대기</label>
+              <div class="input-with-unit">
+                <input type="number" v-model.number="form.fertilizer.preStopWait" min="0" class="num-input" />
+                <span class="unit">분</span>
+              </div>
+            </div>
+          </template>
           <button
             class="toggle-btn"
             :class="{ active: form.fertilizer.enabled }"
             @click="form.fertilizer.enabled = !form.fertilizer.enabled"
           >{{ form.fertilizer.enabled ? 'ON' : 'OFF' }}</button>
         </div>
-        <div v-if="form.fertilizer.enabled" class="setting-fields">
-          <div class="field-group">
-            <label class="field-label">투여시간</label>
-            <div class="input-with-unit">
-              <input type="number" v-model.number="form.fertilizer.duration" min="0" class="num-input" />
-              <span class="unit">분</span>
-            </div>
-          </div>
-          <div class="field-group">
-            <label class="field-label">종료전대기</label>
-            <div class="input-with-unit">
-              <input type="number" v-model.number="form.fertilizer.preStopWait" min="0" class="num-input" />
-              <span class="unit">분</span>
-            </div>
-          </div>
+        <!-- 액비 시간 초과 경고 -->
+        <div v-if="fertilizerWarnings.length > 0" class="fertilizer-warning">
+          <p v-for="(warn, i) in fertilizerWarnings" :key="i">{{ warn }}</p>
         </div>
       </div>
     </div>
@@ -231,6 +237,24 @@ const AVAILABLE_SWITCH_CODES = computed(() => {
   const values = Object.values(effectiveMapping.value).filter((v): v is string => !!v)
   const count = detectChannelCount(values)
   return getAvailableSwitchCodesByCount(count)
+})
+
+// 액비모터 ON 시: 각 활성 구역의 관주시간 ≥ 투여시간 + 종료전대기
+const fertilizerWarnings = computed(() => {
+  if (!form.fertilizer.enabled) return []
+  const fertTotal = (form.fertilizer.duration || 0) + (form.fertilizer.preStopWait || 0)
+  if (fertTotal <= 0) return []
+  const warnings: string[] = []
+  for (const zone of form.zones) {
+    if (!zone.enabled) continue
+    if ((zone.duration || 0) < fertTotal) {
+      const name = zone.name || zone.zone + '구역'
+      warnings.push(
+        `${name}의 관주시간(${zone.duration}분)이 너무 짧습니다. 액비 투여(${form.fertilizer.duration}분) + 종료전 대기(${form.fertilizer.preStopWait}분) = 최소 ${fertTotal}분 이상이어야 합니다.`
+      )
+    }
+  }
+  return warnings
 })
 
 const mappingRecord = computed(() => effectiveMapping.value as unknown as Record<string, string>)
@@ -592,6 +616,24 @@ function toggleDay(day: number) {
   width: 18px;
   height: 18px;
   cursor: pointer;
+}
+.fertilizer-warning {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  font-size: var(--font-size-sm, 12px);
+  color: #92400e;
+  line-height: 1.5;
+}
+.fertilizer-warning p {
+  margin: 2px 0;
+}
+:root[data-theme='dark'] .fertilizer-warning {
+  background: #451a03;
+  border-color: #b45309;
+  color: #fbbf24;
 }
 </style>
 

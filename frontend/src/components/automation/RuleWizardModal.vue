@@ -191,9 +191,20 @@ const canNext = computed(() => {
   if (currentStep.value === 4) {
     if (isIrrigation.value) {
       // 관수: 시작시간과 활성 구역 최소 1개
-      return !!irrigationForm.value.startTime &&
+      const baseValid = !!irrigationForm.value.startTime &&
         irrigationForm.value.zones.some(z => z.enabled) &&
         irrigationForm.value.schedule.days.length > 0
+      if (!baseValid) return false
+      // 액비모터 ON 시: 각 활성 구역의 관주시간 ≥ 투여시간 + 종료전대기
+      const f = irrigationForm.value.fertilizer
+      if (f.enabled) {
+        const fertTotal = (f.duration || 0) + (f.preStopWait || 0)
+        const hasViolation = irrigationForm.value.zones
+          .filter(z => z.enabled)
+          .some(z => (z.duration || 0) < fertTotal)
+        if (hasViolation) return false
+      }
+      return true
     }
     return formData.value.conditions.groups.length > 0 &&
       formData.value.conditions.groups.every(g => g.conditions.length > 0) &&
