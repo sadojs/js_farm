@@ -43,6 +43,7 @@ services:
       - TUYA_CLIENT_SECRET=${TUYA_CLIENT_SECRET}
       - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
       - KMA_API_KEY=${KMA_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     depends_on:
       - postgres
       - redis

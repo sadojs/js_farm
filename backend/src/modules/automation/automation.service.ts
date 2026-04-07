@@ -145,13 +145,13 @@ export class AutomationService {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    // todayCount: 관수 관련 타입만 카운트 (irrigation, irrigation_started, irrigation_cancelled)
+    // todayCount: 완료/취소만 카운트 (started 제외 — 시작+완료가 각각 1건으로 중복 집계되는 문제 방지)
     const todayCount = await this.logsRepo
       .createQueryBuilder('l')
       .where('l.user_id = :userId', { userId })
       .andWhere('l.executed_at >= :today', { today })
       .andWhere("l.conditions_met->>'type' IN (:...types)", {
-        types: ['irrigation', 'irrigation_started', 'irrigation_cancelled'],
+        types: ['irrigation', 'irrigation_cancelled'],
       })
       .getCount()
 
@@ -184,7 +184,7 @@ export class AutomationService {
   async runRuleNow(id: string, userId: string) {
     const rule = await this.rulesRepo.findOne({ where: { id, userId } });
     if (!rule) throw new NotFoundException();
-    return this.runnerService.executeRule(rule);
+    return this.runnerService.forceExecuteRule(rule);
   }
 
   private determineRuleType(conditions: any): 'weather' | 'time' | 'hybrid' {

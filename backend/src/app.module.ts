@@ -19,11 +19,12 @@ import { SensorAlertsModule } from './modules/sensor-alerts/sensor-alerts.module
 import { EnvConfigModule } from './modules/env-config/env-config.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ActivityLogModule } from './modules/activity-log/activity-log.module';
+import { VoiceModule } from './modules/voice/voice.module';
 import { RetentionService } from './common/retention.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env', '../.env'] }),
     ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     TypeOrmModule.forRootAsync({
@@ -51,6 +52,7 @@ import { RetentionService } from './common/retention.service';
     EnvConfigModule,
     NotificationsModule,
     ActivityLogModule,
+    VoiceModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

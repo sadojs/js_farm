@@ -45,6 +45,50 @@ export class AutomationRunnerService {
     }
   }
 
+  /** 조건 무시, 액션만 즉시 실행 (음성 명령 등에서 사용) */
+  async forceExecuteRule(rule: AutomationRule) {
+    this.logger.log(`강제 실행: rule=${rule.name} (조건 무시)`);
+    const actionResults: any[] = [];
+    let success = true;
+    let errorMessage: string | undefined;
+
+    try {
+      const actions = Array.isArray(rule.actions) ? rule.actions : [rule.actions];
+      for (const action of actions) {
+        const executed = await this.executeAction(rule, action);
+        actionResults.push(executed);
+      }
+
+      this.eventsGateway.broadcastAutomationExecuted({
+        ruleId: rule.id,
+        ruleName: rule.name,
+        success: true,
+        actions: actionResults,
+      });
+    } catch (err: any) {
+      success = false;
+      errorMessage = err?.message || '강제 실행 실패';
+      this.logger.error(`Rule ${rule.id} force execution failed: ${errorMessage}`);
+    }
+
+    const deviceNames = actionResults
+      .flatMap((r: any) => r.devices || [])
+      .map((d: any) => d.deviceName || d.deviceId)
+      .filter(Boolean);
+    await this.logsRepo.save(
+      this.logsRepo.create({
+        ruleId: rule.id,
+        userId: rule.userId,
+        success,
+        conditionsMet: { type: 'force_execute', ruleName: rule.name },
+        actionsExecuted: { deviceNames, results: actionResults },
+        errorMessage,
+      }),
+    );
+
+    return { executed: success, actions: actionResults, errorMessage };
+  }
+
   async executeRule(rule: AutomationRule) {
     const evaluatedAt = new Date();
     const conditionResult = await this.evaluateRuleConditions(rule, evaluatedAt);
