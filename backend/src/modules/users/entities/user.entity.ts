@@ -26,6 +26,9 @@ export class User {
   @Column({ nullable: true })
   address: string;
 
+  @Column({ name: 'voice_aliases', type: 'jsonb', default: '{}' })
+  voiceAliases: Record<string, string>;
+
   @Column({ default: 'active' })
   status: 'active' | 'inactive';
 
