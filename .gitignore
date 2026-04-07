@@ -62,3 +62,4 @@ package.json
 
 # PDCA snapshots (auto-generated)
 docs/.pdca-snapshots/
+certs/
