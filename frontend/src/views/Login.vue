@@ -16,10 +16,12 @@
             type="text"
             name="username"
             autocomplete="username"
+            autocapitalize="none"
             placeholder="아이디를 입력하세요"
             pattern="[a-z][a-z0-9_\-]{2,49}"
             class="form-input"
             required
+            @input="loginData.username = loginData.username.toLowerCase()"
           />
         </div>
 
