@@ -385,19 +385,13 @@ export class AutomationService {
     return ids;
   }
 
-  /** 원격제어 자동 ON (FR-03) */
+  /** 원격제어 자동 ON (FR-03) — B접점 페어 동시 ON */
   private async ensureRemoteControlOn(deviceId: string): Promise<boolean> {
     try {
       const device = await this.devicesRepo.findOne({ where: { id: deviceId } });
       if (!device) return false;
 
-      const mapping = this.devicesService.getEffectiveMapping(device);
-      const remoteCode = mapping['remote_control'];
-      if (!remoteCode) return false;
-
-      const credentials = await this.tuyaRepo.findOne({
-        where: { userId: device.userId, enabled: true },
-      });
+      const credentials = await this.tuyaRepo.findOne({ where: { userId: device.userId, enabled: true } });
       if (!credentials) return false;
 
       const tuyaCreds = {
@@ -406,10 +400,29 @@ export class AutomationService {
         endpoint: credentials.endpoint,
       };
 
-      await this.tuyaService.sendDeviceCommand(tuyaCreds, device.tuyaDeviceId, [
+      // channelMapping 없으면 Tuya 상태로 switch 코드 확인 (12포트 B접점 정확도)
+      let switchCodes: string[] = [];
+      if (!device.channelMapping) {
+        try {
+          const status = await this.tuyaService.getDeviceStatus(tuyaCreds, device.tuyaDeviceId);
+          switchCodes = (status?.result || [])
+            .filter((s: any) => typeof s.value === 'boolean' && s.code.startsWith('switch_'))
+            .map((s: any) => s.code);
+        } catch { /* 실패 시 기본 매핑 사용 */ }
+      }
+
+      const mapping = this.devicesService.getEffectiveMapping(device, switchCodes);
+      const remoteCode = mapping['remote_control'];
+      const bContactCode = mapping['fertilizer_b_contact'];
+      if (!remoteCode) return false;
+
+      // 원격제어 + B접점 동시 ON
+      const commands: { code: string; value: boolean }[] = [
         { code: remoteCode, value: true },
-      ]);
-      this.logger.log(`원격제어 자동 ON: ${device.name}`);
+        ...(bContactCode ? [{ code: bContactCode, value: true }] : []),
+      ];
+      await this.tuyaService.sendDeviceCommand(tuyaCreds, device.tuyaDeviceId, commands);
+      this.logger.log(`원격제어 + B접점 자동 ON: ${device.name} (${commands.map(c => c.code).join(', ')})`);
       return true;
     } catch (err: any) {
       this.logger.warn(`원격제어 자동 ON 실패: ${err.message}`);

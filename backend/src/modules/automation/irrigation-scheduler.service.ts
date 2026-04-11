@@ -130,23 +130,30 @@ export class IrrigationSchedulerService {
       endpoint: credentials.endpoint,
     };
 
-    // 장비 채널 매핑 로드
-    const mapping = this.devicesService.getEffectiveMapping(device);
-
-    // 원격제어(remote_control) OFF 상태면 스케줄 스킵
-    const remoteControlSwitch = mapping['remote_control'];
+    // Tuya 상태 조회 — 원격제어 확인 + 실제 switch 코드로 12포트 여부 감지
+    let switchCodes: string[] = [];
     try {
       const statusResult = await this.tuyaService.getDeviceStatus(tuyaCreds, device.tuyaDeviceId);
-      const remoteControlOn = (statusResult?.result || []).find(
-        (s: any) => s.code === remoteControlSwitch,
+      const allStatus: any[] = statusResult?.result || [];
+      switchCodes = allStatus
+        .filter((s: any) => typeof s.value === 'boolean' && s.code.startsWith('switch_'))
+        .map((s: any) => s.code);
+
+      // 장비 채널 매핑 로드 (switchCodes로 12포트 정확 감지)
+      const mappingForCheck = this.devicesService.getEffectiveMapping(device, switchCodes);
+      const remoteControlOn = allStatus.find(
+        (s: any) => s.code === mappingForCheck['remote_control'],
       )?.value === true;
       if (!remoteControlOn) {
-        this.logger.log(`관주 일정 스킵: 원격제어(${remoteControlSwitch}) OFF - ${rule.name}`);
+        this.logger.log(`관주 일정 스킵: 원격제어(${mappingForCheck['remote_control']}) OFF - ${rule.name}`);
         return;
       }
     } catch (err: any) {
       this.logger.warn(`원격제어 상태 확인 실패, 스케줄 진행: ${err.message}`);
     }
+
+    // 장비 채널 매핑 로드 (switchCodes 기반으로 12포트 정확 감지)
+    const mapping = this.devicesService.getEffectiveMapping(device, switchCodes);
 
     // 타임라인 생성
     const timeline = this.buildTimeline(conditions, mapping);

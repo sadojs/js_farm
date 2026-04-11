@@ -164,7 +164,17 @@ export class DevicesService {
     // 관수 장비의 원격제어 스위치 명령 시 연동 처리
     let finalCommands = commands;
     if (device.equipmentType === 'irrigation') {
-      const mapping = this.getEffectiveMapping(device);
+      // channelMapping 미저장 시 Tuya 상태로 포트 수 감지 (12포트 B접점 오매핑 방지)
+      let switchCodes: string[] = [];
+      if (!device.channelMapping) {
+        try {
+          const statusResult = await this.tuyaService.getDeviceStatus(credentials, device.tuyaDeviceId);
+          switchCodes = (statusResult?.result || [])
+            .filter((s: any) => typeof s.value === 'boolean' && s.code.startsWith('switch_'))
+            .map((s: any) => s.code);
+        } catch { /* 상태 조회 실패 시 기본 매핑 사용 */ }
+      }
+      const mapping = this.getEffectiveMapping(device, switchCodes);
       const remoteControlSwitch = mapping['remote_control'];
       const fertilizerBSwitch = mapping['fertilizer_b_contact'];
       const remoteCmd = commands.find(c => c.code === remoteControlSwitch);
@@ -174,10 +184,29 @@ export class DevicesService {
           { code: fertilizerBSwitch, value: remoteCmd.value },
         ];
         if (remoteCmd.value === false) {
-          // 원격제어 OFF: 나머지 기능 전체 강제 OFF
+          // 원격제어 OFF: 모든 스위치 강제 OFF
           for (const fn of ['zone_1', 'zone_2', 'zone_3', 'zone_4', 'zone_5', 'zone_6', 'zone_7', 'zone_8', 'mixer', 'fertilizer_motor']) {
             const sw = mapping[fn];
             if (sw) extraCommands.push({ code: sw, value: false });
+          }
+          // 원격제어 OFF: 해당 장치의 활성 관주 자동화 룰 전체 비활성화
+          try {
+            const allRules = await this.rulesRepo.find({ where: { userId: device.userId, enabled: true } });
+            const toDisable = allRules.filter(r => {
+              if ((r.conditions as any)?.type !== 'irrigation') return false;
+              const acts = r.actions as any;
+              const ids: string[] = [];
+              if (acts?.targetDeviceId) ids.push(acts.targetDeviceId);
+              if (Array.isArray(acts?.targetDeviceIds)) ids.push(...acts.targetDeviceIds);
+              return ids.includes(id);
+            });
+            if (toDisable.length > 0) {
+              for (const r of toDisable) r.enabled = false;
+              await this.rulesRepo.save(toDisable);
+              this.logger.log(`원격제어 OFF → 관주 룰 ${toDisable.length}개 자동 비활성화: ${device.name}`);
+            }
+          } catch (err: any) {
+            this.logger.warn(`관주 룰 비활성화 실패: ${err.message}`);
           }
         }
         finalCommands = [...commands, ...extraCommands];

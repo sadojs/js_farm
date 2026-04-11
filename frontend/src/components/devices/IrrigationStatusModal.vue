@@ -155,6 +155,7 @@ onMounted(() => {
 .status-modal {
   background: var(--bg-card); border-radius: 16px; width: 100%;
   max-width: 460px; box-shadow: var(--shadow-modal);
+  max-height: calc(100vh - 40px); display: flex; flex-direction: column;
 }
 .status-modal-header {
   display: flex; justify-content: space-between; align-items: center;
@@ -165,7 +166,7 @@ onMounted(() => {
   background: none; border: none; font-size: var(--font-size-subtitle); color: var(--text-muted);
   cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
 }
-.status-modal-body { padding: 16px 24px 0; }
+.status-modal-body { padding: 16px 24px 0; overflow-y: auto; flex: 1; min-height: 0; }
 
 .status-header-row {
   display: flex; align-items: center; padding: 0 0 8px;
