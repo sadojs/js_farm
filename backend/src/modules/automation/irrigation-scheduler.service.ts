@@ -188,6 +188,7 @@ export class IrrigationSchedulerService {
     const enabledZones = conditions.zones.filter((z: any) => z.enabled);
     const totalIrrigationMin = enabledZones.reduce((sum: number, z: any) => sum + (z.duration || 0), 0);
     const fertilizerMin = conditions.fertilizer?.enabled ? (conditions.fertilizer.duration || 0) : 0;
+    const groupName = await this.fetchGroupName(rule.groupId);
     await this.logsRepo.save(
       this.logsRepo.create({
         ruleId: rule.id,
@@ -197,6 +198,7 @@ export class IrrigationSchedulerService {
           type: 'irrigation_started',
           startTime: conditions.startTime,
           deviceName: device.name,
+          groupName,
           enabledZones: enabledZones.length,
           totalZones: conditions.zones.length,
           irrigationMin: totalIrrigationMin,
@@ -262,6 +264,7 @@ export class IrrigationSchedulerService {
               type: 'irrigation',
               startTime: conditions.startTime,
               deviceName: device.name,
+              groupName: await this.fetchGroupName(rule.groupId),
               enabledZones: conditions.zones.filter((z: any) => z.enabled).length,
               totalZones: conditions.zones.length,
               irrigationMin: conditions.zones.filter((z: any) => z.enabled).reduce((s: number, z: any) => s + (z.duration || 0), 0),
@@ -457,5 +460,15 @@ export class IrrigationSchedulerService {
       }
     }
     return false;
+  }
+
+  private async fetchGroupName(groupId: string | null | undefined): Promise<string | null> {
+    if (!groupId) return null;
+    try {
+      const rows = await this.devicesRepo.query('SELECT name FROM house_groups WHERE id = $1', [groupId]);
+      return rows?.[0]?.name || null;
+    } catch {
+      return null;
+    }
   }
 }
