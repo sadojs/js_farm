@@ -20,6 +20,7 @@ export interface VoiceResponse {
   speech: string;
   action?: string;
   data?: any;
+  parsedBy?: 'rule' | 'claude';
 }
 
 @Injectable()
@@ -62,7 +63,7 @@ export class VoiceService {
         await this.learnAlias(effectiveUserId, text, parsed.deviceId);
       }
 
-      return result;
+      return { ...result, parsedBy: 'claude' };
     } catch (error) {
       this.logger.error(`음성 명령 처리 실패: ${error.message}`);
       return { success: false, speech: '명령 처리 중 오류가 발생했습니다. 다시 시도해주세요.' };

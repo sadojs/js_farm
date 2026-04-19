@@ -66,7 +66,7 @@ function formatTime(dateStr: string): string {
 onMounted(async () => {
   const [s, l] = await Promise.all([
     automationLogApi.getStats(),
-    automationLogApi.getLogs({ limit: 10, type: 'irrigation' }),
+    automationLogApi.getLogs({ limit: 5, type: 'irrigation' }),
   ])
   stats.value = s
   irrigationLogs.value = Array.isArray(l) ? l : (l.data ?? [])

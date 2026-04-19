@@ -10,83 +10,67 @@
 
     <!-- 사용자 목록 -->
     <div v-if="loading" class="empty-state"><p>사용자 목록을 불러오는 중...</p></div>
-    <div v-else class="users-table-container">
-      <table class="users-table">
-        <thead>
-          <tr>
-            <th>이름</th>
-            <th>아이디</th>
-            <th>역할</th>
-            <th>주소</th>
-            <th>센서 프로젝트</th>
-            <th>등록일</th>
-            <th>상태</th>
-            <th>작업</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="user in users" :key="user.id">
-            <td>
-              <div class="user-name">
-                <div class="user-avatar">{{ user.name.charAt(0) }}</div>
-                <span>{{ user.name }}</span>
-              </div>
-            </td>
-            <td>{{ user.username }}</td>
-            <td>
-              <span class="role-badge" :class="user.role">
-                {{ roleLabel(user.role) }}
-              </span>
-              <span v-if="user.parentUserName" class="parent-badge">
-                {{ user.parentUserName }}
-              </span>
-            </td>
-            <td>
-              <span class="address-text">{{ user.address || '-' }}</span>
-            </td>
-            <td>
-              <span v-if="user.tuyaProject?.enabled && user.tuyaProject?.name" class="project-badge">
-                {{ user.tuyaProject.name }}
-              </span>
-              <span v-else class="text-muted">미설정</span>
-            </td>
-            <td>{{ user.createdAt }}</td>
-            <td>
-              <span class="status-badge" :class="user.status">
-                {{ user.status === 'active' ? '활성' : '비활성' }}
-              </span>
-            </td>
-            <td>
-              <div class="action-buttons">
-                <button
-                  class="btn-icon"
-                  title="편집"
-                  @click="editUser(user)"
-                >
-                  ✏️
-                </button>
-                <button
-                  class="btn-icon"
-                  title="센서 프로젝트 할당"
-                  @click="assignProject(user)"
-                >
-                  🔗
-                </button>
-                <button
-                  class="btn-icon danger"
-                  title="삭제"
-                  @click="deleteUser(user)"
-                >
-                  🗑️
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
+    <div v-else class="user-list">
       <div v-if="users.length === 0" class="empty-state">
         <p>등록된 사용자가 없습니다</p>
+      </div>
+
+      <div v-for="user in users" :key="user.id" class="user-card">
+        <!-- ── 1행: 기본 정보 ── -->
+        <div class="user-row-main">
+          <div class="user-identity">
+            <div class="user-avatar">{{ user.name.charAt(0) }}</div>
+            <div class="user-text">
+              <span class="user-name">{{ user.name }}</span>
+              <span class="user-username">@{{ user.username }}</span>
+            </div>
+          </div>
+
+          <div class="user-meta">
+            <span class="role-badge" :class="user.role">{{ roleLabel(user.role) }}</span>
+            <span v-if="user.parentUserName" class="parent-badge">{{ user.parentUserName }}</span>
+          </div>
+
+          <div class="user-info-chips">
+            <span v-if="user.address" class="info-chip">📍 {{ user.address }}</span>
+            <span v-if="user.tuyaProject?.enabled && user.tuyaProject?.name" class="info-chip project">
+              🔗 {{ user.tuyaProject.name }}
+            </span>
+            <span class="info-chip date">📅 {{ user.createdAt }}</span>
+          </div>
+
+          <span class="status-badge" :class="user.status">
+            {{ user.status === 'active' ? '활성' : '비활성' }}
+          </span>
+
+          <div class="action-buttons">
+            <button class="btn-icon" title="편집" @click="editUser(user)">✏️</button>
+            <button class="btn-icon" title="센서 프로젝트 할당" @click="assignProject(user)">🔗</button>
+            <button class="btn-icon danger" title="삭제" @click="deleteUser(user)">🗑️</button>
+          </div>
+        </div>
+
+        <!-- ── 2행: 기능 설정 (farm_admin만) ── -->
+        <div v-if="user.role === 'farm_admin'" class="user-row-features">
+          <span class="features-label">기능 설정</span>
+          <div class="feature-toggles">
+            <!-- 생육관리 -->
+            <div class="feature-toggle-item">
+              <span class="feature-toggle-name">🌱 생육관리</span>
+              <button
+                class="toggle-btn"
+                :class="{ on: cropFeatureMap[user.id] !== false }"
+                @click="toggleUserCropFeature(user)"
+                :title="cropFeatureMap[user.id] !== false ? '끄기' : '켜기'"
+              >
+                <span class="toggle-knob" />
+              </button>
+              <span class="toggle-state-label">{{ cropFeatureMap[user.id] !== false ? '켜짐' : '꺼짐' }}</span>
+            </div>
+
+            <!-- 향후 기능 추가 시 여기에 삽입 -->
+          </div>
+        </div>
       </div>
     </div>
 
@@ -141,6 +125,8 @@ function roleLabel(role: string): string {
 const authStore = useAuthStore()
 const users = ref<User[]>([])
 const loading = ref(false)
+// 사용자 ID → 생육관리 활성화 여부 (true = 켜짐, false = 꺼짐)
+const cropFeatureMap = ref<Record<string, boolean>>({})
 
 const showUserModal = ref(false)
 const showProjectModal = ref(false)
@@ -149,12 +135,48 @@ const selectedUser = ref<User | null>(null)
 async function fetchUsers() {
   loading.value = true
   try {
-    const { data } = await userApi.getAll()
+    const [{ data }, featureMap] = await Promise.all([
+      userApi.getAll(),
+      fetchCropFeatureMap(),
+    ])
     users.value = data as any
+    cropFeatureMap.value = featureMap
   } catch (err) {
     console.error('사용자 목록 조회 실패:', err)
   } finally {
     loading.value = false
+  }
+}
+
+async function fetchCropFeatureMap(): Promise<Record<string, boolean>> {
+  try {
+    const res = await fetch('/api/crop-management/feature/all', {
+      headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
+    })
+    if (!res.ok) return {}
+    return await res.json()
+  } catch {
+    return {}
+  }
+}
+
+async function toggleUserCropFeature(user: User) {
+  const current = cropFeatureMap.value[user.id] !== false  // undefined도 true 취급
+  const next = !current
+  try {
+    const res = await fetch(`/api/crop-management/feature/users/${user.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+      body: JSON.stringify({ enabled: next }),
+    })
+    if (res.ok) {
+      cropFeatureMap.value = { ...cropFeatureMap.value, [user.id]: next }
+    }
+  } catch (err) {
+    console.error('생육관리 설정 변경 실패:', err)
   }
 }
 
@@ -324,46 +346,164 @@ const handleProjectAssign = async (project: any) => {
   box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
 }
 
-.users-table-container {
+/* ── 카드 목록 ── */
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-card {
   background: var(--bg-card);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   overflow: hidden;
+  border: 1px solid var(--border-light);
 }
 
-.users-table {
-  width: 100%;
-  border-collapse: collapse;
+/* ── 1행: 기본 정보 ── */
+.user-row-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  flex-wrap: wrap;
 }
 
-.users-table thead {
-  background: var(--bg-secondary);
-}
-
-.users-table th {
-  padding: 16px;
-  text-align: left;
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: var(--font-size-label);
-  border-bottom: 2px solid var(--border-input);
-}
-
-.users-table td {
-  padding: 16px;
-  border-bottom: 1px solid var(--border-light);
-  font-size: var(--font-size-label);
-  color: var(--text-secondary);
-}
-
-.users-table tbody tr:hover {
-  background: var(--bg-hover);
-}
-
-.user-name {
+.user-identity {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 160px;
+}
+
+.user-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: var(--font-size-body);
+  color: var(--text-primary);
+}
+
+.user-username {
+  font-size: var(--font-size-caption);
+  color: var(--text-muted);
+}
+
+.user-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.user-info-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+
+.info-chip {
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+  padding: 3px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.info-chip.project {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.info-chip.date {
+  color: var(--text-muted);
+}
+
+/* ── 2행: 기능 설정 ── */
+.user-row-features {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-light);
+  flex-wrap: wrap;
+}
+
+.features-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.feature-toggles {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.feature-toggle-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.feature-toggle-name {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.toggle-btn {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: var(--border-color, #ccc);
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.toggle-btn.on {
+  background: #4caf50;
+}
+
+.toggle-btn .toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  display: block;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle-btn.on .toggle-knob {
+  transform: translateX(18px);
+}
+
+.toggle-state-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  min-width: 28px;
 }
 
 .user-avatar {
@@ -413,23 +553,6 @@ const handleProjectAssign = async (project: any) => {
   color: var(--text-muted);
 }
 
-.address-text {
-  font-size: var(--font-size-caption);
-  color: var(--text-link);
-}
-
-.project-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  background: #e8f5e9;
-  color: #2e7d32;
-  border-radius: 8px;
-  font-size: var(--font-size-caption);
-  font-weight: 500;
-  font-family: monospace;
-  white-space: nowrap;
-}
-
 .text-muted {
   color: var(--text-muted);
   font-style: italic;
@@ -454,6 +577,7 @@ const handleProjectAssign = async (project: any) => {
   background: #ffebee;
   color: #c62828;
 }
+
 
 .action-buttons {
   display: flex;

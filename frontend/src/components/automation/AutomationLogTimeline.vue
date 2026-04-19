@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { automationLogApi, type AutomationLogEntry, type AutomationLogStats } from '@/api/automation-log.api'
+import { automationLogApi, type AutomationLogEntry } from '@/api/automation-log.api'
 import EmptyState from '@/components/common/EmptyState.vue'
 
 const logs = ref<AutomationLogEntry[]>([])

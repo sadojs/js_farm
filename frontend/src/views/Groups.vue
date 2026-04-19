@@ -659,7 +659,8 @@ const handleIrrigationControl = async (device: Device, switchCode: string) => {
       if (isRemoteControl && !newVal) {
         const m = deviceStore.getEffectiveMapping(storeDevice)
         for (const fn of Object.keys(m)) {
-          if (m[fn]) storeDevice.switchStates[m[fn]] = false
+          const code = m[fn]
+          if (code) storeDevice.switchStates[code] = false
         }
       }
     }

@@ -20,21 +20,38 @@ frontend/src/
 shared/                ← 프론트/백엔드 공유 타입
 docs/                  ← PDCA 문서 (01-plan, 02-design, 03-analysis)
 certs/                 ← 로컬 자체 서명 인증서 (.gitignore 대상)
-docker-compose.yml     ← postgres(TimescaleDB), redis, backend, frontend (80+443)
-farm.sh                ← Docker 관리 헬퍼 스크립트
+docker-compose.yml     ← postgres(TimescaleDB), redis용 (DB/Redis만 Docker, 앱은 로컬)
+smartfarm.sh           ← 로컬 서비스 관리 CLI (symlink: /opt/homebrew/bin/smartfarm)
+farm.sh                ← 프로덕션 서버(175.206.245.234)용 Docker 관리 스크립트
 ```
 
 ## 실행 방법
 
+### ⚠️ 로컬 개발 환경 (macOS, ohjeongseok) — Docker 아님
+**Docker가 설치되어 있지 않음. 앱은 로컬 Node.js로 직접 실행.**
+
 ```bash
-# Docker로 전체 실행
-docker compose up -d
+# 서비스 관리 (LaunchAgent로 자동 실행, 재부팅 후에도 자동 시작)
+smartfarm start     # 서비스 시작
+smartfarm stop      # 서비스 중지
+smartfarm restart   # 재시작
+smartfarm status    # 상태 확인
+smartfarm logs      # 로그 보기 (backend|frontend)
+smartfarm build     # 빌드 (코드 변경 후 반드시 실행)
+smartfarm update    # git pull + 빌드 + 재시작
 
-# 개발 모드 (HTTPS — certs/ 폴더에 인증서 있으면 자동 적용)
-cd backend && npm run start:dev    # localhost:3000
-cd frontend && npm run dev         # https://localhost:5173
+# 실행 방식
+backend:  node dist/main.js          (포트 3000, LaunchAgent: com.smartfarm.backend)
+frontend: npm run preview            (포트 4173, LaunchAgent: com.smartfarm.frontend)
+logs:     smart-farm-platform/logs/backend.stdout.log 등
 
-# farm.sh 헬퍼
+# DB/Redis는 Homebrew로 로컬 실행 (postgresql@15, redis)
+# 코드 수정 후 반드시: smartfarm build && smartfarm restart
+```
+
+### 프로덕션 서버 (175.206.245.234, jeongseok) — Docker 사용
+```bash
+# farm.sh는 프로덕션 전용
 ./farm.sh start|stop|restart|logs
 ```
 

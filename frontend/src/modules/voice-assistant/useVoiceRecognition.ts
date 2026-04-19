@@ -96,6 +96,8 @@ export function useVoiceRecognition() {
         return
       }
 
+      // 에코 방지: TTS 전 마이크 확실히 중지
+      stopListening()
       // 기존 TTS 중지
       window.speechSynthesis.cancel()
 
