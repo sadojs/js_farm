@@ -113,19 +113,19 @@
     <div v-if="loadingData" class="loading-state">데이터를 불러오는 중...</div>
 
     <template v-else-if="hourlyData.length > 0 && !envWarning">
-      <!-- 통계 카드 -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">평균 온도</div>
-          <div class="stat-value temp">{{ avgTemp }}<span class="stat-unit">°C</span></div>
+      <!-- 통계 요약 카드 (3칸) -->
+      <div class="report-summary-cards">
+        <div class="summary-card">
+          <div class="summary-label">평균 온도</div>
+          <div class="summary-value">{{ avgTemp }}<span class="summary-unit">°C</span></div>
         </div>
-        <div class="stat-card">
-          <div class="stat-label">평균 습도</div>
-          <div class="stat-value humidity">{{ avgHumidity }}<span class="stat-unit">%</span></div>
+        <div class="summary-card">
+          <div class="summary-label">평균 습도</div>
+          <div class="summary-value">{{ avgHumidity }}<span class="summary-unit">%</span></div>
         </div>
-        <div class="stat-card">
-          <div class="stat-label">장치 가동 시간</div>
-          <div class="stat-value actuator">{{ actuatorHours }}<span class="stat-unit">시간</span></div>
+        <div class="summary-card">
+          <div class="summary-label">장치 가동</div>
+          <div class="summary-value">{{ actuatorHours }}<span class="summary-unit">회</span></div>
         </div>
       </div>
 
@@ -145,10 +145,15 @@
         </div>
       </div>
 
-      <!-- 상세 데이터 테이블 -->
+      <!-- 상세 데이터 테이블 (접기/펼치기) -->
       <div class="chart-card">
-        <h3 class="chart-title">상세 데이터</h3>
-        <div class="table-container">
+        <div class="detail-table-header">
+          <h3 class="chart-title">상세 데이터</h3>
+          <button class="btn-detail-toggle report-detail-toggle" @click="showDetailTable = !showDetailTable">
+            {{ showDetailTable ? '접기' : '펼치기' }}
+          </button>
+        </div>
+        <div v-if="showDetailTable" class="table-container">
           <table class="data-table">
             <thead>
               <tr>
@@ -197,7 +202,7 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import { useLocalStorage } from '@vueuse/core'
 import { formatChartTimeLabel } from '../utils/date-format'
 import SensorCompareChart from '@/components/reports/SensorCompareChart.vue'
-import { exportToCsv, exportToExcel, formatSensorDataForExport } from '@/utils/export'
+// export utilities reserved for future use
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler)
 
@@ -224,6 +229,7 @@ const endDate = ref('')
 const loadingData = ref(false)
 const envWarning = ref(false)
 const reportTab = ref<'data' | 'compare'>('data')
+const showDetailTable = ref(false)
 
 const groups = computed(() => groupStore.groups)
 
@@ -271,6 +277,7 @@ const actuatorHours = computed(() => {
   if (actuatorData.value.length === 0) return '0'
   return actuatorData.value.reduce((sum: number, d: any) => sum + Number(d.total_actions || 0), 0)
 })
+
 
 // 차트 색상
 const CHART_COLORS: Record<string, { border: string; bg: string }> = {
@@ -621,10 +628,6 @@ async function exportToPDF() {
   window.print()
 }
 
-function getSensorTypeLabel(type: string): string {
-  const opt = sensorTypeOptions.find(o => o.value === type)
-  return opt ? opt.label : type
-}
 
 
 async function checkEnvWarning(groupId: string) {
@@ -806,6 +809,36 @@ onMounted(async () => {
   font-variant-numeric: tabular-nums;
 }
 .data-table tbody tr:hover { background: var(--bg-hover); }
+
+/* 상세 데이터 테이블 헤더 + 접기 버튼 */
+.detail-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0;
+}
+.detail-table-header .chart-title { margin-bottom: 0; }
+
+.btn-detail-toggle {
+  padding: 6px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  font-size: var(--font-size-caption);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  min-height: 36px;
+}
+.btn-detail-toggle:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* 펼침 시 테이블 컨테이너 마진 */
+.table-container { margin-top: 12px; overflow-x: auto; }
 
 .env-warning-banner {
   display: flex;

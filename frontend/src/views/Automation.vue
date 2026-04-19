@@ -61,29 +61,36 @@
           <span class="rule-type-badge">{{ ruleTypeLabel(rule) }}</span>
         </div>
 
-        <!-- 관주 설정: 일정 정보 -->
-        <template v-if="isIrrigationConditions(rule.conditions)">
-          <div class="rule-body irrigation-body">
-            <div class="irrigation-schedule-row">
-              <span class="section-title">일정</span>
-              <span class="section-content">{{ formatIrrigationSchedule(rule.conditions) }}</span>
-            </div>
-            <div class="irrigation-schedule-row">
-              <span class="section-title">구역</span>
-              <span class="section-content">{{ formatIrrigationZones(rule.conditions) }}</span>
-            </div>
-          </div>
-        </template>
+        <!-- 룰 한 줄 요약 -->
+        <p class="rule-oneline">{{ ruleOneLine(rule) }}</p>
 
-        <!-- 일반 설정: 조건만 표시 -->
-        <template v-else>
-          <div class="rule-body">
-            <div class="rule-section condition">
-              <span class="section-title">조건</span>
-              <span class="section-content">{{ formatConditionGroup(rule.conditions) }}</span>
+        <!-- 상세 접기/펼치기 -->
+        <details class="rule-details">
+          <summary>자세히 보기</summary>
+          <!-- 관주 설정: 일정 정보 -->
+          <template v-if="isIrrigationConditions(rule.conditions)">
+            <div class="rule-body irrigation-body">
+              <div class="irrigation-schedule-row">
+                <span class="section-title">일정</span>
+                <span class="section-content">{{ formatIrrigationSchedule(rule.conditions) }}</span>
+              </div>
+              <div class="irrigation-schedule-row">
+                <span class="section-title">구역</span>
+                <span class="section-content">{{ formatIrrigationZones(rule.conditions) }}</span>
+              </div>
             </div>
-          </div>
-        </template>
+          </template>
+
+          <!-- 일반 설정: 조건만 표시 -->
+          <template v-else>
+            <div class="rule-body">
+              <div class="rule-section condition">
+                <span class="section-title">조건</span>
+                <span class="section-content">{{ formatConditionGroup(rule.conditions) }}</span>
+              </div>
+            </div>
+          </template>
+        </details>
 
         <!-- 장치 목록 -->
         <div v-if="getRuleDeviceNames(rule).length > 0" class="rule-devices">
@@ -130,6 +137,7 @@ import { useNotificationStore } from '../stores/notification.store'
 import type { AutomationRule } from '../types/automation.types'
 import RuleWizardModal from '../components/automation/RuleWizardModal.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
+import { oneLineRule } from '../utils/sensor-labels'
 // AutomationLogTimeline → 활동 로그 페이지로 이전됨
 
 const automationStore = useAutomationStore()
@@ -260,6 +268,41 @@ async function handleDelete(rule: AutomationRule) {
 function onRuleSaved() {
   // store에서 이미 fetchRules를 호출하므로 별도 처리 불필요
 }
+
+/**
+ * 룰 한 줄 요약: 관수 스케줄 룰은 formatConditionGroup 그대로 유지,
+ * 단순 센서 조건 룰은 oneLineRule() 사용
+ */
+function ruleOneLine(rule: AutomationRule): string {
+  // 관수 스케줄 룰
+  if (isIrrigationConditions(rule.conditions)) {
+    return formatIrrigationSchedule(rule.conditions)
+  }
+
+  // 단순 센서 조건 룰 파싱 시도
+  const conditions = rule.conditions as any
+  const actions = rule.actions as any
+
+  // sensor 조건 구조: { type: 'sensor', sensorKey, operator, threshold }
+  const sensorKey: string | undefined = conditions?.sensorKey
+  const operator: string | undefined = conditions?.operator
+  const threshold = conditions?.threshold
+
+  // 액션: { actionKey, targetDeviceIds }
+  const actionKey: string | undefined = actions?.actionKey
+
+  if (sensorKey && operator && threshold !== undefined && actionKey) {
+    return oneLineRule({ sensorKey, operator, threshold, actionKey })
+  }
+
+  // 복합 조건 룰 — formatConditionGroup 폴백
+  const summary = formatConditionGroup(rule.conditions)
+  if (summary) return summary
+
+  // 최후 폴백: 룰 이름
+  return rule.name
+}
+
 
 onMounted(async () => {
   await Promise.all([

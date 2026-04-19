@@ -20,6 +20,7 @@ import { EnvConfigModule } from './modules/env-config/env-config.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ActivityLogModule } from './modules/activity-log/activity-log.module';
 import { VoiceModule } from './modules/voice/voice.module';
+import { CropManagementModule } from './modules/crop-management/crop-management.module';
 import { RetentionService } from './common/retention.service';
 
 @Module({
@@ -53,6 +54,7 @@ import { RetentionService } from './common/retention.service';
     NotificationsModule,
     ActivityLogModule,
     VoiceModule,
+    CropManagementModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

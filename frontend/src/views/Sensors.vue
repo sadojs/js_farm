@@ -58,6 +58,12 @@
             <p>환경 데이터를 불러오는 중...</p>
           </div>
           <template v-else-if="resolvedByGroup[group.id]">
+            <!-- 환경 행동 권고 카드 -->
+            <EnvActionCard
+              v-if="isEnvConfigured(group.id)"
+              :score="getGroupEnvScore(group.id)"
+              :worst="getGroupWorstMetric(group.id)"
+            />
             <!-- 모바일 접이식 센서 뷰 -->
             <div class="mobile-metric-accordion" v-if="isEnvConfigured(group.id)">
               <div
@@ -119,6 +125,7 @@ import type { ResolvedValue } from '@/api/env-config.api'
 import ResolvedEnvPanel from '@/components/dashboard/ResolvedEnvPanel.vue'
 import GroupEnvScore from '@/components/dashboard/GroupEnvScore.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
+import EnvActionCard from '@/components/sensors/EnvActionCard.vue'
 import type { Device } from '@/types/device.types'
 
 const groupStore = useGroupStore()
@@ -341,6 +348,56 @@ onUnmounted(() => {
   off('sensor:update', handleSensorUpdate)
   if (refreshTimer) clearTimeout(refreshTimer)
 })
+
+/**
+ * 그룹 환경 점수 계산 (0~100)
+ * resolved metrics의 status를 기반으로 단순 평균
+ */
+function getGroupEnvScore(groupId: string): number {
+  const resolved = resolvedByGroup.value[groupId]
+  if (!resolved) return 100
+
+  const metrics = (resolved as any)?.metrics
+  if (!metrics) return 100
+
+  const entries = Object.values(metrics) as any[]
+  if (entries.length === 0) return 100
+
+  const scores = entries.map((m: any) => {
+    const status = m?.status || 'normal'
+    if (status === 'normal' || status === 'good') return 100
+    if (status === 'warning') return 60
+    if (status === 'danger') return 20
+    return 80
+  })
+
+  return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+}
+
+/**
+ * 그룹에서 가장 나쁜 메트릭 키 반환
+ */
+function getGroupWorstMetric(groupId: string): string {
+  const resolved = resolvedByGroup.value[groupId]
+  if (!resolved) return ''
+
+  const metrics = (resolved as any)?.metrics
+  if (!metrics) return ''
+
+  let worstKey = ''
+  let worstScore = 999
+
+  for (const [key, m] of Object.entries(metrics) as [string, any][]) {
+    const status = m?.status || 'normal'
+    const score = status === 'danger' ? 0 : status === 'warning' ? 1 : 2
+    if (score < worstScore) {
+      worstScore = score
+      worstKey = key
+    }
+  }
+
+  return worstKey
+}
 </script>
 
 <style scoped>

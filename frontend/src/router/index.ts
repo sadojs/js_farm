@@ -40,6 +40,12 @@ const router = createRouter({
       meta: { title: '구역 관리', requiresAuth: true }
     },
     {
+      path: '/crop-management',
+      name: 'crop-management',
+      component: () => import('../modules/crop-management/CropManagementView.vue'),
+      meta: { title: '생육관리', requiresAuth: true }
+    },
+    {
       path: '/devices',
       name: 'devices',
       component: () => import('../views/Devices.vue'),

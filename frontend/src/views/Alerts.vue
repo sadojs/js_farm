@@ -3,10 +3,9 @@
     <!-- 헤더 -->
     <header class="page-header">
       <div>
-        <h2>이상 알림</h2>
+        <h2>이상 알림<span v-if="unresolvedCount > 0" class="unresolved-badge-inline">{{ unresolvedCount }}</span></h2>
         <p class="page-description">측정기 이상 감지 및 조치 안내</p>
       </div>
-      <span v-if="unresolvedCount > 0" class="unresolved-badge">{{ unresolvedCount }}</span>
     </header>
 
     <!-- 탭 -->
@@ -193,6 +192,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { sensorAlertsApi, type SensorAlert, type SensorEntry, type AlertDetail } from '../api/sensor-alerts.api'
 import { useNotificationStore } from '../stores/notification.store'
 import { formatDateTime } from '../utils/date-format'
+import { labelOf } from '../utils/sensor-labels'
 
 const notificationStore = useNotificationStore()
 
@@ -212,38 +212,6 @@ const ALERT_TYPE_LABELS: Record<string, string> = {
   spike: '급변',
   out_of_range: '범위 이탈',
   unstable: '측정기 불안정',
-}
-
-const SENSOR_TYPE_LABELS: Record<string, string> = {
-  // 하우스 내부
-  temperature: '온도',
-  humidity: '습도',
-  // 기상 관측
-  dew_point: '이슬점',
-  dew_point_temp: '이슬점 온도',
-  rainfall: '강우량',
-  rain_rate: '강우 강도',
-  rain_1h: '1시간 강우',
-  rain_24h: '24시간 강우',
-  uv: '자외선',
-  uv_index: 'UV 지수',
-  atmospheric_pressture: '기압',
-  pressure_drop: '기압 변화',
-  windspeed_avg: '평균 풍속',
-  windspeed_gust: '돌풍 풍속',
-  // 온도 파생 지표
-  feellike_temp: '체감온도',
-  heat_index: '열지수',
-  windchill_index: '풍속냉각지수',
-  // 실외 온습도 (다채널)
-  temp_current_external: '외부 온도',
-  temp_current_external_1: '외부 온도 1',
-  temp_current_external_2: '외부 온도 2',
-  temp_current_external_3: '외부 온도 3',
-  humidity_outdoor: '외부 습도',
-  humidity_outdoor_1: '외부 습도 1',
-  humidity_outdoor_2: '외부 습도 2',
-  humidity_outdoor_3: '외부 습도 3',
 }
 
 const SENSOR_ICONS: Record<string, string> = {
@@ -302,10 +270,7 @@ const filteredAlerts = computed(() => {
 })
 
 function alertTypeLabel(type: string) { return ALERT_TYPE_LABELS[type] || type }
-function sensorTypeLabel(type: string) {
-  const ko = SENSOR_TYPE_LABELS[type]
-  return ko ? `${ko} (${type})` : type
-}
+function sensorTypeLabel(type: string) { return labelOf(type) }
 function sensorIcon(type: string) { return SENSOR_ICONS[type] || '📡' }
 
 function formatSensorValue(value: number, type: string): string {

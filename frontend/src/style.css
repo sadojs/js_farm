@@ -43,6 +43,10 @@
   --font-size-label: 15px;
   --font-size-caption: 13px;
   --font-size-tiny: 12px;
+
+  /* Phase 01 UX 개선: 40~60대 모바일 가독성 변수 */
+  --touch-target: 48px;
+  --font-size-number: 28px;
 }
 
 /* Scrollbar */
@@ -92,14 +96,19 @@
 
 /* ─── Accessibility ─── */
 
-/* 최소 터치 타겟 (모바일) — 아이콘 전용 버튼만 적용, 텍스트 버튼은 높이만 */
-@media (max-width: 768px) {
+/* 최소 터치 타겟 (모바일) — 48px 기준으로 강화 */
+@media (max-width: 640px) {
   .btn-icon, [role="button"]:not(button) {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: var(--touch-target);
+    min-width: var(--touch-target);
   }
   button {
-    min-height: 44px;
+    min-height: var(--touch-target);
+  }
+
+  /* 모바일 전체 폰트 크기 스케일 업 */
+  body {
+    font-size: 17px;
   }
 }
 
@@ -116,9 +125,11 @@
     min-width: 0;
   }
 
-  /* 설명 텍스트 숨김 → 공간 확보 */
+  /* 설명 텍스트: 표시 (Phase 01 UX 개선 — 숨김 해제) */
   .page-header .page-description {
-    display: none;
+    display: block;
+    font-size: var(--font-size-caption);
+    color: var(--color-text-secondary);
   }
 
   /* 제목 폰트 크기를 content-scale에 연동하되 모바일 최대값 제한 */
@@ -209,4 +220,186 @@
   --device-irrigation: #00bcd4;
   --device-sensor: #9c27b0;
   --device-other: #607d8b;
+}
+
+/* ═══════════════════════════════════════════
+   Phase 01 UX 개선 클래스 (40~60대 모바일 가독성)
+   ═══════════════════════════════════════════ */
+
+/* 환경 행동 권고 카드 */
+.env-action-card {
+  padding: 14px 18px;
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-card, #d0d0d0);
+  border-left: 4px solid var(--accent, #2e7d32);
+  border-radius: 10px;
+  font-size: var(--font-size-body, 17px);
+  font-weight: 600;
+  color: var(--text-primary, #333333);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+.env-action-card .env-action-label {
+  font-size: var(--font-size-label, 15px);
+  color: var(--text-muted, #999999);
+  font-weight: 400;
+  margin-bottom: 4px;
+}
+
+/* 리포트 요약 카드 3칸 그리드 */
+.report-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 480px) {
+  .report-summary-cards {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+.report-summary-cards .summary-card {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-card, #d0d0d0);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06));
+}
+
+.report-summary-cards .summary-card .summary-label {
+  font-size: var(--font-size-caption, 13px);
+  color: var(--text-muted, #999999);
+  margin-bottom: 6px;
+}
+
+.report-summary-cards .summary-card .summary-value {
+  font-size: var(--font-size-number, 28px);
+  font-weight: 700;
+  color: var(--text-primary, #333333);
+  line-height: 1.2;
+}
+
+.report-summary-cards .summary-card .summary-unit {
+  font-size: var(--font-size-caption, 13px);
+  color: var(--text-muted, #999999);
+  margin-left: 2px;
+}
+
+.report-summary-cards .summary-card .summary-time {
+  font-size: var(--font-size-tiny, 12px);
+  color: var(--text-muted, #999999);
+  margin-top: 4px;
+}
+
+/* 글자크기 토글 버튼 그룹 (가/가/가) */
+.mobile-fontsize-toggle {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.mobile-fontsize-toggle button {
+  background: none;
+  border: 1px solid var(--border-color, #d0d0d0);
+  border-radius: 6px;
+  color: var(--text-secondary, #555555);
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 8px;
+  min-height: 32px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mobile-fontsize-toggle button.active {
+  background: var(--accent, #2e7d32);
+  color: #fff;
+  border-color: var(--accent, #2e7d32);
+}
+
+.mobile-fontsize-toggle button:hover:not(.active) {
+  background: var(--bg-hover, #f5f5f5);
+}
+
+.mobile-fontsize-toggle .btn-font-sm { font-size: 12px; }
+.mobile-fontsize-toggle .btn-font-md { font-size: 15px; }
+.mobile-fontsize-toggle .btn-font-lg { font-size: 18px; }
+
+/* 룰 한 줄 요약 텍스트 */
+.rule-oneline {
+  font-size: var(--font-size-label, 15px);
+  font-weight: 600;
+  color: var(--text-primary, #333333);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+/* 룰 접기/펼치기 details */
+.rule-details {
+  margin-top: 6px;
+}
+
+.rule-details > summary {
+  font-size: var(--font-size-caption, 13px);
+  color: var(--text-muted, #999999);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 0;
+}
+
+.rule-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.rule-details > summary::before {
+  content: '▶';
+  font-size: 10px;
+  transition: transform 0.2s;
+}
+
+.rule-details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.rule-details > summary:hover {
+  color: var(--text-secondary, #555555);
+}
+
+/* 영문 키 표시용 모노스페이스 배지 */
+.mono-key {
+  display: inline-block;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 0.82em;
+  background: var(--bg-badge, #f0f0f0);
+  color: var(--text-secondary, #555555);
+  border: 1px solid var(--border-light, #e8e8e8);
+  border-radius: 4px;
+  padding: 1px 6px;
+  line-height: 1.4;
+}
+
+/* h2 제목 안 미해결 카운트 뱃지 */
+.unresolved-badge-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--danger, #e53935);
+  color: #fff;
+  font-size: 0.55em;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  min-width: 22px;
+  text-align: center;
+  vertical-align: middle;
+  margin-left: 8px;
+  line-height: 1.4;
 }
