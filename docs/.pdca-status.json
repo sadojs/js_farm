@@ -1,185 +1,34 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-04-07T11:05:52.627Z",
+  "lastUpdated": "2026-04-19T22:05:43.618Z",
+  "growing-degree-days": {
+    "phase": "act",
+    "matchRate": 97,
+    "iterationCount": 1,
+    "startedAt": "2026-04-12T05:55:00.000Z",
+    "analysisPath": "docs/03-analysis/growing-degree-days.analysis.md"
+  },
   "activeFeatures": [
-    "automation",
-    "frontend",
-    "composables",
-    "admin",
-    "dashboard",
-    "devices",
-    "router",
-    "locales",
-    "users",
-    "integrations",
-    "backend",
-    "api",
+    "growing-degree-days",
     "voice-assistant",
     "voice",
-    "sensor-alerts"
+    "automation",
+    "frontend",
+    "devices",
+    "dashboard",
+    "smart-farm-platform",
+    "crop-management",
+    "backend",
+    "router",
+    "composables",
+    "sensors"
   ],
   "primaryFeature": "voice-assistant",
   "features": {
-    "automation": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
-      "iterationCount": 0,
-      "requirements": [],
-      "documents": {},
-      "timestamps": {
-        "started": "2026-04-04T10:24:17.003Z",
-        "lastUpdated": "2026-04-07T03:37:36.851Z"
-      },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/components/automation/StepIrrigationCondition.vue"
-    },
-    "frontend": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
-      "iterationCount": 0,
-      "requirements": [],
-      "documents": {},
-      "timestamps": {
-        "started": "2026-04-04T10:24:31.532Z",
-        "lastUpdated": "2026-04-07T10:50:26.459Z"
-      },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/views/Login.vue"
-    },
-    "composables": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
-      "iterationCount": 0,
-      "requirements": [],
-      "documents": {},
-      "timestamps": {
-        "started": "2026-04-04T10:29:15.953Z",
-        "lastUpdated": "2026-04-04T10:40:08.407Z"
-      },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/frontend/src/composables/useDashboardLayout.ts"
-    },
-    "admin": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
-      "iterationCount": 0,
-      "requirements": [],
-      "documents": {},
-      "timestamps": {
-        "started": "2026-04-04T10:30:19.437Z",
-        "lastUpdated": "2026-04-05T22:32:39.980Z"
-      },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/components/admin/TelegramLinking.vue"
-    },
-    "dashboard": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
-      "iterationCount": 0,
-      "requirements": [],
-      "documents": {},
-      "timestamps": {
-        "started": "2026-04-04T10:30:41.851Z",
-        "lastUpdated": "2026-04-04T21:20:56.162Z"
-      },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/frontend/src/components/dashboard/IrrigationHistoryWidget.vue"
-    },
-    "devices": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
-      "iterationCount": 0,
-      "requirements": [],
-      "documents": {},
-      "timestamps": {
-        "started": "2026-04-04T10:33:44.078Z",
-        "lastUpdated": "2026-04-04T10:40:29.025Z"
-      },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/frontend/src/components/devices/DeviceRegistration.vue"
-    },
-    "router": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
-      "iterationCount": 0,
-      "requirements": [],
-      "documents": {},
-      "timestamps": {
-        "started": "2026-04-04T10:33:47.665Z",
-        "lastUpdated": "2026-04-04T10:43:30.605Z"
-      },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/frontend/src/router/index.ts"
-    },
-    "locales": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
-      "iterationCount": 0,
-      "requirements": [],
-      "documents": {},
-      "timestamps": {
-        "started": "2026-04-04T10:39:54.857Z",
-        "lastUpdated": "2026-04-04T10:42:48.359Z"
-      },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/i18n/locales/ko.ts"
-    },
-    "users": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
-      "iterationCount": 0,
-      "requirements": [],
-      "documents": {},
-      "timestamps": {
-        "started": "2026-04-05T22:27:32.706Z",
-        "lastUpdated": "2026-04-05T23:05:07.345Z"
-      },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/backend/src/modules/users/entities/user.entity.ts"
-    },
-    "integrations": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
-      "iterationCount": 0,
-      "requirements": [],
-      "documents": {},
-      "timestamps": {
-        "started": "2026-04-05T22:27:51.326Z",
-        "lastUpdated": "2026-04-05T23:06:48.080Z"
-      },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/backend/src/modules/integrations/telegram/telegram.controller.ts"
-    },
-    "backend": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
-      "iterationCount": 0,
-      "requirements": [],
-      "documents": {},
-      "timestamps": {
-        "started": "2026-04-05T22:30:42.676Z",
-        "lastUpdated": "2026-04-07T03:25:06.631Z"
-      },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/backend/src/app.module.ts"
-    },
-    "api": {
-      "phase": "do",
-      "phaseNumber": 3,
-      "matchRate": null,
-      "iterationCount": 0,
-      "requirements": [],
-      "documents": {},
-      "timestamps": {
-        "started": "2026-04-05T22:32:21.493Z",
-        "lastUpdated": "2026-04-05T22:32:21.493Z"
-      },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/api/telegram.api.ts"
-    },
     "voice-assistant": {
       "phase": "do",
       "phaseNumber": 3,
-      "matchRate": null,
+      "matchRate": 97,
       "iterationCount": 0,
       "requirements": [
         "FR-01",
@@ -196,9 +45,9 @@
       },
       "timestamps": {
         "started": "2026-04-06T22:07:30.735Z",
-        "lastUpdated": "2026-04-07T11:03:30.466Z"
+        "lastUpdated": "2026-04-10T23:44:44.469Z"
       },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/modules/voice-assistant/VoiceAssistant.vue"
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/modules/voice-assistant/useVoiceRecognition.ts"
     },
     "voice": {
       "phase": "do",
@@ -208,12 +57,12 @@
       "requirements": [],
       "documents": {},
       "timestamps": {
-        "started": "2026-04-06T22:25:32.462Z",
-        "lastUpdated": "2026-04-07T11:05:52.627Z"
+        "started": "2026-04-10T23:44:31.427Z",
+        "lastUpdated": "2026-04-10T23:44:38.320Z"
       },
       "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/backend/src/modules/voice/voice.service.ts"
     },
-    "sensor-alerts": {
+    "automation": {
       "phase": "do",
       "phaseNumber": 3,
       "matchRate": null,
@@ -221,10 +70,127 @@
       "requirements": [],
       "documents": {},
       "timestamps": {
-        "started": "2026-04-07T10:06:07.719Z",
-        "lastUpdated": "2026-04-07T10:06:07.719Z"
+        "started": "2026-04-11T05:13:54.657Z",
+        "lastUpdated": "2026-04-11T20:58:08.701Z"
       },
-      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/backend/src/modules/sensor-alerts/sensor-alerts.module.ts"
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/components/automation/AutomationLogTimeline.vue"
+    },
+    "frontend": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-11T05:14:02.551Z",
+        "lastUpdated": "2026-04-19T22:05:43.618Z"
+      },
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/views/Login.vue"
+    },
+    "devices": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-11T05:16:18.119Z",
+        "lastUpdated": "2026-04-11T07:47:01.842Z"
+      },
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/backend/src/modules/devices/devices.service.ts"
+    },
+    "dashboard": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-11T07:59:29.839Z",
+        "lastUpdated": "2026-04-11T22:55:58.516Z"
+      },
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/components/dashboard/IrrigationHistoryWidget.vue"
+    },
+    "smart-farm-platform": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-11T20:54:40.484Z",
+        "lastUpdated": "2026-04-11T20:54:40.484Z"
+      },
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/smartfarm.sh"
+    },
+    "crop-management": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-11T22:03:23.220Z",
+        "lastUpdated": "2026-04-19T13:26:54.207Z"
+      },
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/frontend/src/modules/crop-management/api/crop-management.api.ts"
+    },
+    "backend": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-11T22:07:10.689Z",
+        "lastUpdated": "2026-04-19T12:49:17.748Z"
+      },
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/backend/src/app.module.ts"
+    },
+    "router": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-11T22:14:03.256Z",
+        "lastUpdated": "2026-04-19T12:49:40.616Z"
+      },
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/frontend/src/router/index.ts"
+    },
+    "composables": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-11T22:15:08.036Z",
+        "lastUpdated": "2026-04-19T12:50:04.171Z"
+      },
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-mqtt/frontend/src/composables/useDashboardLayout.ts"
+    },
+    "sensors": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-19T12:21:19.985Z",
+        "lastUpdated": "2026-04-19T12:21:19.985Z"
+      },
+      "lastFile": "/Users/ohjeongseok/Projects/smart-farm-platform/frontend/src/components/sensors/EnvActionCard.vue"
     }
   },
   "pipeline": {
@@ -235,1998 +201,1854 @@
   "session": {
     "startedAt": "2026-04-04T10:24:17.003Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-04-07T11:05:52.627Z"
+    "lastActivity": "2026-04-19T22:05:43.618Z"
   },
   "history": [
     {
-      "timestamp": "2026-04-04T10:24:17.003Z",
+      "timestamp": "2026-04-10T23:44:31.427Z",
+      "feature": "voice",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-10T23:44:38.320Z",
+      "feature": "voice",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-10T23:44:44.469Z",
+      "feature": "voice-assistant",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T05:13:54.657Z",
       "feature": "automation",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:24:27.486Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:24:31.532Z",
+      "timestamp": "2026-04-11T05:14:02.551Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:24:41.029Z",
+      "timestamp": "2026-04-11T05:16:18.120Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T05:16:24.664Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T05:21:22.625Z",
       "feature": "automation",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:24:45.516Z",
+      "timestamp": "2026-04-11T05:52:58.137Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:24:48.504Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:24:55.042Z",
+      "timestamp": "2026-04-11T05:53:05.929Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:24:56.766Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:25:04.548Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:25:08.672Z",
+      "timestamp": "2026-04-11T05:53:11.828Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:25:09.674Z",
+      "timestamp": "2026-04-11T05:53:18.226Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T05:53:25.344Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T05:53:37.159Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T05:53:50.391Z",
       "feature": "automation",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:25:40.019Z",
+      "timestamp": "2026-04-11T05:54:01.749Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T06:06:07.993Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T06:09:17.251Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T06:09:32.326Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T06:09:55.146Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T06:10:04.300Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T06:20:12.088Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T06:20:21.562Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T06:20:39.449Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T06:20:55.308Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T06:45:02.124Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:25:44.205Z",
-      "feature": "automation",
+      "timestamp": "2026-04-11T07:01:23.235Z",
+      "feature": "devices",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:25:53.511Z",
+      "timestamp": "2026-04-11T07:01:49.162Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:25:55.520Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:26:02.218Z",
+      "timestamp": "2026-04-11T07:02:00.472Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:26:09.920Z",
+      "timestamp": "2026-04-11T07:03:31.643Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T07:05:19.005Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T07:24:36.007Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T07:25:01.906Z",
       "feature": "automation",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:26:18.155Z",
+      "timestamp": "2026-04-11T07:25:24.663Z",
       "feature": "automation",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:26:20.358Z",
+      "timestamp": "2026-04-11T07:37:04.260Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T07:37:52.849Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T07:38:50.189Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T07:39:13.271Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T07:39:38.832Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T07:44:49.676Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T07:45:10.199Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T07:46:47.244Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T07:47:01.842Z",
+      "feature": "devices",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T07:47:39.204Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:26:38.813Z",
+      "timestamp": "2026-04-11T07:59:00.289Z",
       "feature": "automation",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:26:44.234Z",
+      "timestamp": "2026-04-11T07:59:09.413Z",
       "feature": "automation",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:26:45.240Z",
+      "timestamp": "2026-04-11T07:59:21.225Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T07:59:29.839Z",
+      "feature": "dashboard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T07:59:37.176Z",
+      "feature": "dashboard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T08:02:57.612Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T08:03:27.917Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T08:03:50.598Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T08:04:35.474Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T08:04:55.870Z",
+      "feature": "dashboard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T08:05:33.713Z",
+      "feature": "dashboard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T20:54:40.484Z",
+      "feature": "smart-farm-platform",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T20:58:08.701Z",
+      "feature": "automation",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T20:58:10.079Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:26:48.639Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:27:02.810Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:27:07.044Z",
+      "timestamp": "2026-04-11T20:58:21.116Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:27:09.353Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:27:20.273Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:27:26.954Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:27:31.478Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:27:36.914Z",
+      "timestamp": "2026-04-11T20:58:22.501Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:27:39.271Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:27:47.341Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:27:48.778Z",
+      "timestamp": "2026-04-11T20:58:31.277Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:27:57.118Z",
-      "feature": "automation",
+      "timestamp": "2026-04-11T22:03:23.220Z",
+      "feature": "crop-management",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:28:02.473Z",
-      "feature": "automation",
+      "timestamp": "2026-04-11T22:03:30.342Z",
+      "feature": "crop-management",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:28:06.538Z",
+      "timestamp": "2026-04-11T22:03:48.448Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:03:55.284Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:04:01.283Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:05:38.222Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:06:18.516Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:06:44.345Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:06:51.403Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:07:10.689Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:07:16.786Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:08:10.374Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:08:27.620Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:08:41.093Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:09:54.465Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:10:56.188Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:12:19.358Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:12:40.804Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:13:05.582Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:13:29.537Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:14:03.256Z",
+      "feature": "router",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:14:22.560Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:28:13.053Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:28:18.529Z",
+      "timestamp": "2026-04-11T22:14:38.894Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:28:23.704Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:28:31.194Z",
+      "timestamp": "2026-04-11T22:14:48.339Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:28:34.248Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:28:52.754Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:28:57.730Z",
+      "timestamp": "2026-04-11T22:14:53.704Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:29:02.903Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:29:07.696Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:29:15.953Z",
+      "timestamp": "2026-04-11T22:15:08.036Z",
       "feature": "composables",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:29:23.824Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:29:28.198Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:29:37.272Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:29:56.774Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:30:01.428Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:30:19.437Z",
-      "feature": "admin",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:30:21.725Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:30:38.097Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:30:41.851Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:30:48.503Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:30:48.512Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:31:03.749Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:31:03.915Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:31:16.751Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:31:17.225Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:31:27.595Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:31:35.888Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:31:42.575Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:31:55.774Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:31:58.118Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:32:13.692Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:32:29.184Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:32:45.083Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:33:24.434Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:33:44.078Z",
-      "feature": "devices",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:33:47.665Z",
-      "feature": "router",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:34:08.354Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:34:10.668Z",
-      "feature": "router",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:34:28.134Z",
-      "feature": "devices",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:34:45.566Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:34:50.369Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:39:53.370Z",
-      "feature": "router",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:39:54.857Z",
-      "feature": "locales",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:39:58.100Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:39:59.438Z",
-      "feature": "devices",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:00.599Z",
-      "feature": "devices",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:01.740Z",
-      "feature": "devices",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:02.895Z",
-      "feature": "devices",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:04.134Z",
-      "feature": "devices",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:07.410Z",
+      "timestamp": "2026-04-11T22:15:14.369Z",
       "feature": "composables",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:40:08.407Z",
+      "timestamp": "2026-04-11T22:16:51.486Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:17:11.872Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:18:24.857Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:18:56.542Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:24:38.294Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:24:45.592Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:24:52.267Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:24:57.820Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:33:10.231Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:33:20.066Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:33:30.591Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:34:06.107Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:34:15.755Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:34:24.007Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:34:35.270Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:34:45.963Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:34:55.512Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:35:44.825Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:36:14.801Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:36:36.947Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:37:25.467Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:44:44.309Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:44:59.539Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:53:24.529Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:53:31.578Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:53:44.833Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:53:53.357Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:54:00.574Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:54:27.302Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:54:34.741Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:54:43.162Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:54:51.500Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:55:02.470Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:55:16.137Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:55:22.775Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:55:29.225Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:55:35.991Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T22:55:58.516Z",
+      "feature": "dashboard",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:00:17.144Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:00:41.047Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:01:10.360Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:01:42.127Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:02:32.864Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:02:39.655Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:02:51.639Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:03:12.881Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:03:21.571Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:03:29.687Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:03:37.169Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:03:45.383Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:04:00.697Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:04:07.058Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:04:13.201Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:10:30.506Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:10:36.850Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:10:45.470Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:10:51.403Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:10:59.861Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:11:16.934Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:11:43.418Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:11:52.010Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:12:06.406Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:12:13.089Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:12:25.023Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:12:38.965Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:12:51.270Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:13:29.749Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:21:22.827Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:21:32.912Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:25:45.966Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:26:03.625Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:26:16.478Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:29:29.069Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:29:49.093Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:30:05.265Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:30:13.883Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:30:20.070Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:30:24.703Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:30:51.727Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:31:05.898Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:31:33.667Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:31:49.039Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:35:36.217Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:41:25.120Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:41:37.137Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:41:44.218Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:41:55.844Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:46:10.210Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:46:25.029Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:47:32.504Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:47:54.267Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-11T23:48:15.700Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:05:36.212Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:06:00.791Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:06:45.877Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:07:11.819Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:07:59.439Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:08:31.019Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:08:52.394Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:09:41.515Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:12:34.203Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:12:44.489Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:12:51.811Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:12:57.964Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:13:08.521Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:13:14.844Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:13:32.097Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:20:41.204Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:29:17.162Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:29:28.536Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:29:42.987Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:29:54.947Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:30:06.918Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:30:12.945Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:37:26.828Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:37:33.633Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:38:32.400Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:38:41.672Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:38:58.970Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:46:57.178Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:47:03.766Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:47:18.053Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:47:25.539Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:48:07.444Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:48:14.611Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:48:22.488Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:48:30.577Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:48:37.860Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:53:53.135Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:54:15.377Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:57:31.214Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:57:38.673Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:57:55.707Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:58:08.461Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:58:28.077Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T11:58:40.151Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T12:31:12.079Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T12:32:03.578Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T12:32:42.669Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T12:33:36.427Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T12:34:12.307Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T12:45:16.677Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-12T12:45:23.057Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:19:33.363Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:19:40.048Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:20:05.909Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:20:12.748Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:20:18.248Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:20:30.683Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:20:36.201Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:20:48.298Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:20:58.767Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:21:09.126Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:21:19.985Z",
+      "feature": "sensors",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:21:29.362Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:21:35.828Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:21:49.902Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:22:08.265Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:22:14.228Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:22:23.599Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:22:42.582Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:23:24.065Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:23:29.362Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:23:38.453Z",
+      "feature": "frontend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:29:31.170Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:29:35.877Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:29:47.491Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:30:01.461Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:30:09.104Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:30:14.348Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:30:46.008Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:30:51.380Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:30:57.559Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:31:03.188Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:31:09.276Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:31:18.443Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:31:25.538Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:31:33.506Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:32:18.361Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:32:25.755Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:32:31.680Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:32:37.924Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:32:43.149Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:32:49.786Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:42:50.957Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:43:03.471Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:43:09.448Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:43:21.754Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:43:27.694Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:43:34.542Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:43:43.329Z",
+      "feature": "crop-management",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:49:06.498Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:49:17.748Z",
+      "feature": "backend",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:49:40.616Z",
+      "feature": "router",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-19T12:50:04.171Z",
       "feature": "composables",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T10:40:08.866Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:10.062Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:10.321Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:22.736Z",
-      "feature": "devices",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:23.923Z",
-      "feature": "devices",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:24.981Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:25.817Z",
-      "feature": "devices",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:26.856Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:27.550Z",
-      "feature": "devices",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:28.507Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:29.025Z",
-      "feature": "devices",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:29.957Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:31.185Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:32.343Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:33.515Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:34.654Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:35.788Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:40:46.461Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:42:48.359Z",
-      "feature": "locales",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:43:25.527Z",
-      "feature": "router",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:43:26.935Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:43:28.340Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:43:29.478Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:43:30.605Z",
-      "feature": "router",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:43:34.716Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:43:43.015Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:43:47.419Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:50:53.055Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T10:51:33.968Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:08:03.408Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:09:17.418Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:12:05.263Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:15:12.571Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:17:26.119Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:19:03.645Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:19:09.230Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:19:29.575Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:19:39.659Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:19:45.486Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:20:12.745Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:20:21.752Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:20:51.792Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:20:56.162Z",
-      "feature": "dashboard",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:21:34.283Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:22:31.295Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:25:19.107Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:25:30.746Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:25:32.201Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:25:43.789Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:26:02.911Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:26:10.332Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:26:29.035Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:28:34.183Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:28:41.250Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T21:29:08.767Z",
+      "timestamp": "2026-04-19T12:50:18.164Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T21:29:20.281Z",
+      "timestamp": "2026-04-19T12:50:30.879Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T21:31:14.762Z",
+      "timestamp": "2026-04-19T12:51:14.451Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T21:31:16.663Z",
+      "timestamp": "2026-04-19T12:51:33.656Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T21:43:06.403Z",
+      "timestamp": "2026-04-19T13:03:22.956Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T21:43:08.177Z",
+      "timestamp": "2026-04-19T13:03:37.951Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T21:49:53.049Z",
+      "timestamp": "2026-04-19T13:03:52.776Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T21:50:33.259Z",
+      "timestamp": "2026-04-19T13:05:04.923Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T21:52:59.836Z",
+      "timestamp": "2026-04-19T13:05:29.694Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T21:55:52.861Z",
+      "timestamp": "2026-04-19T13:05:43.389Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T22:02:50.942Z",
+      "timestamp": "2026-04-19T13:06:08.823Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T22:03:15.983Z",
+      "timestamp": "2026-04-19T13:06:19.411Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T22:03:20.476Z",
+      "timestamp": "2026-04-19T13:06:32.118Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T22:03:34.383Z",
+      "timestamp": "2026-04-19T13:06:54.012Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T22:04:09.370Z",
+      "timestamp": "2026-04-19T13:07:06.852Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T22:04:13.339Z",
+      "timestamp": "2026-04-19T13:07:26.296Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T22:04:14.500Z",
+      "timestamp": "2026-04-19T13:07:42.911Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T22:04:18.000Z",
+      "timestamp": "2026-04-19T13:12:58.977Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T22:05:45.604Z",
+      "timestamp": "2026-04-19T13:13:11.603Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T22:06:35.241Z",
+      "timestamp": "2026-04-19T13:13:21.115Z",
       "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:08:13.544Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:09:10.618Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:10:36.528Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:11:38.410Z",
-      "feature": "automation",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T22:14:15.893Z",
-      "feature": "frontend",
+      "timestamp": "2026-04-19T13:26:07.181Z",
+      "feature": "crop-management",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T22:14:21.005Z",
+      "timestamp": "2026-04-19T13:26:23.657Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T22:15:10.371Z",
-      "feature": "frontend",
+      "timestamp": "2026-04-19T13:26:54.207Z",
+      "feature": "crop-management",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T22:15:11.716Z",
+      "timestamp": "2026-04-19T22:05:21.934Z",
       "feature": "frontend",
       "phase": "do",
       "action": "updated"
     },
     {
-      "timestamp": "2026-04-04T22:16:23.137Z",
+      "timestamp": "2026-04-19T22:05:43.618Z",
       "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:17:34.536Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:19:40.382Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:20:45.889Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:24:35.604Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:26:29.770Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:28:35.059Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:28:49.097Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:37:27.037Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:39:52.088Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:41:13.363Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:41:24.768Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:43:26.820Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:43:32.991Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:45:31.464Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:45:44.983Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:48:39.128Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:48:52.380Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:49:15.433Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-04T22:49:43.858Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T04:26:15.580Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:27:32.706Z",
-      "feature": "users",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:27:51.326Z",
-      "feature": "integrations",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:28:19.621Z",
-      "feature": "integrations",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:28:43.220Z",
-      "feature": "integrations",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:28:55.458Z",
-      "feature": "integrations",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:30:26.742Z",
-      "feature": "integrations",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:30:38.008Z",
-      "feature": "integrations",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:30:41.374Z",
-      "feature": "integrations",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:30:42.676Z",
-      "feature": "backend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:30:49.293Z",
-      "feature": "backend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:32:21.493Z",
-      "feature": "api",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:32:39.980Z",
-      "feature": "admin",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:33:08.712Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:33:13.480Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:33:30.501Z",
-      "feature": "integrations",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:33:39.240Z",
-      "feature": "integrations",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:33:49.115Z",
-      "feature": "integrations",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:33:57.664Z",
-      "feature": "integrations",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T22:34:06.805Z",
-      "feature": "integrations",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T23:05:07.345Z",
-      "feature": "users",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-05T23:06:48.080Z",
-      "feature": "integrations",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:25:32.462Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:25:57.546Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:26:30.459Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:27:32.631Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:27:34.400Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:27:42.003Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:27:49.443Z",
-      "feature": "backend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:27:50.580Z",
-      "feature": "backend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:28:26.685Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:28:32.391Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:29:13.385Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:29:23.072Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:29:24.307Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:38:32.206Z",
-      "feature": "backend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:48:48.345Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:48:58.449Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:49:49.507Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:54:08.506Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T22:54:29.705Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T23:01:57.634Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T23:02:54.408Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T23:03:41.705Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T23:03:49.526Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T23:04:31.160Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T23:12:01.445Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T23:12:16.436Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T23:14:52.778Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T23:34:24.225Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T23:35:10.032Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T23:35:38.143Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-06T23:36:08.549Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:06:59.510Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:07:11.061Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:07:25.156Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:07:33.469Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:19:39.291Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:20:02.355Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:20:11.311Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:20:46.079Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:23:16.685Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:23:23.832Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:23:38.306Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:24:37.544Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:24:53.771Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:25:00.652Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:25:09.660Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:28:59.748Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:30:44.365Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:32:20.598Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:32:32.970Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:32:44.407Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:32:59.653Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:37:27.699Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:40:52.487Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:40:58.861Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:43:32.866Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:49:52.315Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T02:57:16.199Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:01:58.426Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:02:14.419Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:02:43.102Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:09:55.209Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:10:06.423Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:11:41.197Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:11:56.516Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:12:07.749Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:12:16.164Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:14:06.926Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:16:03.394Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:16:11.209Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:16:19.636Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:18:29.516Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:18:40.457Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:20:35.105Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:20:40.843Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:24:43.540Z",
-      "feature": "backend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:24:50.345Z",
-      "feature": "backend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:25:06.631Z",
-      "feature": "backend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:25:41.034Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:33:21.700Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:33:40.336Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:33:59.591Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:34:12.074Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:34:30.219Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:34:36.290Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:34:47.921Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:35:01.119Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:37:24.518Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T03:37:36.851Z",
-      "feature": "automation",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T09:56:14.160Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T09:57:27.656Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T09:57:35.158Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T09:57:42.035Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T09:58:04.511Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:00:59.060Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:06:07.719Z",
-      "feature": "sensor-alerts",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:06:24.951Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:06:43.167Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:06:51.642Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:08:07.015Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:08:16.606Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:08:45.419Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:09:17.919Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:09:29.392Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:12:51.513Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:24:12.294Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:38:44.744Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:40:08.182Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:40:58.410Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:41:08.690Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:50:26.459Z",
-      "feature": "frontend",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T10:57:20.561Z",
-      "feature": "voice",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T11:00:28.704Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T11:00:38.230Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T11:00:52.761Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T11:02:51.435Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T11:03:00.728Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T11:03:12.626Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T11:03:22.323Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T11:03:30.466Z",
-      "feature": "voice-assistant",
-      "phase": "do",
-      "action": "updated"
-    },
-    {
-      "timestamp": "2026-04-07T11:05:52.627Z",
-      "feature": "voice",
       "phase": "do",
       "action": "updated"
     }
