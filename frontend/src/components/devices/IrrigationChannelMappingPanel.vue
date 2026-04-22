@@ -13,10 +13,33 @@
       </div>
       <p v-if="hasDuplicate" class="warning-text">같은 구역이 중복 배정되어 있습니다.</p>
       <div class="mapping-actions">
-        <button class="btn-save" :disabled="hasDuplicate || saving" @click="save">
+        <button class="btn-save" :disabled="hasDuplicate || saving" @click="confirmSave">
           {{ saving ? '저장 중...' : '저장' }}
         </button>
         <button class="btn-reset" @click="reset">기본값 복원</button>
+      </div>
+    </div>
+
+    <!-- 저장 전 경고 확인 모달 -->
+    <div v-if="showConfirm" class="mapping-confirm-overlay" @click.self="showConfirm = false">
+      <div class="mapping-confirm-modal">
+        <div class="confirm-icon">⚠️</div>
+        <h4 class="confirm-title">구역 설정 변경 확인</h4>
+        <div class="confirm-body">
+          <p class="confirm-warning">
+            <strong>주의:</strong> 컨트롤 박스의 각 스위치(포트)는 설치 시 특정 기능에 배선된 상태입니다.
+          </p>
+          <p class="confirm-warning">
+            구역 설정을 변경하면 <strong>실제 배선과 불일치</strong>가 발생하여 <strong>오동작, 장치 손상 또는 안전 사고</strong>로 이어질 수 있습니다.
+          </p>
+          <p class="confirm-note">
+            변경이 필요한 경우, 반드시 컨트롤 박스 배선 도면과 일치하는지 확인한 후 저장하세요.
+          </p>
+        </div>
+        <div class="confirm-actions">
+          <button class="btn-confirm-cancel" @click="showConfirm = false">취소</button>
+          <button class="btn-confirm-ok" @click="save">배선 확인 완료 — 저장</button>
+        </div>
       </div>
     </div>
   </div>
@@ -36,6 +59,12 @@ const notify = useNotificationStore()
 const isOpen = ref(false)
 const editMapping = ref<ChannelMapping | null>(null)
 const saving = ref(false)
+const showConfirm = ref(false)
+
+function confirmSave() {
+  if (!editMapping.value) return
+  showConfirm.value = true
+}
 
 const channelCount = computed<8 | 12>(() =>
   props.device.switchStates ? detectChannelCount(Object.keys(props.device.switchStates)) : 8
@@ -62,6 +91,7 @@ const hasDuplicate = computed(() =>
 
 async function save() {
   if (!editMapping.value) return
+  showConfirm.value = false
   saving.value = true
   try {
     await deviceStore.updateChannelMapping(props.device.id, editMapping.value)
@@ -113,4 +143,45 @@ function reset() {
   padding: 5px 14px; background: var(--bg-secondary); color: var(--text-secondary);
   border: 1px solid var(--border-input); border-radius: 6px; font-size: var(--font-size-caption); cursor: pointer;
 }
+
+.mapping-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 16px;
+}
+.mapping-confirm-modal {
+  background: var(--bg-card, #fff);
+  border-radius: 16px;
+  padding: 24px 20px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+.confirm-icon { font-size: 36px; text-align: center; margin-bottom: 8px; }
+.confirm-title { font-size: 16px; font-weight: 700; color: #d32f2f; text-align: center; margin: 0 0 16px; }
+.confirm-body { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.confirm-warning {
+  font-size: 13px; line-height: 1.6; color: var(--text-primary, #333);
+  background: #fff3e0; border-left: 3px solid #e65100;
+  padding: 8px 12px; border-radius: 4px; margin: 0;
+}
+.confirm-note { font-size: 12px; color: var(--text-secondary, #666); margin: 0; line-height: 1.5; }
+.confirm-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-confirm-cancel {
+  padding: 8px 18px; border: 1px solid var(--border-color, #ddd);
+  background: none; border-radius: 8px; font-size: 13px; cursor: pointer; color: var(--text-secondary, #666);
+}
+.btn-confirm-cancel:hover { background: var(--bg-secondary); }
+.btn-confirm-ok {
+  padding: 8px 18px; background: #d32f2f; color: #fff;
+  border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.btn-confirm-ok:hover { background: #b71c1c; }
+#app.theme-dark .mapping-confirm-modal { background: var(--bg-card); }
+#app.theme-dark .confirm-warning { background: #3e2723; }
 </style>

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, HttpCode, HttpStatus, ForbiddenException } from '@nestjs/common';
 import { DevicesService } from './devices.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -65,6 +65,23 @@ export class DevicesController {
   @Get(':id/dependencies')
   getDependencies(@Param('id') id: string, @CurrentUser() user: any) {
     return this.devicesService.getDependencies(id, this.getEffectiveUserId(user));
+  }
+
+  @Patch(':id/name')
+  async renameDevice(
+    @Param('id') id: string,
+    @CurrentUser() user: any,
+    @Body() body: { name: string },
+  ) {
+    if (user.role === 'farm_user') throw new ForbiddenException('권한이 없습니다.');
+    const result = await this.devicesService.renameDevice(id, this.getEffectiveUserId(user), body.name);
+    this.activityLog.log({
+      userId: user.id, userName: user.name || user.username,
+      action: 'device.rename', targetType: 'device', targetId: id,
+      targetName: result.name,
+      details: { menu: '장치 관리', newName: result.name },
+    });
+    return result;
   }
 
   @Patch(':id/channel-mapping')

@@ -334,6 +334,14 @@ export class DevicesService {
     return { message: '개폐기 페어가 삭제되었습니다.', deletedIds: ids };
   }
 
+  async renameDevice(id: string, userId: string, name: string) {
+    const device = await this.devicesRepo.findOne({ where: { id, userId } });
+    if (!device) throw new NotFoundException();
+    device.name = name.trim();
+    await this.devicesRepo.save(device);
+    return { id: device.id, name: device.name };
+  }
+
   async remove(id: string, userId: string) {
     const device = await this.devicesRepo.findOne({ where: { id, userId } });
     if (!device) throw new NotFoundException();
