@@ -369,49 +369,52 @@ export class DevicesService {
   }
 
   /**
-   * 5분마다 Tuya Cloud에서 장비 온라인 상태를 동기화
+   * 20분마다 Tuya Cloud에서 장비 온라인 상태를 동기화
    */
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron('0 */20 * * * *')
   async syncDeviceOnlineStatus() {
     const tuyaProjects = await this.tuyaProjectRepo.find({ where: { enabled: true } });
-
     for (const project of tuyaProjects) {
-      try {
-        const credentials = {
-          accessId: project.accessId,
-          accessSecret: this.decryptSecret(project.accessSecretEncrypted),
-          endpoint: project.endpoint,
-        };
+      await this.syncDeviceOnlineStatusForUser(project.userId);
+    }
+  }
 
-        const result = await this.tuyaService.apiGet(
-          credentials,
-          '/v1.0/iot-01/associated-users/devices?last_row_key=&size=100',
-        );
+  async syncDeviceOnlineStatusForUser(userId: string) {
+    const project = await this.tuyaProjectRepo.findOne({ where: { userId, enabled: true } });
+    if (!project) return;
 
-        if (!result.success || !result.result?.devices) continue;
+    try {
+      const credentials = {
+        accessId: project.accessId,
+        accessSecret: this.decryptSecret(project.accessSecretEncrypted),
+        endpoint: project.endpoint,
+      };
 
-        const tuyaDevices: { id: string; online: boolean }[] = result.result.devices;
+      const result = await this.tuyaService.apiGet(
+        credentials,
+        '/v1.0/iot-01/associated-users/devices?last_row_key=&size=100',
+      );
 
-        // DB에 등록된 이 사용자의 장비 조회
-        const dbDevices = await this.devicesRepo.find({ where: { userId: project.userId } });
+      if (!result.success || !result.result?.devices) return;
 
-        for (const dbDevice of dbDevices) {
-          const tuyaDevice = tuyaDevices.find(td => td.id === dbDevice.tuyaDeviceId);
-          if (!tuyaDevice) continue;
+      const tuyaDevices: { id: string; online: boolean }[] = result.result.devices;
+      const dbDevices = await this.devicesRepo.find({ where: { userId } });
 
-          // 상태가 변경된 경우에만 업데이트
-          if (dbDevice.online !== tuyaDevice.online) {
-            await this.devicesRepo.update(
-              { id: dbDevice.id },
-              { online: tuyaDevice.online, lastSeen: new Date() },
-            );
-            this.eventsGateway.broadcastDeviceStatus(dbDevice.id, tuyaDevice.online);
-            this.logger.log(`장비 상태 변경: ${dbDevice.name} → ${tuyaDevice.online ? '온라인' : '오프라인'}`);
-          }
+      for (const dbDevice of dbDevices) {
+        const tuyaDevice = tuyaDevices.find(td => td.id === dbDevice.tuyaDeviceId);
+        if (!tuyaDevice) continue;
+
+        if (dbDevice.online !== tuyaDevice.online) {
+          await this.devicesRepo.update(
+            { id: dbDevice.id },
+            { online: tuyaDevice.online, lastSeen: new Date() },
+          );
+          this.eventsGateway.broadcastDeviceStatus(dbDevice.id, tuyaDevice.online);
+          this.logger.log(`장비 상태 변경: ${dbDevice.name} → ${tuyaDevice.online ? '온라인' : '오프라인'}`);
         }
-      } catch (err) {
-        this.logger.error(`장비 상태 동기화 실패 (userId: ${project.userId}):`, err.message);
       }
+    } catch (err) {
+      this.logger.error(`장비 상태 동기화 실패 (userId: ${userId}):`, err.message);
     }
   }
 }

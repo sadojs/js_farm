@@ -44,27 +44,37 @@ export class SensorCollectorService {
   ) {}
 
   /**
-   * 5분마다 온라인 센서의 데이터를 수집하여 TimescaleDB에 저장
+   * 20분마다 온라인 센서의 데이터를 수집하여 TimescaleDB에 저장
    */
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron('0 */20 * * * *')
   async collectSensorData() {
     const tuyaProjects = await this.tuyaProjectRepo.find({ where: { enabled: true } });
-
     for (const project of tuyaProjects) {
-      try {
-        const credentials = {
-          accessId: project.accessId,
-          accessSecret: decryptTuyaSecret(project.accessSecretEncrypted),
-          endpoint: project.endpoint,
-        };
+      await this.collectForProject(project);
+    }
+  }
 
-        const sensors = await this.devicesRepo.find({
-          where: { userId: project.userId, deviceType: 'sensor', online: true },
-        });
+  async collectForUser(userId: string) {
+    const project = await this.tuyaProjectRepo.findOne({ where: { userId, enabled: true } });
+    if (!project) return;
+    await this.collectForProject(project);
+  }
 
-        for (const sensor of sensors) {
-          try {
-            const result = await this.tuyaService.getDeviceStatus(credentials, sensor.tuyaDeviceId);
+  private async collectForProject(project: TuyaProject) {
+    try {
+      const credentials = {
+        accessId: project.accessId,
+        accessSecret: decryptTuyaSecret(project.accessSecretEncrypted),
+        endpoint: project.endpoint,
+      };
+
+      const sensors = await this.devicesRepo.find({
+        where: { userId: project.userId, deviceType: 'sensor', online: true },
+      });
+
+      for (const sensor of sensors) {
+        try {
+          const result = await this.tuyaService.getDeviceStatus(credentials, sensor.tuyaDeviceId);
             if (!result.result || !Array.isArray(result.result)) continue;
 
             for (const status of result.result) {
@@ -107,10 +117,9 @@ export class SensorCollectorService {
           }
         }
 
-        this.logger.log(`측정 데이터 수집 완료 (userId: ${project.userId}, ${sensors.length}개 측정기)`);
-      } catch (err) {
-        this.logger.error(`측정 데이터 수집 실패 (userId: ${project.userId}): ${err.message}`);
-      }
+      this.logger.log(`측정 데이터 수집 완료 (userId: ${project.userId}, ${sensors.length}개 측정기)`);
+    } catch (err) {
+      this.logger.error(`측정 데이터 수집 실패 (userId: ${project.userId}): ${err.message}`);
     }
   }
 }

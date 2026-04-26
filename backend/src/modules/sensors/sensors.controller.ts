@@ -1,12 +1,19 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { SensorsService } from './sensors.service';
+import { SensorCollectorService } from './sensor-collector.service';
+import { DevicesService } from '../devices/devices.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @Controller('sensor-data')
 @UseGuards(JwtAuthGuard)
 export class SensorsController {
-  constructor(private sensorsService: SensorsService) {}
+  constructor(
+    private sensorsService: SensorsService,
+    private sensorCollector: SensorCollectorService,
+    private devicesService: DevicesService,
+  ) {}
 
   @Get()
   queryData(
@@ -35,5 +42,16 @@ export class SensorsController {
   getLatest(@CurrentUser() user: any) {
     const userId = user.role === 'farm_user' && user.parentUserId ? user.parentUserId : user.id;
     return this.sensorsService.getLatest(userId);
+  }
+
+  @Post('refresh')
+  @Throttle({ default: { ttl: 60000, limit: 1 } })
+  async refresh(@CurrentUser() user: any) {
+    const userId = user.role === 'farm_user' && user.parentUserId ? user.parentUserId : user.id;
+    await Promise.all([
+      this.sensorCollector.collectForUser(userId),
+      this.devicesService.syncDeviceOnlineStatusForUser(userId),
+    ]);
+    return { ok: true };
   }
 }

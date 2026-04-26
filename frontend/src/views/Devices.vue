@@ -232,6 +232,7 @@ import { useConfirm } from '@/composables/useConfirm'
 import { useNotificationStore } from '@/stores/notification.store'
 import { useAutomationStore } from '@/stores/automation.store'
 import { deviceApi } from '@/api/device.api'
+import { sensorApi } from '@/api/sensor.api'
 import { translateTuyaError } from '@/utils/tuya-errors'
 import type { ChannelMapping, Device, DependencyRule } from '@/types/device.types'
 import { FUNCTION_LABELS } from '@/types/device.types'
@@ -518,6 +519,7 @@ const formatLastSeen = (lastSeen?: string) => {
 }
 
 onMounted(async () => {
+  sensorApi.refresh().catch(() => {}) // 페이지 진입 시 Tuya 데이터 즉시 갱신 (실패 무시)
   await deviceStore.fetchDevices()
   deviceStore.fetchAllActuatorStatuses()
   deviceStore.fetchAllSensorStatuses()
