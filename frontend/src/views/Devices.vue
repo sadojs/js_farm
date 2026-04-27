@@ -59,27 +59,29 @@
           <span :class="['status-dot', (group.openDevice.online || group.closeDevice.online) ? 'online' : 'offline']"></span>
           <span class="type-badge actuator">장치</span>
           <div class="card-title">
-            <template v-if="renamingDeviceId === group.openDevice.id">
-              <input
-                ref="renameInput"
-                v-model="renameValue"
-                class="rename-input"
-                maxlength="50"
-                @keyup.enter="submitRename(group.openDevice.id)"
-                @keyup.esc="cancelRename"
-                @blur="cancelRename"
-              />
-              <button class="btn-rename-ok" @mousedown.prevent="submitRename(group.openDevice.id)">✓</button>
-            </template>
-            <template v-else>
-              <h4>{{ group.groupName }}</h4>
-              <button
-                v-if="authStore.isAdmin || authStore.isFarmAdmin"
-                class="btn-rename"
-                @click="startRename(group.openDevice.id, group.groupName)"
-                title="이름 변경"
-              >✎</button>
-            </template>
+            <div class="card-title-name">
+              <template v-if="renamingDeviceId === group.openDevice.id">
+                <input
+                  ref="renameInput"
+                  v-model="renameValue"
+                  class="rename-input"
+                  maxlength="50"
+                  @keyup.enter="submitRename(group.openDevice.id)"
+                  @keyup.esc="cancelRename"
+                  @blur="cancelRename"
+                />
+                <button class="btn-rename-ok" @mousedown.prevent="submitRename(group.openDevice.id)">✓</button>
+              </template>
+              <template v-else>
+                <h4>{{ group.groupName }}</h4>
+                <button
+                  v-if="authStore.isAdmin || authStore.isFarmAdmin"
+                  class="btn-rename"
+                  @click="startRename(group.openDevice.id, group.groupName)"
+                  title="이름 변경"
+                >✎</button>
+              </template>
+            </div>
             <span class="card-category">개폐기</span>
           </div>
           <button class="btn-icon-delete" @click="handleRemoveOpenerGroup(group)" aria-label="삭제">삭제</button>
@@ -116,27 +118,29 @@
           <span :class="['status-dot', device.online ? 'online' : 'offline']"></span>
           <span class="type-badge actuator">장치</span>
           <div class="card-title">
-            <template v-if="renamingDeviceId === device.id">
-              <input
-                ref="renameInput"
-                v-model="renameValue"
-                class="rename-input"
-                maxlength="50"
-                @keyup.enter="submitRename(device.id)"
-                @keyup.esc="cancelRename"
-                @blur="cancelRename"
-              />
-              <button class="btn-rename-ok" @mousedown.prevent="submitRename(device.id)">✓</button>
-            </template>
-            <template v-else>
-              <h4>{{ device.name }}</h4>
-              <button
-                v-if="authStore.isAdmin || authStore.isFarmAdmin"
-                class="btn-rename"
-                @click="startRename(device.id, device.name)"
-                title="이름 변경"
-              >✎</button>
-            </template>
+            <div class="card-title-name">
+              <template v-if="renamingDeviceId === device.id">
+                <input
+                  ref="renameInput"
+                  v-model="renameValue"
+                  class="rename-input"
+                  maxlength="50"
+                  @keyup.enter="submitRename(device.id)"
+                  @keyup.esc="cancelRename"
+                  @blur="cancelRename"
+                />
+                <button class="btn-rename-ok" @mousedown.prevent="submitRename(device.id)">✓</button>
+              </template>
+              <template v-else>
+                <h4>{{ device.name }}</h4>
+                <button
+                  v-if="authStore.isAdmin || authStore.isFarmAdmin"
+                  class="btn-rename"
+                  @click="startRename(device.id, device.name)"
+                  title="이름 변경"
+                >✎</button>
+              </template>
+            </div>
             <span class="card-category">관수장치</span>
           </div>
           <button class="btn-status" @click="openIrrigationStatusModal(device)">상태</button>
@@ -187,27 +191,29 @@
             {{ device.deviceType === 'sensor' ? '측정기' : '장치' }}
           </span>
           <div class="card-title">
-            <template v-if="renamingDeviceId === device.id">
-              <input
-                ref="renameInput"
-                v-model="renameValue"
-                class="rename-input"
-                maxlength="50"
-                @keyup.enter="submitRename(device.id)"
-                @keyup.esc="cancelRename"
-                @blur="cancelRename"
-              />
-              <button class="btn-rename-ok" @mousedown.prevent="submitRename(device.id)">✓</button>
-            </template>
-            <template v-else>
-              <h4>{{ device.name }}</h4>
-              <button
-                v-if="authStore.isAdmin || authStore.isFarmAdmin"
-                class="btn-rename"
-                @click="startRename(device.id, device.name)"
-                title="이름 변경"
-              >✎</button>
-            </template>
+            <div class="card-title-name">
+              <template v-if="renamingDeviceId === device.id">
+                <input
+                  ref="renameInput"
+                  v-model="renameValue"
+                  class="rename-input"
+                  maxlength="50"
+                  @keyup.enter="submitRename(device.id)"
+                  @keyup.esc="cancelRename"
+                  @blur="cancelRename"
+                />
+                <button class="btn-rename-ok" @mousedown.prevent="submitRename(device.id)">✓</button>
+              </template>
+              <template v-else>
+                <h4>{{ device.name }}</h4>
+                <button
+                  v-if="authStore.isAdmin || authStore.isFarmAdmin"
+                  class="btn-rename"
+                  @click="startRename(device.id, device.name)"
+                  title="이름 변경"
+                >✎</button>
+              </template>
+            </div>
             <span class="card-category">{{ getCategoryLabel(device.category) }}</span>
           </div>
         </div>
@@ -902,6 +908,16 @@ const handleTuyaSync = async () => {
 .card-title {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card-title-name {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 4px;
 }
 
 .card-title h4 {
@@ -911,7 +927,8 @@ const handleTuyaSync = async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  display: inline;
+  flex: 1;
+  min-width: 0;
 }
 
 .btn-rename {
