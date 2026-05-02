@@ -705,12 +705,18 @@ const handleIrrigationControl = async (device: Device, switchCode: string) => {
     if (storeDevice) {
       if (!storeDevice.switchStates) storeDevice.switchStates = {}
       storeDevice.switchStates[switchCode] = newVal
-      // 원격제어 OFF → 모든 관수 스위치 로컬 상태도 OFF 반영
-      if (isRemoteControl && !newVal) {
+      if (isRemoteControl) {
         const m = deviceStore.getEffectiveMapping(storeDevice)
-        for (const fn of Object.keys(m)) {
-          const code = m[fn]
-          if (code) storeDevice.switchStates[code] = false
+        if (newVal) {
+          // 원격제어 ON → B접점 로컬 상태도 ON 반영
+          const bContact = m['fertilizer_b_contact']
+          if (bContact) storeDevice.switchStates[bContact] = true
+        } else {
+          // 원격제어 OFF → 모든 관수 스위치 로컬 상태도 OFF 반영
+          for (const fn of Object.keys(m)) {
+            const code = m[fn]
+            if (code) storeDevice.switchStates[code] = false
+          }
         }
       }
     }

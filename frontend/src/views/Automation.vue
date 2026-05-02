@@ -116,11 +116,17 @@
       <router-link to="/activity-log" class="btn-link">작업 내역 보기 →</router-link>
     </div>
 
-    <!-- 위저드 모달 -->
+    <!-- 위저드 모달 (수정: V1, 신규: V2) -->
     <RuleWizardModal
       :visible="wizardOpen"
       :editRule="editingRule"
       @close="wizardOpen = false"
+      @saved="onRuleSaved"
+    />
+    <IntentWizardModal
+      v-if="showIntentWizard"
+      @close="showIntentWizard = false"
+      @switch-to-legacy="handleSwitchToLegacy"
       @saved="onRuleSaved"
     />
   </div>
@@ -136,6 +142,7 @@ import { useConfirm } from '../composables/useConfirm'
 import { useNotificationStore } from '../stores/notification.store'
 import type { AutomationRule } from '../types/automation.types'
 import RuleWizardModal from '../components/automation/RuleWizardModal.vue'
+import IntentWizardModal from '../components/automation/v2/IntentWizardModal.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import { oneLineRule } from '../utils/sensor-labels'
 // AutomationLogTimeline → 활동 로그 페이지로 이전됨
@@ -153,6 +160,7 @@ const SHOW_OPENER_TAB = true
 const mainTab = ref<'rules' | 'logs'>('rules')
 const activeTab = ref<TabType>('all')
 const wizardOpen = ref(false)
+const showIntentWizard = ref(false)
 const editingRule = ref<AutomationRule | null>(null)
 
 const rules = computed(() => automationStore.rules)
@@ -234,6 +242,16 @@ function targetLabel(rule: AutomationRule) {
 
 function openWizard(rule?: AutomationRule) {
   editingRule.value = rule || null
+  if (!rule) {
+    showIntentWizard.value = true
+  } else {
+    wizardOpen.value = true
+  }
+}
+
+function handleSwitchToLegacy() {
+  showIntentWizard.value = false
+  editingRule.value = null
   wizardOpen.value = true
 }
 

@@ -99,6 +99,18 @@ const noSensor = ref(false)
 const formData = ref<WizardFormData>(createEmptyWizardForm())
 const irrigationForm = ref<IrrigationConditions>(createDefaultIrrigationConditions())
 
+// V2 위저드가 저장한 내부 메타데이터 JSON은 사용자에게 노출하지 않음
+function parseUserDescription(desc: string | undefined | null): string {
+  if (!desc) return ''
+  try {
+    const parsed = JSON.parse(desc)
+    if (parsed && typeof parsed === 'object' && (
+      'channelMapping' in parsed || 'hysteresisOffAt' in parsed || 'additionalSchedules' in parsed
+    )) return ''
+  } catch {}
+  return desc
+}
+
 const stepList = [
   { num: 1, label: '구역' },
   { num: 2, label: '측정기' },
@@ -127,7 +139,7 @@ watch(() => props.visible, (open) => {
         ? rule.conditions
         : createEmptyWizardForm().conditions,
       name: rule.name,
-      description: rule.description || '',
+      description: parseUserDescription(rule.description),
       priority: rule.priority,
     }
     // 관수 조건 복원

@@ -459,12 +459,18 @@ async function handleIrrigationControl(device: Device, switchCode: string) {
     }
     if (!device.switchStates) device.switchStates = {}
     device.switchStates[switchCode] = newVal
-    // 원격제어 OFF → 모든 관주 스위치 로컬 상태도 OFF 반영
-    if (isRemoteControl && !newVal) {
+    if (isRemoteControl) {
       const m = deviceStore.getEffectiveMapping(device)
-      for (const fn of Object.keys(m)) {
-        const code = m[fn]
-        if (code) device.switchStates[code] = false
+      if (newVal) {
+        // 원격제어 ON → B접점 로컬 상태도 ON 반영
+        const bContact = m['fertilizer_b_contact']
+        if (bContact) device.switchStates[bContact] = true
+      } else {
+        // 원격제어 OFF → 모든 관주 스위치 로컬 상태도 OFF 반영
+        for (const fn of Object.keys(m)) {
+          const code = m[fn]
+          if (code) device.switchStates[code] = false
+        }
       }
     }
     const verification = await deviceStore.verifyDeviceStatus(device.id, switchCode, newVal)
