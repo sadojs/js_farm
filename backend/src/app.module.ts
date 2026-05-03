@@ -33,7 +33,7 @@ import { RetentionService } from './common/retention.service';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
-        url: config.get('DATABASE_URL', 'postgresql://smartfarm:smartfarm123@localhost:5432/smartfarm'),
+        url: config.get<string>('DATABASE_URL'),
         autoLoadEntities: true,
         synchronize: false, // 스키마는 schema.sql로 관리
       }),

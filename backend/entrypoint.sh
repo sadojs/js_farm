@@ -13,7 +13,7 @@ done
 echo "✅ PostgreSQL is ready"
 
 echo "⏳ Running database migration..."
-PGPASSWORD=smartfarm123 psql -h postgres -U smartfarm -d smartfarm -f /app/database/migrate.sql 2>&1 | tail -5
+PGPASSWORD="${POSTGRES_PASSWORD}" psql -h postgres -U smartfarm -d smartfarm -f /app/database/migrate.sql 2>&1 | tail -5
 echo "✅ Migration complete"
 
 echo "🚀 Starting application..."
