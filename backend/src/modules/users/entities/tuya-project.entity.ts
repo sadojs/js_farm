@@ -1,6 +1,6 @@
 import {
   Entity, PrimaryGeneratedColumn, Column,
-  CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn,
+  CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 
@@ -12,9 +12,12 @@ export class TuyaProject {
   @Column({ name: 'user_id' })
   userId: string;
 
-  @OneToOne(() => User)
+  @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @Column({ nullable: true })
+  label: string;
 
   @Column()
   name: string;

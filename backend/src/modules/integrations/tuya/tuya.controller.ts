@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, UseGuards } from '@nestjs/common';
 import { IsString } from 'class-validator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
@@ -44,8 +44,10 @@ export class TuyaController {
    * 현재 사용자의 Tuya 디바이스 목록 조회 (DB에서 크레덴셜 읽음)
    */
   @Get('devices')
-  async getDevices(@CurrentUser('id') userId: string) {
-    const tuya = await this.tuyaRepo.findOne({ where: { userId } });
+  async getDevices(@CurrentUser('id') userId: string, @Query('projectId') projectId?: string) {
+    const tuya = projectId
+      ? await this.tuyaRepo.findOne({ where: { id: projectId, userId } })
+      : await this.tuyaRepo.findOne({ where: { userId }, order: { createdAt: 'ASC' } });
     if (!tuya) {
       return { success: false, message: 'Tuya 프로젝트가 설정되지 않았습니다.', devices: [] };
     }

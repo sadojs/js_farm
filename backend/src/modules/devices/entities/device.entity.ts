@@ -38,6 +38,9 @@ export class Device {
   @Column({ name: 'opener_group_name', nullable: true })
   openerGroupName: string;
 
+  @Column({ name: 'tuya_project_id', type: 'uuid', nullable: true })
+  tuyaProjectId: string;
+
   @Column({ name: 'channel_mapping', type: 'jsonb', nullable: true })
   channelMapping: Record<string, string> | null;
 

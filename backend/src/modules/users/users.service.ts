@@ -6,7 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { encrypt } from '../../common/utils/crypto.util';
 import { User } from './entities/user.entity';
 import { TuyaProject } from './entities/tuya-project.entity';
-import { CreateUserDto, UpdateUserDto, UpdateTuyaProjectDto } from './dto/user.dto';
+import { CreateUserDto, UpdateUserDto, UpdateTuyaProjectDto, CreateTuyaProjectDto } from './dto/user.dto';
 
 @Injectable()
 export class UsersService {
@@ -124,7 +124,7 @@ export class UsersService {
   }
 
   async updateTuyaProject(userId: string, dto: UpdateTuyaProjectDto) {
-    let tuya = await this.tuyaRepo.findOne({ where: { userId } });
+    let tuya = await this.tuyaRepo.findOne({ where: { userId }, order: { createdAt: 'ASC' } });
     if (tuya) {
       tuya.name = dto.name;
       tuya.accessId = dto.accessId;
@@ -144,6 +144,44 @@ export class UsersService {
       });
     }
     return this.tuyaRepo.save(tuya);
+  }
+
+  async listTuyaProjects(userId: string) {
+    return this.tuyaRepo.find({ where: { userId }, order: { createdAt: 'ASC' } });
+  }
+
+  async addTuyaProject(userId: string, dto: CreateTuyaProjectDto) {
+    const tuya = this.tuyaRepo.create({
+      userId,
+      label: dto.label,
+      name: dto.name,
+      accessId: dto.accessId,
+      accessSecretEncrypted: encrypt(dto.accessSecret, this.encryptionKey),
+      endpoint: dto.endpoint,
+      projectId: dto.projectId,
+      enabled: true,
+    });
+    return this.tuyaRepo.save(tuya);
+  }
+
+  async updateTuyaProjectById(userId: string, projectId: string, dto: Partial<UpdateTuyaProjectDto & { label?: string }>) {
+    const tuya = await this.tuyaRepo.findOne({ where: { id: projectId, userId } });
+    if (!tuya) throw new NotFoundException('Tuya 프로젝트를 찾을 수 없습니다.');
+    if (dto.label !== undefined) tuya.label = dto.label;
+    if (dto.name !== undefined) tuya.name = dto.name;
+    if (dto.accessId !== undefined) tuya.accessId = dto.accessId;
+    if (dto.accessSecret) tuya.accessSecretEncrypted = encrypt(dto.accessSecret, this.encryptionKey);
+    if (dto.endpoint !== undefined) tuya.endpoint = dto.endpoint;
+    if (dto.projectId !== undefined) tuya.projectId = dto.projectId;
+    if (dto.enabled !== undefined) tuya.enabled = dto.enabled;
+    return this.tuyaRepo.save(tuya);
+  }
+
+  async deleteTuyaProject(userId: string, projectId: string) {
+    const tuya = await this.tuyaRepo.findOne({ where: { id: projectId, userId } });
+    if (!tuya) throw new NotFoundException('Tuya 프로젝트를 찾을 수 없습니다.');
+    await this.tuyaRepo.remove(tuya);
+    return { message: '삭제되었습니다.' };
   }
 
   private sanitize(user: User) {

@@ -24,9 +24,9 @@ export class DevicesController {
   @Post('register')
   async register(
     @CurrentUser() user: any,
-    @Body() body: { devices: any[]; houseId?: string },
+    @Body() body: { devices: any[]; houseId?: string; tuyaProjectId?: string },
   ) {
-    const result = await this.devicesService.registerBatch(this.getEffectiveUserId(user), body.devices, body.houseId);
+    const result = await this.devicesService.registerBatch(this.getEffectiveUserId(user), body.devices, body.houseId, body.tuyaProjectId);
     for (const d of body.devices) {
       this.activityLog.log({
         userId: user.id, userName: user.name || user.username,

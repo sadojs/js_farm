@@ -19,6 +19,26 @@ export interface UpdateTuyaRequest {
   enabled?: boolean
 }
 
+export interface TuyaProject {
+  id: string
+  label: string
+  name: string
+  accessId: string
+  endpoint: string
+  projectId?: string
+  enabled: boolean
+  createdAt: string
+}
+
+export interface CreateTuyaProjectRequest {
+  label: string
+  name: string
+  accessId: string
+  accessSecret: string
+  endpoint: string
+  projectId?: string
+}
+
 export const userApi = {
   // 자기 정보 수정 (모든 사용자)
   updateMe: (data: { name?: string; address?: string; password?: string }) =>
@@ -26,6 +46,18 @@ export const userApi = {
 
   updateMyTuya: (data: UpdateTuyaRequest) =>
     apiClient.put('/users/me/tuya', data),
+
+  listMyTuyaProjects: () =>
+    apiClient.get<TuyaProject[]>('/users/me/tuya-projects'),
+
+  addMyTuyaProject: (data: CreateTuyaProjectRequest) =>
+    apiClient.post<TuyaProject>('/users/me/tuya-projects', data),
+
+  updateMyTuyaProject: (id: string, data: Partial<CreateTuyaProjectRequest> & { enabled?: boolean }) =>
+    apiClient.put<TuyaProject>(`/users/me/tuya-projects/${id}`, data),
+
+  deleteMyTuyaProject: (id: string) =>
+    apiClient.delete(`/users/me/tuya-projects/${id}`),
 
   // 관리자 전용
   getAll: () =>

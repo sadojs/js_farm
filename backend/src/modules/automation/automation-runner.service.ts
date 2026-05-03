@@ -9,6 +9,7 @@ import { TuyaProject } from '../users/entities/tuya-project.entity';
 import { TuyaService } from '../integrations/tuya/tuya.service';
 import { EventsGateway } from '../gateway/events.gateway';
 import { decryptTuyaSecret } from '../../common/utils/crypto.util';
+import { resolveCredentials } from '../integrations/tuya/tuya-credentials.util';
 
 type LogicOp = 'AND' | 'OR';
 
@@ -515,13 +516,6 @@ export class AutomationRunnerService {
   }
 
   private async executeAction(rule: AutomationRule, action: any) {
-    const credentials = await this.tuyaRepo.findOne({
-      where: { userId: rule.userId, enabled: true },
-    });
-    if (!credentials) {
-      throw new Error('활성화된 Tuya 프로젝트 설정이 없습니다.');
-    }
-
     // targetDeviceId(단일) 또는 targetDeviceIds(배열)가 있으면 특정 장비를 사용
     let candidateDevices: Device[];
     const targetIds = action?.targetDeviceId
@@ -553,14 +547,11 @@ export class AutomationRunnerService {
       );
       let sent = false;
       let lastError = '';
+      const creds = await resolveCredentials(device, this.tuyaRepo, decryptTuyaSecret);
       for (const commandSet of commands) {
         try {
           const res = await this.tuyaService.sendDeviceCommand(
-            {
-              accessId: credentials.accessId,
-              accessSecret: decryptTuyaSecret(credentials.accessSecretEncrypted),
-              endpoint: credentials.endpoint,
-            },
+            creds,
             device.tuyaDeviceId,
             commandSet,
           );

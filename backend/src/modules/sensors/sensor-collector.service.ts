@@ -55,7 +55,10 @@ export class SensorCollectorService {
   }
 
   async collectForUser(userId: string) {
-    const project = await this.tuyaProjectRepo.findOne({ where: { userId, enabled: true } });
+    const project = await this.tuyaProjectRepo.findOne({
+      where: { userId, enabled: true },
+      order: { createdAt: 'ASC' },
+    });
     if (!project) return;
     await this.collectForProject(project);
   }
@@ -68,9 +71,13 @@ export class SensorCollectorService {
         endpoint: project.endpoint,
       };
 
-      const sensors = await this.devicesRepo.find({
+      const allSensors = await this.devicesRepo.find({
         where: { userId: project.userId, deviceType: 'sensor', online: true },
       });
+      // tuyaProjectId가 지정된 센서는 해당 프로젝트에서만 수집 (중복 방지)
+      const sensors = allSensors.filter(
+        s => !s.tuyaProjectId || s.tuyaProjectId === project.id,
+      );
 
       for (const sensor of sensors) {
         try {

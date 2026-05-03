@@ -126,6 +126,7 @@ export interface Device {
   pairedDeviceId?: string
   openerGroupName?: string
   channelMapping?: ChannelMapping | null
+  tuyaProjectId?: string | null
 }
 
 export interface RegisterDeviceRequest {

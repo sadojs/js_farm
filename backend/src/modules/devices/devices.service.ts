@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import { ConfigService } from '@nestjs/config';
 import { DEFAULT_CHANNEL_MAPPING, AVAILABLE_SWITCH_CODES, detectChannelCount, getDefaultMappingByCount, getAvailableSwitchCodesByCount } from './channel-mapping.constants';
 import { decrypt } from '../../common/utils/crypto.util';
+import { resolveCredentials } from '../integrations/tuya/tuya-credentials.util';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -54,7 +55,7 @@ export class DevicesService {
     });
   }
 
-  async registerBatch(userId: string, devices: { tuyaDeviceId: string; name: string; category: string; deviceType: string; equipmentType?: string; icon?: string; online?: boolean }[], houseId?: string) {
+  async registerBatch(userId: string, devices: { tuyaDeviceId: string; name: string; category: string; deviceType: string; equipmentType?: string; icon?: string; online?: boolean }[], houseId?: string, tuyaProjectId?: string) {
     const results: Device[] = [];
 
     for (const d of devices) {
@@ -73,12 +74,14 @@ export class DevicesService {
         existing.online = d.online ?? existing.online;
         if (d.online) existing.lastSeen = new Date();
         if (houseId) existing.houseId = houseId;
+        if (tuyaProjectId) existing.tuyaProjectId = tuyaProjectId;
         results.push(await this.devicesRepo.save(existing));
       } else {
         // 새 장비 등록
         const entity = this.devicesRepo.create({
           userId,
           ...(houseId && { houseId }),
+          ...(tuyaProjectId && { tuyaProjectId }),
           tuyaDeviceId: d.tuyaDeviceId,
           name: d.name,
           category: d.category,
@@ -152,14 +155,7 @@ export class DevicesService {
     const device = await this.devicesRepo.findOne({ where: { id, userId } });
     if (!device) throw new NotFoundException('장비를 찾을 수 없습니다.');
 
-    const tuyaProject = await this.tuyaProjectRepo.findOne({ where: { userId } });
-    if (!tuyaProject) throw new NotFoundException('Tuya 프로젝트 설정이 없습니다.');
-
-    const credentials = {
-      accessId: tuyaProject.accessId,
-      accessSecret: this.decryptSecret(tuyaProject.accessSecretEncrypted),
-      endpoint: tuyaProject.endpoint,
-    };
+    const credentials = await resolveCredentials(device, this.tuyaProjectRepo, this.decryptSecret.bind(this));
 
     // 관수 장비의 원격제어 스위치 명령 시 연동 처리
     let finalCommands = commands;
@@ -223,14 +219,7 @@ export class DevicesService {
     const device = await this.devicesRepo.findOne({ where: { id, userId } });
     if (!device) throw new NotFoundException('장비를 찾을 수 없습니다.');
 
-    const tuyaProject = await this.tuyaProjectRepo.findOne({ where: { userId } });
-    if (!tuyaProject) throw new NotFoundException('Tuya 프로젝트 설정이 없습니다.');
-
-    const credentials = {
-      accessId: tuyaProject.accessId,
-      accessSecret: this.decryptSecret(tuyaProject.accessSecretEncrypted),
-      endpoint: tuyaProject.endpoint,
-    };
+    const credentials = await resolveCredentials(device, this.tuyaProjectRepo, this.decryptSecret.bind(this));
 
     try {
       const result = await this.tuyaService.getDeviceStatus(credentials, device.tuyaDeviceId);
@@ -380,7 +369,10 @@ export class DevicesService {
   }
 
   async syncDeviceOnlineStatusForUser(userId: string) {
-    const project = await this.tuyaProjectRepo.findOne({ where: { userId, enabled: true } });
+    const project = await this.tuyaProjectRepo.findOne({
+      where: { userId, enabled: true },
+      order: { createdAt: 'ASC' },
+    });
     if (!project) return;
 
     try {

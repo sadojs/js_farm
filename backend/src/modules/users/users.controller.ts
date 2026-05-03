@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto, UpdateUserDto, UpdateTuyaProjectDto } from './dto/user.dto';
+import { CreateUserDto, UpdateUserDto, UpdateTuyaProjectDto, CreateTuyaProjectDto } from './dto/user.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -17,10 +17,35 @@ export class UsersController {
     return this.usersService.updateSelf(userId, dto);
   }
 
-  // 자기 Tuya 프로젝트 수정
+  // 자기 Tuya 프로젝트 수정 (하위 호환)
   @Put('me/tuya')
   updateMyTuya(@CurrentUser('id') userId: string, @Body() dto: UpdateTuyaProjectDto) {
     return this.usersService.updateTuyaProject(userId, dto);
+  }
+
+  // 다중 Tuya 프로젝트 관리
+  @Get('me/tuya-projects')
+  listMyTuyaProjects(@CurrentUser('id') userId: string) {
+    return this.usersService.listTuyaProjects(userId);
+  }
+
+  @Post('me/tuya-projects')
+  addMyTuyaProject(@CurrentUser('id') userId: string, @Body() dto: CreateTuyaProjectDto) {
+    return this.usersService.addTuyaProject(userId, dto);
+  }
+
+  @Put('me/tuya-projects/:projectId')
+  updateMyTuyaProject(
+    @CurrentUser('id') userId: string,
+    @Param('projectId') projectId: string,
+    @Body() dto: Partial<UpdateTuyaProjectDto & { label?: string }>,
+  ) {
+    return this.usersService.updateTuyaProjectById(userId, projectId, dto);
+  }
+
+  @Delete('me/tuya-projects/:projectId')
+  deleteMyTuyaProject(@CurrentUser('id') userId: string, @Param('projectId') projectId: string) {
+    return this.usersService.deleteTuyaProject(userId, projectId);
   }
 
   // 이하 관리자 전용
@@ -72,5 +97,23 @@ export class UsersController {
   @Roles('admin')
   updateTuya(@Param('id') id: string, @Body() dto: UpdateTuyaProjectDto) {
     return this.usersService.updateTuyaProject(id, dto);
+  }
+
+  @Get(':id/tuya-projects')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  listTuyaProjects(@Param('id') id: string) {
+    return this.usersService.listTuyaProjects(id);
+  }
+
+  @Put(':id/tuya-projects/:projectId')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  updateTuyaProject(
+    @Param('id') id: string,
+    @Param('projectId') projectId: string,
+    @Body() dto: Partial<UpdateTuyaProjectDto & { label?: string }>,
+  ) {
+    return this.usersService.updateTuyaProjectById(id, projectId, dto);
   }
 }

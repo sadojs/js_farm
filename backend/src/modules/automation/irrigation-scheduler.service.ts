@@ -11,6 +11,7 @@ import { EventsGateway } from '../gateway/events.gateway';
 import { DEFAULT_CHANNEL_MAPPING } from '../devices/channel-mapping.constants';
 import { DevicesService } from '../devices/devices.service';
 import { decryptTuyaSecret } from '../../common/utils/crypto.util';
+import { resolveCredentials } from '../integrations/tuya/tuya-credentials.util';
 
 interface ScheduledAction {
   time: number; // ms offset from start
@@ -116,19 +117,13 @@ export class IrrigationSchedulerService {
       return;
     }
 
-    const credentials = await this.tuyaRepo.findOne({
-      where: { userId: rule.userId, enabled: true },
-    });
-    if (!credentials) {
+    let tuyaCreds: { accessId: string; accessSecret: string; endpoint: string };
+    try {
+      tuyaCreds = await resolveCredentials(device, this.tuyaRepo, decryptTuyaSecret);
+    } catch {
       this.logger.warn(`관주 설정 ${rule.id}: Tuya 프로젝트 없음`);
       return;
     }
-
-    const tuyaCreds = {
-      accessId: credentials.accessId,
-      accessSecret: decryptTuyaSecret(credentials.accessSecretEncrypted),
-      endpoint: credentials.endpoint,
-    };
 
     // Tuya 상태 조회 — 원격제어 확인 + 실제 switch 코드로 12포트 여부 감지
     let switchCodes: string[] = [];

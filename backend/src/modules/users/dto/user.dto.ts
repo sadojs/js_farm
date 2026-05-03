@@ -52,6 +52,27 @@ export class UpdateUserDto {
   password?: string;
 }
 
+export class CreateTuyaProjectDto {
+  @IsString()
+  label: string;
+
+  @IsString()
+  name: string;
+
+  @IsString()
+  accessId: string;
+
+  @IsString()
+  accessSecret: string;
+
+  @IsString()
+  endpoint: string;
+
+  @IsOptional()
+  @IsString()
+  projectId?: string;
+}
+
 export class UpdateTuyaProjectDto {
   @IsString()
   name: string;
