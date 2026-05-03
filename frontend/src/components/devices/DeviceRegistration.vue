@@ -28,7 +28,17 @@
             <h3>센서 클라우드 기기 불러오기</h3>
           </div>
 
-          <div class="project-info-box">
+          <!-- 프로젝트 선택 (2개 이상일 때만 표시) -->
+          <div v-if="tuyaProjects.length > 1" class="input-group">
+            <label>Tuya 계정 선택</label>
+            <select v-model="selectedProjectId" class="form-input">
+              <option v-for="p in tuyaProjects" :key="p.id" :value="p.id">
+                {{ p.label || p.name }} ({{ p.accessId }})
+              </option>
+            </select>
+          </div>
+
+          <div class="project-info-box" v-else>
             <p><strong>프로젝트:</strong> {{ authStore.user?.tuyaProject?.name }}</p>
             <p><strong>엔드포인트:</strong> {{ authStore.user?.tuyaProject?.endpoint }}</p>
           </div>
@@ -328,11 +338,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useAuthStore } from '../../stores/auth.store'
 import { useDeviceStore } from '../../stores/device.store'
 import { useGroupStore } from '../../stores/group.store'
 import apiClient from '../../api/client'
+import { userApi, type TuyaProject } from '../../api/user.api'
 
 import type { EquipmentType } from '../../types/device.types'
 
@@ -393,9 +404,29 @@ const searchQuery = ref('')
 const errorMessage = ref('')
 const noDevicesFound = ref(false)
 
+const tuyaProjects = ref<TuyaProject[]>([])
+const selectedProjectId = ref<string>('')
+
 const hasTuyaProject = computed(() => {
+  if (tuyaProjects.value.length > 0) return true
   const tp = authStore.user?.tuyaProject
   return tp && tp.enabled && tp.accessId && tp.endpoint
+})
+
+const loadTuyaProjects = async () => {
+  try {
+    const { data } = await userApi.listMyTuyaProjects()
+    tuyaProjects.value = data
+    if (data.length > 0 && !selectedProjectId.value) {
+      selectedProjectId.value = data[0].id
+    }
+  } catch {
+    tuyaProjects.value = []
+  }
+}
+
+onMounted(() => {
+  loadTuyaProjects()
 })
 
 // 모달 열릴 때 상태 초기화
@@ -403,6 +434,7 @@ watch(() => props.isOpen, (open) => {
   if (open) {
     errorMessage.value = ''
     noDevicesFound.value = false
+    loadTuyaProjects()
   }
 })
 
@@ -438,7 +470,8 @@ const loadDevices = async () => {
   noDevicesFound.value = false
 
   try {
-    const { data } = await apiClient.get('/tuya/devices')
+    const params = selectedProjectId.value ? { projectId: selectedProjectId.value } : undefined
+    const { data } = await apiClient.get('/tuya/devices', { params })
     const result = data as any
 
     if (!result.success) {
@@ -570,7 +603,7 @@ const registerDevices = async () => {
       ...(d.equipmentType?.startsWith('opener_') && openerGroupName.value ? { openerGroupName: openerGroupName.value } : {}),
     }))
 
-    const result = await deviceStore.registerDevices(deviceList)
+    const result = await deviceStore.registerDevices(deviceList, undefined, selectedProjectId.value || undefined)
     registeredDeviceIds.value = (result as any[]).map((d: any) => d.id)
     emit('registered', selectedDevices.value)
 
@@ -632,6 +665,9 @@ const closeModal = () => {
   newGroupName.value = ''
   newGroupDesc.value = ''
   groupWizardError.value = ''
+  if (tuyaProjects.value.length > 0) {
+    selectedProjectId.value = tuyaProjects.value[0].id
+  }
 }
 </script>
 

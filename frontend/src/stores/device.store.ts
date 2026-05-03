@@ -26,8 +26,8 @@ export const useDeviceStore = defineStore('device', () => {
     }
   }
 
-  async function registerDevices(deviceList: any[], houseId?: string) {
-    const { data } = await deviceApi.register(deviceList, houseId)
+  async function registerDevices(deviceList: any[], houseId?: string, tuyaProjectId?: string) {
+    const { data } = await deviceApi.register(deviceList, houseId, tuyaProjectId)
     await fetchDevices()
     return data
   }

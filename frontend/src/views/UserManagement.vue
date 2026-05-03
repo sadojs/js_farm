@@ -45,6 +45,7 @@
 
           <div class="action-buttons">
             <button class="btn-icon" title="편집" @click="editUser(user)">✏️</button>
+            <button class="btn-icon" title="Tuya 계정 관리" @click="openTuyaProjects(user)">☁️</button>
             <button class="btn-icon" title="센서 프로젝트 할당" @click="assignProject(user)">🔗</button>
             <button class="btn-icon danger" title="삭제" @click="deleteUser(user)">🗑️</button>
           </div>
@@ -89,6 +90,13 @@
       @close="showProjectModal = false"
       @assign="handleProjectAssign"
     />
+
+    <!-- Tuya 다중 프로젝트 관리 모달 -->
+    <TuyaProjectsModal
+      :show="showTuyaProjectsModal"
+      :target-user="selectedUser"
+      @close="showTuyaProjectsModal = false"
+    />
   </div>
 </template>
 
@@ -96,6 +104,7 @@
 import { ref, onMounted } from 'vue'
 import UserFormModal from '@/components/admin/UserFormModal.vue'
 import ProjectAssignModal from '@/components/admin/ProjectAssignModal.vue'
+import TuyaProjectsModal from '@/components/admin/TuyaProjectsModal.vue'
 import { userApi } from '../api/user.api'
 import type { UpdateTuyaRequest } from '../api/user.api'
 import { useAuthStore } from '../stores/auth.store'
@@ -130,6 +139,7 @@ const cropFeatureMap = ref<Record<string, boolean>>({})
 
 const showUserModal = ref(false)
 const showProjectModal = ref(false)
+const showTuyaProjectsModal = ref(false)
 const selectedUser = ref<User | null>(null)
 
 async function fetchUsers() {
@@ -192,6 +202,11 @@ const editUser = (user: User) => {
 const assignProject = (user: User) => {
   selectedUser.value = user
   showProjectModal.value = true
+}
+
+const openTuyaProjects = (user: User) => {
+  selectedUser.value = user
+  showTuyaProjectsModal.value = true
 }
 
 const deleteUser = async (user: User) => {
