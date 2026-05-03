@@ -57,33 +57,39 @@
         <div class="field-section">
           <label class="field-label">🗓️ 요일</label>
           <label class="everyday-toggle">
-            <input type="checkbox" :checked="isEveryDay(localTimeRange.days)" @change="toggleRangeDayAll" />
+            <input type="checkbox" :checked="isEveryDay(sharedDays)" @change="toggleRangeDayAll" />
             매일
           </label>
           <div class="day-chips">
             <label v-for="(dName, dIdx) in DAY_NAMES" :key="dIdx"
-              class="day-chip" :class="{ active: localTimeRange.days.includes(dIdx) }">
-              <input type="checkbox" :checked="localTimeRange.days.includes(dIdx)" class="sr-only" @change="toggleRangeDay(dIdx)" />
+              class="day-chip" :class="{ active: sharedDays.includes(dIdx) }">
+              <input type="checkbox" :checked="sharedDays.includes(dIdx)" class="sr-only" @change="toggleRangeDay(dIdx)" />
               {{ dName }}
             </label>
           </div>
         </div>
 
-        <div class="time-range-row">
-          <div class="field-group">
-            <label class="field-label">시작</label>
-            <input type="time" class="time-input" v-model="localTimeRange.start" @change="emitTimeRange" />
+        <div v-for="(range, rIdx) in localTimeRanges" :key="rIdx" class="time-range-block">
+          <div class="time-range-row">
+            <div class="field-group">
+              <label class="field-label">시작</label>
+              <input type="time" class="time-input" :value="range.start"
+                @change="updateRange(rIdx, 'start', ($event.target as HTMLInputElement).value)" />
+            </div>
+            <span class="tilde">~</span>
+            <div class="field-group">
+              <label class="field-label">종료</label>
+              <input type="time" class="time-input" :value="range.end"
+                @change="updateRange(rIdx, 'end', ($event.target as HTMLInputElement).value)" />
+            </div>
+            <button v-if="localTimeRanges.length > 1" class="btn-remove-sm" @click="removeRange(rIdx)">✕</button>
           </div>
-          <span class="tilde">~</span>
-          <div class="field-group">
-            <label class="field-label">종료</label>
-            <input type="time" class="time-input" v-model="localTimeRange.end" @change="emitTimeRange" />
-          </div>
+          <p v-if="range.start && range.end && range.start >= range.end" class="error-msg">
+            시작 시각은 종료 시각보다 앞이어야 합니다.
+          </p>
         </div>
 
-        <p v-if="localTimeRange.start && localTimeRange.end && localTimeRange.start >= localTimeRange.end" class="error-msg">
-          시작 시각은 종료 시각보다 앞이어야 합니다.
-        </p>
+        <button class="btn-add-sched" @click="addRange">＋ 시간대 추가</button>
 
         <div v-if="timePreview" class="preview-box">
           <span class="preview-label">✨ 미리보기</span>
@@ -204,6 +210,7 @@ const props = defineProps<{
   schedule: IrrigationSchedule[]
   triggerType: 'time' | 'temperature'
   timeRange: TimeRange | undefined
+  timeRanges: TimeRange[] | undefined
   temperature: TemperatureTrigger | undefined
   extraConditions: SensorCondition[]
   relayEnabled: boolean
@@ -215,6 +222,7 @@ const emit = defineEmits<{
   'update:schedule': [v: IrrigationSchedule[]]
   'update:triggerType': [v: 'time' | 'temperature']
   'update:timeRange': [v: TimeRange]
+  'update:timeRanges': [v: TimeRange[]]
   'update:temperature': [v: TemperatureTrigger]
   'update:extraConditions': [v: SensorCondition[]]
   'update:relayEnabled': [v: boolean]
@@ -229,12 +237,13 @@ function setTab(t: 'time' | 'temperature') {
   emit('update:triggerType', t)
 }
 
-// 시간 범위 로컬 상태
-const localTimeRange = reactive<TimeRange>({
-  days: props.timeRange?.days ?? [0, 1, 2, 3, 4, 5, 6],
-  start: props.timeRange?.start ?? '08:00',
-  end: props.timeRange?.end ?? '18:00',
-})
+// 시간 범위 로컬 상태 (다중 지원)
+const defaultRanges = (props.timeRanges && props.timeRanges.length > 0)
+  ? props.timeRanges
+  : (props.timeRange ? [props.timeRange] : [{ days: [0, 1, 2, 3, 4, 5, 6], start: '08:00', end: '18:00' }])
+const localTimeRanges = ref<TimeRange[]>(defaultRanges.map(r => ({ ...r })))
+
+const sharedDays = computed(() => localTimeRanges.value[0]?.days ?? [0, 1, 2, 3, 4, 5, 6])
 
 // 온도 로컬 상태
 const localTemp = reactive<TemperatureTrigger>({
@@ -285,21 +294,47 @@ function removeSchedule(idx: number) {
 
 // ── 시간 범위 헬퍼 ────────────────────────────────
 function toggleRangeDayAll() {
-  localTimeRange.days = isEveryDay(localTimeRange.days) ? [1, 2, 3, 4, 5] : [0, 1, 2, 3, 4, 5, 6]
-  emitTimeRange()
+  const newDays = isEveryDay(sharedDays.value) ? [1, 2, 3, 4, 5] : [0, 1, 2, 3, 4, 5, 6]
+  localTimeRanges.value = localTimeRanges.value.map(r => ({ ...r, days: newDays }))
+  emitTimeRanges()
 }
 
 function toggleRangeDay(dIdx: number) {
-  const days = [...localTimeRange.days]
+  const days = [...sharedDays.value]
   const i = days.indexOf(dIdx)
   if (i === -1) days.push(dIdx)
   else days.splice(i, 1)
-  localTimeRange.days = days.sort((a, b) => a - b)
-  emitTimeRange()
+  const sorted = days.sort((a, b) => a - b)
+  localTimeRanges.value = localTimeRanges.value.map(r => ({ ...r, days: sorted }))
+  emitTimeRanges()
 }
 
-function emitTimeRange() {
-  emit('update:timeRange', { ...localTimeRange })
+function updateRange(idx: number, key: 'start' | 'end', val: string) {
+  const ranges = [...localTimeRanges.value]
+  ranges[idx] = { ...ranges[idx], [key]: val }
+  localTimeRanges.value = ranges
+  emitTimeRanges()
+}
+
+function addRange() {
+  const last = localTimeRanges.value[localTimeRanges.value.length - 1]
+  localTimeRanges.value = [...localTimeRanges.value, {
+    days: last?.days ?? [0, 1, 2, 3, 4, 5, 6],
+    start: '20:00',
+    end: '22:00',
+  }]
+  emitTimeRanges()
+}
+
+function removeRange(idx: number) {
+  localTimeRanges.value = localTimeRanges.value.filter((_, i) => i !== idx)
+  emitTimeRanges()
+}
+
+function emitTimeRanges() {
+  const ranges = localTimeRanges.value
+  emit('update:timeRanges', ranges)
+  if (ranges.length > 0) emit('update:timeRange', ranges[0])
 }
 
 // ── 온도 헬퍼 ────────────────────────────────────
@@ -314,11 +349,14 @@ const tempPreview = computed(() => localTemp.base != null && !isNaN(Number(local
 
 // ── 시간 미리보기 ─────────────────────────────────
 const timePreview = computed(() => {
-  const { start, end, days } = localTimeRange
-  if (!start || !end || start >= end || days.length === 0) return ''
-  const dayStr = isEveryDay(days) ? '매일' : days.map(d => DAY_NAMES[d]).join('·')
+  const ranges = localTimeRanges.value
+  if (ranges.length === 0) return ''
+  const first = ranges[0]
+  if (!first.start || !first.end || first.start >= first.end || first.days.length === 0) return ''
+  const dayStr = isEveryDay(sharedDays.value) ? '매일' : sharedDays.value.map(d => DAY_NAMES[d]).join('·')
   const action = props.intent === 'opener' ? '닫힙니다' : '꺼집니다'
-  return `${dayStr} ${start} ~ ${end} 사이에만 작동합니다.\n그 외 시간엔 자동으로 ${action}.`
+  const timeStr = ranges.map(r => `${r.start}~${r.end}`).join(', ')
+  return `${dayStr} ${timeStr} 사이에만 작동합니다.\n그 외 시간엔 자동으로 ${action}.`
 })
 
 // ── 추가 조건 ─────────────────────────────────────
@@ -334,9 +372,9 @@ function emitExtra() {
   emit('update:extraConditions', [...localExtraConds.value])
 }
 
-// 개폐기/환풍기인 경우에만 초기 timeRange emit
+// 개폐기/환풍기인 경우에만 초기 timeRanges emit
 if (props.intent !== 'irrigation') {
-  emitTimeRange()
+  emitTimeRanges()
 }
 </script>
 
@@ -391,6 +429,7 @@ if (props.intent !== 'irrigation') {
 
 .tab-panel { display: flex; flex-direction: column; gap: 16px; }
 
+.time-range-block { display: flex; flex-direction: column; gap: 6px; }
 .time-range-row { display: flex; align-items: flex-end; gap: 8px; }
 .field-group { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .tilde { font-size: 18px; color: var(--text-muted); padding-bottom: 8px; }

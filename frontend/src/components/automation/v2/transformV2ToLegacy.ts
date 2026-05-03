@@ -7,6 +7,10 @@ function toMinutes(hhmm: string): number {
   return h * 60 + m
 }
 
+function toHour(hhmm: string): number {
+  return Number(hhmm.split(':')[0])
+}
+
 function buildIrrigation(state: WizardStateV2): CreateRuleRequest {
   const { groupId, ruleName, irrigation } = state
   if (!irrigation) throw new Error('irrigation state missing')
@@ -35,12 +39,10 @@ function buildIrrigation(state: WizardStateV2): CreateRuleRequest {
       ? { enabled: true, duration: irrigation.fertilizer.duration, preStopWait: irrigation.fertilizer.preStopWait }
       : { enabled: false, duration: 0, preStopWait: 0 },
     schedule: { days: sched?.days ?? [1, 2, 3, 4, 5], repeat: true },
+    schedules: irrigation.schedule.map(s => ({ startTime: s.startTime, days: s.days, repeat: true })),
   }
 
   const meta: Record<string, unknown> = {}
-  if (irrigation.schedule.length > 1) {
-    meta.additionalSchedules = irrigation.schedule.slice(1)
-  }
   meta.channelMapping = mapping
 
   return {
@@ -64,13 +66,21 @@ function buildOpenerFan(state: WizardStateV2): CreateRuleRequest {
 
   let conditions: ConditionGroup
 
-  if (trigger.triggerType === 'time' && trigger.timeRange) {
+  if (trigger.triggerType === 'time') {
+    const ranges = (trigger.timeRanges && trigger.timeRanges.length > 0)
+      ? trigger.timeRanges
+      : (trigger.timeRange ? [trigger.timeRange] : [])
+    if (ranges.length === 0) throw new Error('time trigger has no ranges')
+    const firstRange = ranges[0]
     const baseCond: any = {
       type: 'time',
       field: 'time',
       operator: 'between',
-      value: [toMinutes(trigger.timeRange.start), toMinutes(trigger.timeRange.end)] as [number, number],
-      daysOfWeek: trigger.timeRange.days,
+      value: [toMinutes(firstRange.start), toMinutes(firstRange.end)] as [number, number],
+      daysOfWeek: firstRange.days,
+    }
+    if (ranges.length > 1) {
+      baseCond.timeSlots = ranges.map(r => ({ start: toHour(r.start), end: toHour(r.end) }))
     }
     if (trigger.relayEnabled) {
       baseCond.relay = true

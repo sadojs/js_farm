@@ -68,6 +68,7 @@ export interface OpenerFanState {
   deviceIds: string[]
   triggerType: 'time' | 'temperature'
   timeRange?: TimeRange
+  timeRanges?: TimeRange[]
   temperature?: TemperatureTrigger
   extraConditions: SensorCondition[]
   relayEnabled: boolean       // 동작대기 ON/OFF

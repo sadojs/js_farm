@@ -5,6 +5,7 @@ function makeOpenerFanState(): OpenerFanState {
   return {
     deviceIds: [],
     triggerType: 'time',
+    timeRanges: [{ days: [0, 1, 2, 3, 4, 5, 6], start: '08:00', end: '18:00' }],
     extraConditions: [],
     relayEnabled: false,
     relayOnMin: 50,
@@ -121,8 +122,10 @@ export function useRuleWizardV2() {
         const trigger = s.intent === 'opener' ? s.opener : s.fan
         if (!trigger) return false
         if (trigger.triggerType === 'time') {
-          const t = trigger.timeRange
-          return !!(t && t.days.length > 0 && t.start && t.end && t.start < t.end)
+          const ranges = (trigger.timeRanges && trigger.timeRanges.length > 0)
+            ? trigger.timeRanges
+            : (trigger.timeRange ? [trigger.timeRange] : [])
+          return ranges.length > 0 && ranges.every(r => r.days.length > 0 && r.start && r.end && r.start < r.end)
         }
         const temp = trigger.temperature
         return !!(temp && temp.base != null && !isNaN(temp.base) && temp.hysteresis >= 0.5)

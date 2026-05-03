@@ -82,6 +82,7 @@
             :schedule="wizard.state.value.irrigation?.schedule ?? []"
             :triggerType="currentTrigger?.triggerType ?? 'time'"
             :timeRange="currentTrigger?.timeRange"
+            :timeRanges="currentTrigger?.timeRanges"
             :temperature="currentTrigger?.temperature"
             :extraConditions="currentTrigger?.extraConditions ?? []"
             :relayEnabled="currentTrigger?.relayEnabled ?? false"
@@ -90,6 +91,7 @@
             @update:schedule="v => setIrrigationField('schedule', v)"
             @update:triggerType="v => setTriggerField('triggerType', v)"
             @update:timeRange="v => setTriggerField('timeRange', v)"
+            @update:timeRanges="v => setTriggerField('timeRanges', v)"
             @update:temperature="v => setTriggerField('temperature', v)"
             @update:extraConditions="v => setTriggerField('extraConditions', v)"
             @update:relayEnabled="v => setTriggerField('relayEnabled', v)"
@@ -219,7 +221,7 @@ function setIrrigationField<K extends keyof NonNullable<typeof wizard.state.valu
   ;(wizard.state.value.irrigation as any)[key] = val
 }
 
-function setTriggerField<K extends 'deviceIds' | 'triggerType' | 'timeRange' | 'temperature' | 'extraConditions' | 'relayEnabled' | 'relayOnMin' | 'relayOffMin'>(
+function setTriggerField<K extends 'deviceIds' | 'triggerType' | 'timeRange' | 'timeRanges' | 'temperature' | 'extraConditions' | 'relayEnabled' | 'relayOnMin' | 'relayOffMin'>(
   key: K, val: any
 ) {
   const { intent } = wizard.state.value
