@@ -106,6 +106,13 @@ export class UsersController {
     return this.usersService.listTuyaProjects(id);
   }
 
+  @Post(':id/tuya-projects')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  addTuyaProject(@Param('id') id: string, @Body() dto: CreateTuyaProjectDto) {
+    return this.usersService.addTuyaProject(id, dto);
+  }
+
   @Put(':id/tuya-projects/:projectId')
   @UseGuards(RolesGuard)
   @Roles('admin')
@@ -115,5 +122,12 @@ export class UsersController {
     @Body() dto: Partial<UpdateTuyaProjectDto & { label?: string }>,
   ) {
     return this.usersService.updateTuyaProjectById(id, projectId, dto);
+  }
+
+  @Delete(':id/tuya-projects/:projectId')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  deleteTuyaProject(@Param('id') id: string, @Param('projectId') projectId: string) {
+    return this.usersService.deleteTuyaProject(id, projectId);
   }
 }

@@ -107,6 +107,7 @@
 import { ref, watch } from 'vue'
 import { userApi, type TuyaProject, type CreateTuyaProjectRequest } from '../../api/user.api'
 import { useAuthStore } from '../../stores/auth.store'
+import { useNotification } from '../../composables/useNotification'
 
 interface Props {
   show: boolean
@@ -117,6 +118,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<{ close: [] }>()
 
 const authStore = useAuthStore()
+const { success: showSuccess, error: showError } = useNotification()
 
 const projects = ref<TuyaProject[]>([])
 const loadingList = ref(false)
@@ -143,11 +145,11 @@ const loadProjects = async () => {
       const { data } = await userApi.listMyTuyaProjects()
       projects.value = data
     } else {
-      // Admin viewing another user's projects — placeholder, uses admin endpoint
-      const { data } = await (userApi as any).listTuyaProjects(props.targetUser!.id)
+      const { data } = await userApi.listTuyaProjects(props.targetUser!.id)
       projects.value = data
     }
-  } catch {
+  } catch (err: any) {
+    showError(err.response?.data?.message || '계정 목록을 불러오지 못했습니다.')
     projects.value = []
   } finally {
     loadingList.value = false
@@ -207,9 +209,9 @@ const saveProject = async () => {
       const payload: any = { label: p.label, name: p.name, accessId: p.accessId, endpoint: p.endpoint, projectId: p.projectId, enabled: p.enabled }
       if (p.accessSecret) payload.accessSecret = p.accessSecret
       if (isMyself()) {
-        await userApi.updateMyTuyaProject(p.id, payload)
+        await userApi.updateMyTuyaProjectById(p.id, payload)
       } else {
-        await (userApi as any).updateTuyaProject(props.targetUser!.id, p.id, payload)
+        await userApi.updateTuyaProjectForUser(props.targetUser!.id, p.id, payload)
       }
     } else {
       const payload: CreateTuyaProjectRequest = {
@@ -223,12 +225,12 @@ const saveProject = async () => {
       if (isMyself()) {
         await userApi.addMyTuyaProject(payload)
       } else {
-        // Admin adding for another user — not yet exposed but graceful fallback
-        await userApi.addMyTuyaProject(payload)
+        await userApi.addTuyaProject(props.targetUser!.id, payload)
       }
     }
     await loadProjects()
     editingProject.value = null
+    showSuccess(p.id ? '계정이 수정되었습니다.' : '새 Tuya 계정이 추가되었습니다.')
   } catch (err: any) {
     formError.value = err.response?.data?.message || '저장에 실패했습니다.'
   } finally {
@@ -242,11 +244,12 @@ const deleteProject = async (id: string) => {
     if (isMyself()) {
       await userApi.deleteMyTuyaProject(id)
     } else {
-      await (userApi as any).deleteTuyaProject(props.targetUser!.id, id)
+      await userApi.deleteTuyaProject(props.targetUser!.id, id)
     }
     await loadProjects()
+    showSuccess('Tuya 계정이 삭제되었습니다.')
   } catch (err: any) {
-    alert(err.response?.data?.message || '삭제에 실패했습니다.')
+    showError(err.response?.data?.message || '삭제에 실패했습니다.')
   }
 }
 </script>

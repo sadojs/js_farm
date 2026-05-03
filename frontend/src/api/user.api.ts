@@ -53,7 +53,7 @@ export const userApi = {
   addMyTuyaProject: (data: CreateTuyaProjectRequest) =>
     apiClient.post<TuyaProject>('/users/me/tuya-projects', data),
 
-  updateMyTuyaProject: (id: string, data: Partial<CreateTuyaProjectRequest> & { enabled?: boolean }) =>
+  updateMyTuyaProjectById: (id: string, data: Partial<CreateTuyaProjectRequest> & { enabled?: boolean }) =>
     apiClient.put<TuyaProject>(`/users/me/tuya-projects/${id}`, data),
 
   deleteMyTuyaProject: (id: string) =>
@@ -80,6 +80,19 @@ export const userApi = {
 
   updateTuya: (id: string, data: UpdateTuyaRequest) =>
     apiClient.put(`/users/${id}/tuya`, data),
+
+  // 관리자: 다른 사용자 Tuya 프로젝트 관리
+  listTuyaProjects: (userId: string) =>
+    apiClient.get<TuyaProject[]>(`/users/${userId}/tuya-projects`),
+
+  addTuyaProject: (userId: string, data: CreateTuyaProjectRequest) =>
+    apiClient.post<TuyaProject>(`/users/${userId}/tuya-projects`, data),
+
+  updateTuyaProjectForUser: (userId: string, projectId: string, data: Partial<CreateTuyaProjectRequest> & { enabled?: boolean }) =>
+    apiClient.put<TuyaProject>(`/users/${userId}/tuya-projects/${projectId}`, data),
+
+  deleteTuyaProject: (userId: string, projectId: string) =>
+    apiClient.delete(`/users/${userId}/tuya-projects/${projectId}`),
 
   // Tuya 연결 테스트 (폼 데이터로 직접 테스트)
   testTuyaConnection: (data: { accessId: string; accessSecret: string; endpoint: string }) =>

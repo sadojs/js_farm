@@ -304,6 +304,7 @@ const syncing = ref(false)
 const searchQuery = ref('')
 const activeTab = ref<'all' | 'actuator' | 'sensor'>('all')
 
+
 // 삭제 차단 모달 상태
 const blockingModal = ref<{
   show: boolean
